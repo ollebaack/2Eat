@@ -8,9 +8,4 @@
     <AssemblyName>$(AssemblyName.Replace(' ', '_'))</AssemblyName>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\2Eat.WebUI.Client\2Eat.WebUI.Client.csproj" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.3" />
-  </ItemGroup>
-
 </Project>
