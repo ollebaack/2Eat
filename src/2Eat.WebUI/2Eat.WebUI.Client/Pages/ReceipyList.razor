@@ -1,0 +1,42 @@
+﻿@page "/receipies"
+@attribute [StreamRendering]
+@inject IReceipyService ReceipyService
+
+<PageTitle>Receipies</PageTitle>
+
+<h3>Receipies</h3>
+
+<AddReceipyButton />
+
+<br />
+<br />
+
+@if (receipies == null)
+{
+    <span>Loading...</span>
+}
+else if (receipies.Count == 0)
+{
+    <span>There are no added receipies yet.</span>
+}
+else
+{
+    <ul>
+        @foreach (var receipy in receipies)
+        {
+            <li>@receipy.Name</li>
+        }
+    </ul>
+}
+
+
+@code {
+    List<Receipy>? receipies = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        receipies = await ReceipyService.GetRecepiesAsync();
+    }
+
+
+}

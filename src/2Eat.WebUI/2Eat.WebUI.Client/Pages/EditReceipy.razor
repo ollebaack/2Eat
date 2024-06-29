@@ -1,0 +1,53 @@
+﻿@page "/receipy"
+@page "/receipy/{Id:int}"
+
+@rendermode InteractiveWebAssembly
+@attribute [StreamRendering]
+@inject IReceipyService ReceipyService
+
+<h3>Create Receipy</h3>
+
+<EditForm Model="receipy" OnSubmit="HandleSubmit" FormName="editGame">
+
+    <label>Name</label>
+    <InputText @bind-Value="receipy.Name">@receipy.Name</InputText>
+
+    <label>Ingredients</label>
+    <ul>
+        <li>
+            <InputText @bind-Value="ingredient"></InputText>
+            <AddIngredientButton Name=ingredient></AddIngredientButton>
+        </li>
+        @foreach (var ingredient in receipy.Ingredients)
+        {
+            <li>
+                @ingredient
+            </li>
+        }
+    </ul>
+
+    <label>Instructions</label>
+    <InputTextArea @bind-Value="receipy.Instructions">@receipy.Instructions</InputTextArea>
+
+    <button type="submit" class="btn btn-primary">Save</button>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int? Id { get; set; }
+    
+    private string ingredient = string.Empty;
+    private Receipy receipy = new Receipy() { Name = string.Empty, Ingredients = new List<Ingredient>() };
+
+    async Task HandleSubmit()
+    {
+        if (Id.HasValue)
+        {
+            await ReceipyService.UpdateReceipyAsync(Id.Value, receipy);
+        }
+        else
+        {
+            await ReceipyService.AddReceipyAsync(receipy);
+        }
+    }
+}

@@ -1,11 +1,16 @@
 using _2Eat.WebUI.Client.Pages;
 using _2Eat.WebUI.Components;
+using _2Eat.Application;
+using _2Eat.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
+
+builder.Services.AddApplicationExtensions();
+builder.Services.AddInfrastructureExtensions(builder.Configuration);
 
 var app = builder.Build();
 

@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "2Eat.Infrastructure": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}
