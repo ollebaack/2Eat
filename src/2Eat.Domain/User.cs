@@ -10,6 +10,6 @@ namespace _2Eat.Domain
     {
         public int Id { get; set; }
         public string Name { get; set; }
-        public ICollection<Receipy> Receipies { get; set; }
+        public ICollection<Recipe> Receipies { get; set; }
     }
 }

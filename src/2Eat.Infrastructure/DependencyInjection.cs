@@ -1,4 +1,5 @@
-﻿using _2Eat.Infrastructure.Services.ReceipyServices;
+﻿using _2Eat.Infrastructure.Services.RecipeServices;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,6 +10,12 @@ namespace _2Eat.Infrastructure
     {
         public static IServiceCollection AddInfrastructureExtensions(this IServiceCollection services, IConfiguration configuration)
         {
+
+            services.AddScoped(http => new HttpClient
+            {
+                BaseAddress = new Uri(configuration.GetSection("BaseUri").Value!)
+            });
+
             services.AddDbContext<ApplicationDbContext>(options => 
             {
                 if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
@@ -21,9 +28,21 @@ namespace _2Eat.Infrastructure
                 }
             });
 
-            services.AddScoped<IReceipyService, ReceipyService>();
+            services.AddScoped<IRecipeService, RecipeService>();
 
             return services;
+        }
+
+        public static WebAssemblyHostBuilder AddClientInfrastructureExtensions(this WebAssemblyHostBuilder builder)
+        {
+            builder.Services.AddScoped<IRecipeService, ClientRecipeService>();
+
+            builder.Services.AddScoped(http => new HttpClient
+            {
+                BaseAddress = new Uri(builder.Configuration.GetSection("BaseUri").Value!)
+            });
+
+            return builder;
         }
     }
 }

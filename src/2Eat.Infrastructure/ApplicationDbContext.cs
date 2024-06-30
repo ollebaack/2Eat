@@ -12,6 +12,6 @@ namespace _2Eat.Infrastructure
     {
 
         public DbSet<User> Users { get; set; }
-        public DbSet<Receipy> Receipies { get; set; }
+        public DbSet<Recipe> Recipes { get; set; }
     }
 }

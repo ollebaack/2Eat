@@ -1,0 +1,43 @@
+﻿@page "/recipes"
+@attribute [StreamRendering]
+@rendermode @(new InteractiveWebAssemblyRenderMode(false))
+@inject IRecipeService RecipeService
+
+<PageTitle>Recipes</PageTitle>
+
+<h3>Recipes</h3>
+
+<AddReceipyButton />
+
+<br />
+<br />
+
+@if (recipes == null)
+{
+    <span>Loading...</span>
+}
+else if (recipes.Count == 0)
+{
+    <span>There are no added receipies yet.</span>
+}
+else
+{
+    <ul>
+        @foreach (var recipe in recipes)
+        {
+            <li>@recipe.Name</li>
+        }
+    </ul>
+}
+
+
+@code {
+    List<Recipe>? recipes = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        recipes = await RecipeService.GetRecipesAsync();
+    }
+
+
+}

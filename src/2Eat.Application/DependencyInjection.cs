@@ -6,7 +6,6 @@ namespace _2Eat.Application
     {
         public static IServiceCollection AddApplicationExtensions(this IServiceCollection services)
         {
-            //services.AddScoped<ITodoService, TodoService>();
             return services;
         }
     }
