@@ -25,7 +25,14 @@ namespace _2Eat.Infrastructure.Services.RecipeServices
         }
         public Task<Recipe> GetRecipeByIdAsync(int id)
         {
-            throw new NotImplementedException();
+            var recipe = new Recipe
+            {
+                Id = id,
+                Name = "Test Recipe",
+                Ingredients = [new Ingredient() { Name = "Flower" }, new Ingredient() { Name = "Sugar" }],
+                Instructions = "Test Instructions"
+            };
+            return Task.FromResult(recipe);
         }
 
 
@@ -33,6 +40,7 @@ namespace _2Eat.Infrastructure.Services.RecipeServices
         {
             var recipeEntity = new Recipe
             {
+                Id = 10,
                 Name = recipe.Name,
                 Ingredients = recipe.Ingredients,
                 Instructions = recipe.Instructions

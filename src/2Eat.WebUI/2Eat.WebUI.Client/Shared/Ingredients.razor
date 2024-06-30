@@ -1,0 +1,39 @@
+﻿@rendermode InteractiveWebAssembly
+
+<h5>Ingredients</h5>
+<ul>
+    @foreach (var ingredient in ingredients)
+    {
+        <li>
+            @ingredient.Name
+        </li>
+    }
+    <li>
+        <InputText @bind-Value="Name"></InputText>
+        <button @onclick="AddIngredient" class="btn btn-primary">Add Ingredient</button>
+    </li>
+</ul>
+<hr />
+
+@code {
+    [Parameter]
+    public List<Ingredient>? IngredientsList { get; set; }
+
+    private string Name = string.Empty;
+    private List<Ingredient> ingredients { get; set; } = null!;
+
+    override protected void OnInitialized()
+    {
+        ingredients = ingredients ?? IngredientsList ?? new List<Ingredient>();
+    }
+
+    private void AddIngredient()
+    {
+        if (!string.IsNullOrWhiteSpace(Name)) // Check if Name is not empty
+        {
+            ingredients.Add(new Ingredient() { Name = Name });
+            Name = string.Empty; // Clear the input field after adding
+            StateHasChanged(); // Notify the component to re-render
+        }
+    }
+}
