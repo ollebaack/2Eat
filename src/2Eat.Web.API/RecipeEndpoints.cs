@@ -41,7 +41,7 @@ namespace _2Eat.Web.API
             return TypedResults.Ok(recipe);
         }
 
-        public static async Task<Results<Ok<Recipe>, BadRequest>> CreateRecipe(IRecipeService _service, HttpContext context)
+        public static async Task<Results<Ok<Recipe>, BadRequest, ProblemHttpResult>> CreateRecipe(IRecipeService _service, HttpContext context)
         {
             var recipe = await context.Request.ReadFromJsonAsync<Recipe>();
             if (recipe == null)
@@ -49,12 +49,19 @@ namespace _2Eat.Web.API
                 return TypedResults.BadRequest();
             }
 
-            var newRecipe = await _service.AddRecipeAsync(recipe);
+            try
+            {
+                var newRecipe = await _service.AddRecipeAsync(recipe);
 
-            return TypedResults.Ok(newRecipe);
+                return TypedResults.Ok(newRecipe);
+            }
+            catch (ArgumentException ex)
+            {
+                return TypedResults.Problem(detail: ex.Message, statusCode: 400);
+            }
         }
 
-        public static async Task<Results<Ok<Recipe>, BadRequest>> UpdateRecipe(int id, IRecipeService _service, HttpContext context)
+        public static async Task<Results<Ok<Recipe>, BadRequest, ProblemHttpResult>> UpdateRecipe(int id, IRecipeService _service, HttpContext context)
         {
             var recipe = await context.Request.ReadFromJsonAsync<Recipe>();
             if (recipe == null)
@@ -62,21 +69,34 @@ namespace _2Eat.Web.API
                 return TypedResults.BadRequest();
             }
 
-            var updatedRecipe = await _service.UpdateRecipeAsync(id, recipe);
+            try
+            {
+                var updatedRecipe = await _service.UpdateRecipeAsync(id, recipe);
 
-            return TypedResults.Ok(updatedRecipe);
+                return TypedResults.Ok(updatedRecipe);
+            }
+            catch (Exception ex)
+            {
+                return TypedResults.Problem(detail: ex.Message, statusCode: 400);
+            }
         }
 
-        public static async Task<Results<Ok<Recipe>, NotFound>> DeleteRecipe(int id, IRecipeService _service)
+        public static async Task<Results<Ok<Recipe>, NotFound, ProblemHttpResult>> DeleteRecipe(int id, IRecipeService _service)
         {
             var recipe = await _service.GetRecipeByIdAsync(id);
             if (recipe == null)
             {
                 return TypedResults.NotFound();
             }
-
-            var deletedRecipe = await _service.DeleteRecipeAsync(id);
-            return TypedResults.Ok(deletedRecipe);
+            try
+            {
+                var deletedRecipe = await _service.DeleteRecipeAsync(id);
+                return TypedResults.Ok(deletedRecipe);
+            }
+            catch (Exception ex)
+            {
+                return TypedResults.Problem(detail: ex.Message, statusCode: 400);
+            }
         }
     }
 }

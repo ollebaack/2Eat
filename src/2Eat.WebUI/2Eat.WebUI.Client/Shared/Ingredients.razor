@@ -2,7 +2,7 @@
 
 <h5>Ingredients</h5>
 <ul>
-    @foreach (var ingredient in ingredients)
+    @foreach (var ingredient in _ingredients)
     {
         <li>
             @ingredient.Name
@@ -16,24 +16,39 @@
 <hr />
 
 @code {
-    [Parameter]
-    public List<Ingredient>? IngredientsList { get; set; }
-
+    private ICollection<Ingredient> _ingredients;
     private string Name = string.Empty;
-    private List<Ingredient> ingredients { get; set; } = null!;
 
-    override protected void OnInitialized()
+    [Parameter]
+    public ICollection<Ingredient> IngredientsList
     {
-        ingredients = ingredients ?? IngredientsList ?? new List<Ingredient>();
+        get => _ingredients;
+        set
+        {
+            if (_ingredients != value)
+            {
+                _ingredients = value;
+                IngredientsListChanged.InvokeAsync(value);
+            }
+        }
+    }
+
+    [Parameter]
+    public EventCallback<ICollection<Ingredient>> IngredientsListChanged { get; set; }
+
+    // Ensure the component initializes _ingredients correctly
+    protected override void OnInitialized()
+    {
+        _ingredients = IngredientsList ?? new List<Ingredient>();
     }
 
     private void AddIngredient()
     {
-        if (!string.IsNullOrWhiteSpace(Name)) // Check if Name is not empty
+        if (!string.IsNullOrWhiteSpace(Name))
         {
-            ingredients.Add(new Ingredient() { Name = Name });
-            Name = string.Empty; // Clear the input field after adding
-            StateHasChanged(); // Notify the component to re-render
+            _ingredients.Add(new Ingredient() { Name = Name });
+            Name = string.Empty;
+            IngredientsListChanged.InvokeAsync(_ingredients); // Notify parent component
         }
     }
 }

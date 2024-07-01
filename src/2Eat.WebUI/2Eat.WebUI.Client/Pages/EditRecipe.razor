@@ -1,7 +1,7 @@
 ﻿@page "/recipe"
 @page "/recipe/{Id:int}"
 
-@rendermode InteractiveWebAssembly
+@rendermode @(new InteractiveWebAssemblyRenderMode(false))
 @attribute [StreamRendering]
 @inject IRecipeService RecipeService
 @inject NavigationManager NavigationManager
@@ -24,7 +24,7 @@ else
 <hr />
 
 <EditForm Model="recipe">
-    <Ingredients IngredientsList="@recipe.Ingredients.ToList()"/> <!-- Denna har inte tillgång till tillagda ingredienser vid spara -->
+    <Ingredients @bind-IngredientsList="recipe.Ingredients" />
 </EditForm>
 
 <h5>Instructions</h5>
@@ -45,7 +45,7 @@ else
     {
         if (Id.HasValue)
         {
-            recipe = await RecipeService.GetRecipeByIdAsync(Id.Value);
+            recipe = await RecipeService.GetRecipeByIdAsync(Id.Value) ?? throw new Exception($"{nameof(recipe)} was null.");
         }
     }
 

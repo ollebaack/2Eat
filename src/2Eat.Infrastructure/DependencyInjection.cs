@@ -1,4 +1,5 @@
-﻿using _2Eat.Infrastructure.Services.RecipeServices;
+﻿using _2Eat.Infrastructure.Services.IngredientServices;
+using _2Eat.Infrastructure.Services.RecipeServices;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -18,7 +19,7 @@ namespace _2Eat.Infrastructure
 
             services.AddDbContext<ApplicationDbContext>(options => 
             {
-                if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+                if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development") //Kommentera ur detta och kör dotnet ef migrations add Initial --project ../../2Eat.Infrastructure
                 {
                     options.UseInMemoryDatabase("2EatDb");
                 }
@@ -29,6 +30,7 @@ namespace _2Eat.Infrastructure
             });
 
             services.AddScoped<IRecipeService, RecipeService>();
+            services.AddScoped<IIngredientService, IngredientService>();
 
             return services;
         }
@@ -36,6 +38,7 @@ namespace _2Eat.Infrastructure
         public static WebAssemblyHostBuilder AddClientInfrastructureExtensions(this WebAssemblyHostBuilder builder)
         {
             builder.Services.AddScoped<IRecipeService, ClientRecipeService>();
+            builder.Services.AddScoped<IIngredientService, ClientIngredientService>();
 
             builder.Services.AddScoped(http => new HttpClient
             {
