@@ -2,6 +2,7 @@ using _2Eat.WebUI.Client.Pages;
 using _2Eat.WebUI.Components;
 using _2Eat.Application;
 using _2Eat.Infrastructure;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 

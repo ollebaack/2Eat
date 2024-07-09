@@ -3,7 +3,15 @@
 
 <h5>Ingredients</h5>
 
-<InputText @bind-Value="Name" @oninput="OnInputChanged"></InputText>
+<ul class="styled-ul">
+    @foreach (var ingredient in _ingredients)
+    {
+        <li>
+            @ingredient.Name
+        </li>
+    }
+</ul>
+<InputText class="styled-input" @bind-Value="Name" @oninput="OnInputChanged"></InputText>
 @if (suggestedIngredients.Any())
 {
     @foreach (var ingredient in suggestedIngredients)
@@ -13,15 +21,8 @@
         </button>
     }
 }
-<button @onclick="AddIngredient" class="btn btn-primary">Add Ingredient</button>
-<ul>
-    @foreach (var ingredient in _ingredients)
-    {
-        <li>
-            @ingredient.Name
-        </li>
-    }
-</ul>
+<br />
+<button @onclick="AddIngredient" class="btn btn-primary">+</button>
 <hr />
 
 @code {

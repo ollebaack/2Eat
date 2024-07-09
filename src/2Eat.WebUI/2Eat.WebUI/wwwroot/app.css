@@ -50,24 +50,97 @@ h1:focus {
     border-color: #929292;
 }
 
-/* Custom css */
+/* Custom CSS */
+
+/* Styled list */
+.styled-ul {
+    list-style-type: none; /* Remove default bullets */
+    padding: 0; /* Remove default padding */
+    margin: 0; /* Remove default margin */
+}
+
+    .styled-ul li {
+        width: fit-content;
+        padding: 10px; /* Add padding to each list item */
+        margin-bottom: 5px; /* Add space between list items */
+        background-color: #f8f9fa; /* Light background color */
+        border: 1px solid #dee2e6; /* Border to separate items */
+        border-radius: 5px; /* Rounded corners */
+        transition: background-color 0.3s, box-shadow 0.3s; /* Smooth transition effects */
+    }
+
+        .styled-ul li:hover {
+            background-color: #e2e6ea; /* Slightly darker background on hover */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow on hover */
+        }
+
+        /* Ensure the buttons inside the list are styled correctly */
+        .styled-ul li button {
+            background-color: transparent; /* Transparent background for buttons */
+            border: none; /* Remove border */
+            color: #006bb7; /* Button text color */
+            cursor: pointer; /* Pointer cursor to indicate clickability */
+            text-decoration: underline; /* Underline text to indicate it's a link */
+            font-family: inherit; /* Consistent font family */
+            font-size: inherit; /* Consistent font size */
+            padding: 0; /* Remove default padding */
+            margin: 0; /* Remove default margin */
+        }
+
+/* Styled input */
+.styled-input {
+    width: auto; /* Full width */
+    padding: 10px; /* Add padding */
+    margin-top: 10px; /* Space above input */
+    margin-bottom: 10px; /* Space below input */
+    background-color: #f8f9fa; /* Light background color */
+    border: 1px solid #dee2e6; /* Border to match list items */
+    border-radius: 5px; /* Rounded corners */
+    box-sizing: border-box; /* Ensure padding doesn't affect width */
+    font-family: inherit; /* Consistent font family */
+    font-size: inherit; /* Consistent font size */
+    transition: background-color 0.3s, box-shadow 0.3s; /* Smooth transition effects */
+}
+
+    .styled-input:focus {
+        background-color: #e8f4fd; /* Light background on focus */
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow on focus */
+        outline: none; /* Remove default focus outline */
+    }
+
+/* Ensure the buttons inside the list are styled correctly */
+.styled-ul li button {
+    background-color: transparent; /* Transparent background for buttons */
+    border: none; /* Remove border */
+    color: #006bb7; /* Button text color */
+    cursor: pointer; /* Pointer cursor to indicate clickability */
+    text-decoration: underline; /* Underline text to indicate it's a link */
+    font-family: inherit; /* Consistent font family */
+    font-size: inherit; /* Consistent font size */
+    padding: 0; /* Remove default padding */
+    margin: 0; /* Remove default margin */
+}
 
 /* Suggestion button */
 .suggestion-button {
     background-color: transparent; /* Make the background transparent */
     border: none; /* Remove the border */
     color: #006bb7; /* Use the same color as links for consistency */
-    padding: 0; /* Remove padding */
-    margin: 0 5px; /* Add some margin to separate suggestions */
+    padding: 5px 10px; /* Add padding for better touch targets */
+    margin: 5px; /* Add some margin to separate suggestions */
     cursor: pointer; /* Ensure it's clear the element is clickable */
-    text-decoration: underline; /* Underline to indicate it's clickable */
+    text-decoration: none; /* Remove underline */
     font-family: inherit; /* Ensure font consistency with the surrounding text */
     font-size: inherit; /* Match the font size of surrounding content */
+    border-radius: 5px; /* Add rounded corners */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+    transition: background-color 0.3s, box-shadow 0.3s, transform 0.2s; /* Smooth transition effects */
 }
 
     .suggestion-button:hover,
     .suggestion-button:focus {
         background-color: #e8f4fd; /* Light background on hover/focus for feedback */
         outline: none; /* Remove the default focus outline */
-        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); /* Custom focus indicator */
+        box-shadow: 0 4px 10px rgba(0, 123, 255, 0.25); /* Custom focus indicator with a stronger shadow */
+        transform: translateY(-2px); /* Slight lift effect on hover */
     }

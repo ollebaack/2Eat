@@ -1,12 +1,17 @@
 ﻿using _2Eat.Domain;
-using _2Eat.Infrastructure.Services.IngredientServices;
 using Microsoft.EntityFrameworkCore;
 
 namespace _2Eat.Infrastructure.Services.RecipeServices
 {
-    public class RecipeService(ApplicationDbContext context, IIngredientService ingredientService) : IRecipeService
+    public class RecipeService : IRecipeService
     {
-        private readonly ApplicationDbContext _context = context;
+        private readonly ApplicationDbContext _context;
+
+        public RecipeService(ApplicationDbContext context)
+        {
+            _context = context;
+            _context.Database.EnsureCreated();
+        }
 
         public async Task<List<Recipe>> GetRecipesAsync()
         {
@@ -36,7 +41,7 @@ namespace _2Eat.Infrastructure.Services.RecipeServices
 
         public async Task<Recipe> UpdateRecipeAsync(int Id, Recipe recipe)
         {
-            var recipeEntity = await _context.Recipes.FindAsync(Id) ?? throw new Exception("Recipe not found");
+            var recipeEntity = await _context.Recipes.Include(x => x.Ingredients).FirstOrDefaultAsync(x => x.Id == Id) ?? throw new Exception("Recipe not found");
 
             recipeEntity.Name = recipe.Name;
             recipeEntity.Instructions = recipe.Instructions;
