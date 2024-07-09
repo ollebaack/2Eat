@@ -1,4 +1,5 @@
-﻿using _2Eat.Domain;
+﻿using _2Eat.Application.Json;
+using _2Eat.Domain;
 using _2Eat.Infrastructure.Services.RecipeServices;
 using Microsoft.AspNetCore.Http.HttpResults;
 
@@ -43,7 +44,7 @@ namespace _2Eat.Web.API
 
         public static async Task<Results<Ok<Recipe>, BadRequest, ProblemHttpResult>> CreateRecipe(IRecipeService _service, HttpContext context)
         {
-            var recipe = await context.Request.ReadFromJsonAsync<Recipe>();
+            var recipe = await context.Request.ReadFromJsonAsync<Recipe>(/*JsonHandler.JsonSerializerOptions*/);
             if (recipe == null)
             {
                 return TypedResults.BadRequest();
@@ -63,7 +64,7 @@ namespace _2Eat.Web.API
 
         public static async Task<Results<Ok<Recipe>, BadRequest, ProblemHttpResult>> UpdateRecipe(int id, IRecipeService _service, HttpContext context)
         {
-            var recipe = await context.Request.ReadFromJsonAsync<Recipe>();
+            var recipe = await context.Request.ReadFromJsonAsync<Recipe>(/*JsonHandler.JsonSerializerOptions*/);
             if (recipe == null)
             {
                 return TypedResults.BadRequest();

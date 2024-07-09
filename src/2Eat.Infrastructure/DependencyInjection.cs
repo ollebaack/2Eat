@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System.Diagnostics;
 
 namespace _2Eat.Infrastructure
 {
@@ -19,14 +20,20 @@ namespace _2Eat.Infrastructure
 
             services.AddDbContext<ApplicationDbContext>(options => 
             {
-                if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development") //Kommentera ur detta och kör dotnet ef migrations add Initial --project ../../2Eat.Infrastructure
+                //Kommentera ur detta och kör dotnet ef migrations add Initial --project ../../2Eat.Infrastructure
+                if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
                 {
                     options.UseInMemoryDatabase("2EatDb");
                 }
                 else
                 {
-                    options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
+                    string db = configuration.GetConnectionString("DefaultConnection");
+                    var dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), db);
+                    options.UseSqlite($"Data Source={dbPath}");
                 }
+                //string db = configuration.GetConnectionString("DefaultConnection");
+                //var dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), db);
+                //options.UseSqlite($"Data Source={dbPath}");
             });
 
             services.AddScoped<IRecipeService, RecipeService>();

@@ -9,7 +9,16 @@
 @if (Id.HasValue)
 {
     <PageTitle>Recipe</PageTitle>
-    <h3>Recipe</h3>
+    @if (isEditingName)
+    {
+        <EditForm Model="recipe" OnSubmit="HandleSubmit">
+            <InputText @bind-Value="recipe.Name" class="form-control" />
+        </EditForm>
+    }
+    else
+    {
+        <h3>@recipe.Name <i class="fas fa-pencil-alt fa-xs" @onclick="() => isEditingName = true"></i></h3>
+    }
 }
 else
 {
@@ -18,10 +27,13 @@ else
 }
 <hr />
 
-<EditForm Model="recipe" OnSubmit="HandleSubmit">
-    <InputText @bind-Value="recipe.Name">@recipe.Name</InputText>
-</EditForm>
-<hr />
+@if (!Id.HasValue)
+{
+    <EditForm Model="recipe" OnSubmit="HandleSubmit">
+        <InputText @bind-Value="recipe.Name">@recipe.Name</InputText>
+    </EditForm>
+    <hr />
+}
 
 <EditForm Model="recipe">
     <Ingredients @bind-IngredientsList="recipe.Ingredients" />
@@ -37,9 +49,11 @@ else
 @code {
     [Parameter]
     public int? Id { get; set; }
-    
+
     private string ingredient = string.Empty;
     private Recipe recipe = new Recipe() { Name = string.Empty, Ingredients = new List<Ingredient>() };
+    private bool isEditingName = false;
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -49,11 +63,12 @@ else
         }
     }
 
-    async Task HandleSubmit()
+    protected async Task HandleSubmit()
     {
         if (Id.HasValue)
         {
             recipe = await RecipeService.UpdateRecipeAsync(Id.Value, recipe);
+            isEditingName = false;
         }
         else
         {

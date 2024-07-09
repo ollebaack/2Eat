@@ -1,9 +1,10 @@
 ﻿using _2Eat.Domain;
+using _2Eat.Infrastructure.Services.IngredientServices;
 using Microsoft.EntityFrameworkCore;
 
 namespace _2Eat.Infrastructure.Services.RecipeServices
 {
-    public class RecipeService(ApplicationDbContext context) : IRecipeService
+    public class RecipeService(ApplicationDbContext context, IIngredientService ingredientService) : IRecipeService
     {
         private readonly ApplicationDbContext _context = context;
 
@@ -16,7 +17,10 @@ namespace _2Eat.Infrastructure.Services.RecipeServices
             return receipies;
         }
         public async Task<Recipe?> GetRecipeByIdAsync(int id) 
-            => await _context.Recipes.FindAsync(id);
+            => await _context.Recipes
+                .Include(x => x.Ingredients)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == id);
 
         public async Task<Recipe> AddRecipeAsync(Recipe recipe)
         {
@@ -35,8 +39,31 @@ namespace _2Eat.Infrastructure.Services.RecipeServices
             var recipeEntity = await _context.Recipes.FindAsync(Id) ?? throw new Exception("Recipe not found");
 
             recipeEntity.Name = recipe.Name;
-            recipeEntity.Ingredients = recipe.Ingredients;
             recipeEntity.Instructions = recipe.Instructions;
+
+            foreach (var ingredient in recipe.Ingredients)
+            {
+                Ingredient? addedIngredient = null;
+                if (string.IsNullOrEmpty(ingredient.Name))
+                {
+                    throw new ArgumentException("Ingredient name is required", nameof(ingredient));
+                }
+                if (_context.Ingredients.Any(i => i.Name == ingredient.Name))
+                {
+                    addedIngredient = _context.Ingredients.First(i => i.Name == ingredient.Name);
+                }
+                else
+                {
+                    var addedIngredientTemp = await _context.Ingredients.AddAsync(ingredient);
+                    addedIngredient = addedIngredientTemp.Entity;
+                }
+
+                var entityIngredient = addedIngredient;//await _ingredientService.AddIngredientAsync(ingredient);
+                if (!recipeEntity.Ingredients.Contains(entityIngredient))
+                {
+                    recipeEntity.Ingredients.Add(entityIngredient);
+                }
+            }
 
             await _context.SaveChangesAsync();
 

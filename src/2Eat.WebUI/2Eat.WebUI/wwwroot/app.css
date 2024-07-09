@@ -49,3 +49,25 @@ h1:focus {
 .darker-border-checkbox.form-check-input {
     border-color: #929292;
 }
+
+/* Custom css */
+
+/* Suggestion button */
+.suggestion-button {
+    background-color: transparent; /* Make the background transparent */
+    border: none; /* Remove the border */
+    color: #006bb7; /* Use the same color as links for consistency */
+    padding: 0; /* Remove padding */
+    margin: 0 5px; /* Add some margin to separate suggestions */
+    cursor: pointer; /* Ensure it's clear the element is clickable */
+    text-decoration: underline; /* Underline to indicate it's clickable */
+    font-family: inherit; /* Ensure font consistency with the surrounding text */
+    font-size: inherit; /* Match the font size of surrounding content */
+}
+
+    .suggestion-button:hover,
+    .suggestion-button:focus {
+        background-color: #e8f4fd; /* Light background on hover/focus for feedback */
+        outline: none; /* Remove the default focus outline */
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); /* Custom focus indicator */
+    }

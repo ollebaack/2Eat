@@ -17,18 +17,31 @@ namespace _2Eat.Infrastructure.Services.IngredientServices
         }
 
         public async Task<Ingredient?> GetIngredientByIdAsync(int id) 
-            => await _context.Ingredients.FindAsync(id);
+            => await _context.Ingredients
+                .FindAsync(id);
 
+        /// <summary>
+        /// Creates a new ingredient if it does not already exist
+        /// </summary>
+        /// <param name="ingredient"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
         public async Task<Ingredient> AddIngredientAsync(Ingredient ingredient)
         {
             if (string.IsNullOrEmpty(ingredient.Name))
             {
                 throw new ArgumentException("Recipe name is required", nameof(ingredient));
             }
-
-            var addedIngredient = await _context.Ingredients.AddAsync(ingredient);
-            await _context.SaveChangesAsync();
-            return addedIngredient.Entity;
+            if (_context.Ingredients.Any(i => i.Name == ingredient.Name))
+            {
+                return _context.Ingredients.First(i => i.Name == ingredient.Name);
+            }
+            else
+            {
+                var addedIngredient = await _context.Ingredients.AddAsync(ingredient);
+                await _context.SaveChangesAsync();
+                return addedIngredient.Entity;
+            }
         }
 
         public async Task<Ingredient> DeleteIngredientAsync(int id)

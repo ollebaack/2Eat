@@ -1,4 +1,5 @@
-﻿using _2Eat.Domain;
+﻿using _2Eat.Application.Json;
+using _2Eat.Domain;
 using _2Eat.Infrastructure.Services.IngredientServices;
 using _2Eat.Infrastructure.Services.RecipeServices;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -42,7 +43,7 @@ namespace _2Eat.Web.API
 
         public static async Task<Results<Ok<Ingredient>, BadRequest, ProblemHttpResult>> CreateIngredient(IIngredientService _service, HttpContext context)
         {
-            var Ingredient = await context.Request.ReadFromJsonAsync<Ingredient>();
+            var Ingredient = await context.Request.ReadFromJsonAsync<Ingredient>(/*JsonHandler.JsonSerializerOptions*/);
             if (Ingredient == null)
             {
                 return TypedResults.BadRequest();
