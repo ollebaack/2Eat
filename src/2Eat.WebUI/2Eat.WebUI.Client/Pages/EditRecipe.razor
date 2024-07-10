@@ -36,7 +36,7 @@ else
 }
 
 @* <EditForm Model="recipe"> *@
-    <Ingredients @bind-IngredientsList="recipe.Ingredients" />
+    <RecipeIngredients @bind-IngredientsList="recipe.Ingredients" />
 @* </EditForm> *@
 
 <h5>Instructions</h5>
@@ -51,7 +51,7 @@ else
     public int? Id { get; set; }
 
     private string ingredient = string.Empty;
-    private Recipe recipe = new Recipe() { Name = string.Empty, Ingredients = new List<Ingredient>() };
+    private Recipe recipe = new Recipe();
     private bool isEditingName = false;
 
 

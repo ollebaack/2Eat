@@ -11,6 +11,22 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Shared\SortableList.razor.css" />
+    <None Remove="Shared\SortableList.razor.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Shared\SortableList.razor.css">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="Shared\SortableList.razor.js">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.7" />
   </ItemGroup>
 

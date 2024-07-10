@@ -10,7 +10,10 @@ namespace _2Eat.Domain
         [Required(ErrorMessage = "Please enter a name.")]
         [MaxLength(64)]
         public string Name { get; set; } = null!;
+        public Category Category { get; set; } = null!;
+        public ICollection<Allergens> Allergens { get; set; } = new List<Allergens>();
+        public ICollection<RecipeIngredient> Recipes { get; set; } = new List<RecipeIngredient>();
 
-        public ICollection<Recipe> Recipes { get; set; } = new List<Recipe>();
+        public int CategoryId { get; set; }
     }
 }

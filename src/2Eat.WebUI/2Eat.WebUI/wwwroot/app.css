@@ -1,3 +1,5 @@
+@import url('fontawesome/css/all.min.css');
+
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
@@ -51,6 +53,14 @@ h1:focus {
 }
 
 /* Custom CSS */
+
+.ingredient-row:hover .remove-btn {
+    visibility: visible;
+}
+
+.remove-btn {
+    visibility: hidden;
+}
 
 /* Styled list */
 .styled-ul {

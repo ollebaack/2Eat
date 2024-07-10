@@ -24,6 +24,7 @@ namespace _2Eat.Infrastructure.Services.RecipeServices
         public async Task<Recipe?> GetRecipeByIdAsync(int id) 
             => await _context.Recipes
                 .Include(x => x.Ingredients)
+                .ThenInclude(x => x.Ingredient)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.Id == id);
 
@@ -41,34 +42,55 @@ namespace _2Eat.Infrastructure.Services.RecipeServices
 
         public async Task<Recipe> UpdateRecipeAsync(int Id, Recipe recipe)
         {
-            var recipeEntity = await _context.Recipes.Include(x => x.Ingredients).FirstOrDefaultAsync(x => x.Id == Id) ?? throw new Exception("Recipe not found");
+            var recipeEntity = await _context.Recipes
+                .Include(x => x.Ingredients)
+                .ThenInclude(i => i.Ingredient)
+                .FirstOrDefaultAsync(x => x.Id == Id) ?? throw new Exception("Recipe not found");
 
             recipeEntity.Name = recipe.Name;
             recipeEntity.Instructions = recipe.Instructions;
 
-            foreach (var ingredient in recipe.Ingredients)
+            // Update and add new ingredients
+            foreach (var recipeIngredient in recipe.Ingredients)
             {
-                Ingredient? addedIngredient = null;
-                if (string.IsNullOrEmpty(ingredient.Name))
+                Ingredient addedIngredient;
+                if (_context.Ingredients.Any(i => i.Name == recipeIngredient.Ingredient.Name))
                 {
-                    throw new ArgumentException("Ingredient name is required", nameof(ingredient));
-                }
-                if (_context.Ingredients.Any(i => i.Name == ingredient.Name))
-                {
-                    addedIngredient = _context.Ingredients.First(i => i.Name == ingredient.Name);
+                    addedIngredient = _context.Ingredients.First(i => i.Name == recipeIngredient.Ingredient.Name);
                 }
                 else
                 {
-                    var addedIngredientTemp = await _context.Ingredients.AddAsync(ingredient);
+                    var addedIngredientTemp = await _context.Ingredients.AddAsync(recipeIngredient.Ingredient);
                     addedIngredient = addedIngredientTemp.Entity;
                 }
 
-                var entityIngredient = addedIngredient;//await _ingredientService.AddIngredientAsync(ingredient);
-                if (!recipeEntity.Ingredients.Contains(entityIngredient))
+                var existingRecipeIngredient = recipeEntity.Ingredients
+                    .FirstOrDefault(ri => ri.IngredientId == addedIngredient.Id);
+
+                if (existingRecipeIngredient != null)
                 {
-                    recipeEntity.Ingredients.Add(entityIngredient);
+                    // Update the order of the existing ingredient
+                    existingRecipeIngredient.Order = recipeIngredient.Order;
+                }
+                else
+                {
+                    // Add new ingredient with the correct order
+                    var newRecipeIngredient = new RecipeIngredient
+                    {
+                        RecipeId = recipeEntity.Id,
+                        IngredientId = addedIngredient.Id,
+                        Order = recipeIngredient.Order,
+                        // Set other properties of RecipeIngredient if necessary, like Measurement
+                    };
+
+                    recipeEntity.Ingredients.Add(newRecipeIngredient);
                 }
             }
+
+            // Remove ingredients that are not in the updated recipe
+            recipeEntity.Ingredients = recipeEntity.Ingredients
+                .Where(ri => recipe.Ingredients.Any(i => i.Ingredient.Name == ri.Ingredient.Name))
+                .ToList();
 
             await _context.SaveChangesAsync();
 
