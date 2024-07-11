@@ -11,11 +11,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Shared\RecipeIngredients.razor.css" />
     <None Remove="Shared\SortableList.razor.css" />
     <None Remove="Shared\SortableList.razor.js" />
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="Shared\RecipeIngredients.razor.css" />
     <Content Include="Shared\SortableList.razor.css">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>

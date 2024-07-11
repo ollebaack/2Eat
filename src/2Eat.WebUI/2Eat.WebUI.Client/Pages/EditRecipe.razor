@@ -1,5 +1,5 @@
 ﻿@page "/recipe"
-@page "/recipe/{Id:int}"
+@page "/recipe/{Id:int}/edit"
 
 @rendermode @(new InteractiveWebAssemblyRenderMode(false))
 @attribute [StreamRendering]
@@ -8,7 +8,7 @@
 
 @if (Id.HasValue)
 {
-    <PageTitle>Recipe</PageTitle>
+    <PageTitle>Recept</PageTitle>
     @if (isEditingName)
     {
         <EditForm Model="recipe" OnSubmit="HandleSubmit">
@@ -22,10 +22,18 @@
 }
 else
 {
-    <PageTitle>Create Recipe</PageTitle>
-    <h3>Create Recipe</h3>
+    <PageTitle>Skapa Recept</PageTitle>
+    <h3>Skapa Recept</h3>
 }
 <hr />
+
+<FileUppload></FileUppload>
+@if (recipe.ImageUrl is not null)
+{
+    <p>
+        <img src="@recipe.ImageUrl" />
+    </p>
+}
 
 @if (!Id.HasValue)
 {
@@ -35,9 +43,7 @@ else
     <hr />
 }
 
-@* <EditForm Model="recipe"> *@
-    <RecipeIngredients @bind-IngredientsList="recipe.Ingredients" />
-@* </EditForm> *@
+<RecipeIngredients @bind-IngredientsList="recipe.Ingredients" Edit=true />
 
 <h5>Instructions</h5>
 <EditForm Model="recipe" OnSubmit="HandleSubmit">
@@ -73,7 +79,8 @@ else
         else
         {
             recipe = await RecipeService.AddRecipeAsync(recipe);
-            NavigationManager.NavigateTo($"/recipe/{recipe.Id}");
         }
+
+        NavigationManager.NavigateTo($"/recipe/{recipe.Id}");
     }
 }

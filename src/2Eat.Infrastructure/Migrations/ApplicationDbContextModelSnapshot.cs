@@ -17,34 +17,58 @@ namespace _2Eat.Infrastructure.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.7");
 
-            modelBuilder.Entity("AllergensIngredient", b =>
+            modelBuilder.Entity("AllergenIngredient", b =>
                 {
                     b.Property<int>("AllergensId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("IngredientId")
+                    b.Property<int>("IngredientsId")
                         .HasColumnType("INTEGER");
 
-                    b.HasKey("AllergensId", "IngredientId");
+                    b.HasKey("AllergensId", "IngredientsId");
 
-                    b.HasIndex("IngredientId");
+                    b.HasIndex("IngredientsId");
 
-                    b.ToTable("AllergensIngredient");
+                    b.ToTable("AllergenIngredient");
+
+                    b.HasData(
+                        new
+                        {
+                            AllergensId = 0,
+                            IngredientsId = 1
+                        });
                 });
 
-            modelBuilder.Entity("_2Eat.Domain.Allergens", b =>
+            modelBuilder.Entity("_2Eat.Domain.Allergen", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Allersgens");
+                    b.ToTable("Allergens");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 0
+                        },
+                        new
+                        {
+                            Id = 1
+                        },
+                        new
+                        {
+                            Id = 2
+                        },
+                        new
+                        {
+                            Id = 3
+                        },
+                        new
+                        {
+                            Id = 4
+                        });
                 });
 
             modelBuilder.Entity("_2Eat.Domain.Category", b =>
@@ -203,6 +227,109 @@ namespace _2Eat.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("_2Eat.Domain.IngredientMeasurement", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<double>("Quantity")
+                        .HasColumnType("REAL");
+
+                    b.Property<int>("Unit")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("IngredientMeasurements");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Quantity = 500.0,
+                            Unit = 0
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Quantity = 250.0,
+                            Unit = 0
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Quantity = 200.0,
+                            Unit = 0
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Quantity = 3.0,
+                            Unit = 9
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Quantity = 100.0,
+                            Unit = 0
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Quantity = 250.0,
+                            Unit = 1
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Quantity = 200.0,
+                            Unit = 0
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Quantity = 2.0,
+                            Unit = 9
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Quantity = 50.0,
+                            Unit = 0
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Quantity = 1.0,
+                            Unit = 2
+                        },
+                        new
+                        {
+                            Id = 11,
+                            Quantity = 500.0,
+                            Unit = 0
+                        },
+                        new
+                        {
+                            Id = 12,
+                            Quantity = 100.0,
+                            Unit = 0
+                        },
+                        new
+                        {
+                            Id = 13,
+                            Quantity = 400.0,
+                            Unit = 0
+                        },
+                        new
+                        {
+                            Id = 14,
+                            Quantity = 200.0,
+                            Unit = 1
+                        });
+                });
+
             modelBuilder.Entity("_2Eat.Domain.MealPlan", b =>
                 {
                     b.Property<int>("Id")
@@ -221,21 +348,6 @@ namespace _2Eat.Infrastructure.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("MealPlans");
-                });
-
-            modelBuilder.Entity("_2Eat.Domain.Measurement", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Measurement");
                 });
 
             modelBuilder.Entity("_2Eat.Domain.Recipe", b =>
@@ -292,8 +404,8 @@ namespace _2Eat.Infrastructure.Migrations
                         {
                             Id = 1,
                             CategoryId = 0,
-                            CookTime = 0,
-                            CreatedAt = new DateTimeOffset(new DateTime(2024, 7, 10, 22, 10, 1, 130, DateTimeKind.Unspecified).AddTicks(4358), new TimeSpan(0, 2, 0, 0, 0)),
+                            CookTime = 60,
+                            CreatedAt = new DateTimeOffset(new DateTime(2024, 7, 11, 15, 6, 18, 265, DateTimeKind.Unspecified).AddTicks(5747), new TimeSpan(0, 2, 0, 0, 0)),
                             Description = "",
                             Instructions = "Mix ingredients and bake at 180°C for 15 minutes.",
                             Name = "Kanelbullar",
@@ -306,7 +418,7 @@ namespace _2Eat.Infrastructure.Migrations
                             Id = 2,
                             CategoryId = 0,
                             CookTime = 0,
-                            CreatedAt = new DateTimeOffset(new DateTime(2024, 7, 10, 22, 10, 1, 130, DateTimeKind.Unspecified).AddTicks(4430), new TimeSpan(0, 2, 0, 0, 0)),
+                            CreatedAt = new DateTimeOffset(new DateTime(2024, 7, 11, 15, 6, 18, 265, DateTimeKind.Unspecified).AddTicks(5804), new TimeSpan(0, 2, 0, 0, 0)),
                             Description = "",
                             Instructions = "Assemble the sandwich with bread, shrimps, mayonnaise, and dill.",
                             Name = "Räkmacka",
@@ -319,7 +431,7 @@ namespace _2Eat.Infrastructure.Migrations
                             Id = 3,
                             CategoryId = 0,
                             CookTime = 0,
-                            CreatedAt = new DateTimeOffset(new DateTime(2024, 7, 10, 22, 10, 1, 130, DateTimeKind.Unspecified).AddTicks(4434), new TimeSpan(0, 2, 0, 0, 0)),
+                            CreatedAt = new DateTimeOffset(new DateTime(2024, 7, 11, 15, 6, 18, 265, DateTimeKind.Unspecified).AddTicks(5806), new TimeSpan(0, 2, 0, 0, 0)),
                             Description = "",
                             Instructions = "Roast the moose meat with juniper berries and serve with potatoes and lingonberries.",
                             Name = "Älgstek",
@@ -332,7 +444,7 @@ namespace _2Eat.Infrastructure.Migrations
                             Id = 4,
                             CategoryId = 0,
                             CookTime = 0,
-                            CreatedAt = new DateTimeOffset(new DateTime(2024, 7, 10, 22, 10, 1, 130, DateTimeKind.Unspecified).AddTicks(4436), new TimeSpan(0, 2, 0, 0, 0)),
+                            CreatedAt = new DateTimeOffset(new DateTime(2024, 7, 11, 15, 6, 18, 265, DateTimeKind.Unspecified).AddTicks(5808), new TimeSpan(0, 2, 0, 0, 0)),
                             Description = "",
                             Instructions = "",
                             Name = "Lax med grädde",
@@ -353,7 +465,7 @@ namespace _2Eat.Infrastructure.Migrations
                     b.Property<int>("Id")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("MeasurementId")
+                    b.Property<int>("IngredientMeasurementId")
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("Order")
@@ -363,7 +475,8 @@ namespace _2Eat.Infrastructure.Migrations
 
                     b.HasIndex("IngredientId");
 
-                    b.HasIndex("MeasurementId");
+                    b.HasIndex("IngredientMeasurementId")
+                        .IsUnique();
 
                     b.ToTable("RecipeIngredients");
 
@@ -373,6 +486,7 @@ namespace _2Eat.Infrastructure.Migrations
                             RecipeId = 1,
                             IngredientId = 1,
                             Id = 1,
+                            IngredientMeasurementId = 1,
                             Order = 0
                         },
                         new
@@ -380,6 +494,7 @@ namespace _2Eat.Infrastructure.Migrations
                             RecipeId = 1,
                             IngredientId = 17,
                             Id = 2,
+                            IngredientMeasurementId = 2,
                             Order = 1
                         },
                         new
@@ -387,6 +502,7 @@ namespace _2Eat.Infrastructure.Migrations
                             RecipeId = 1,
                             IngredientId = 2,
                             Id = 3,
+                            IngredientMeasurementId = 3,
                             Order = 2
                         },
                         new
@@ -394,6 +510,7 @@ namespace _2Eat.Infrastructure.Migrations
                             RecipeId = 1,
                             IngredientId = 3,
                             Id = 4,
+                            IngredientMeasurementId = 4,
                             Order = 3
                         },
                         new
@@ -401,6 +518,7 @@ namespace _2Eat.Infrastructure.Migrations
                             RecipeId = 1,
                             IngredientId = 4,
                             Id = 5,
+                            IngredientMeasurementId = 5,
                             Order = 4
                         },
                         new
@@ -408,6 +526,7 @@ namespace _2Eat.Infrastructure.Migrations
                             RecipeId = 1,
                             IngredientId = 5,
                             Id = 6,
+                            IngredientMeasurementId = 6,
                             Order = 5
                         },
                         new
@@ -415,6 +534,7 @@ namespace _2Eat.Infrastructure.Migrations
                             RecipeId = 2,
                             IngredientId = 12,
                             Id = 7,
+                            IngredientMeasurementId = 7,
                             Order = 0
                         },
                         new
@@ -422,6 +542,7 @@ namespace _2Eat.Infrastructure.Migrations
                             RecipeId = 2,
                             IngredientId = 13,
                             Id = 8,
+                            IngredientMeasurementId = 8,
                             Order = 1
                         },
                         new
@@ -429,6 +550,7 @@ namespace _2Eat.Infrastructure.Migrations
                             RecipeId = 2,
                             IngredientId = 9,
                             Id = 9,
+                            IngredientMeasurementId = 9,
                             Order = 2
                         },
                         new
@@ -436,6 +558,7 @@ namespace _2Eat.Infrastructure.Migrations
                             RecipeId = 3,
                             IngredientId = 19,
                             Id = 10,
+                            IngredientMeasurementId = 10,
                             Order = 0
                         },
                         new
@@ -443,6 +566,7 @@ namespace _2Eat.Infrastructure.Migrations
                             RecipeId = 3,
                             IngredientId = 7,
                             Id = 11,
+                            IngredientMeasurementId = 11,
                             Order = 1
                         },
                         new
@@ -450,6 +574,7 @@ namespace _2Eat.Infrastructure.Migrations
                             RecipeId = 3,
                             IngredientId = 16,
                             Id = 12,
+                            IngredientMeasurementId = 12,
                             Order = 2
                         },
                         new
@@ -457,6 +582,7 @@ namespace _2Eat.Infrastructure.Migrations
                             RecipeId = 4,
                             IngredientId = 8,
                             Id = 13,
+                            IngredientMeasurementId = 13,
                             Order = 0
                         },
                         new
@@ -464,21 +590,8 @@ namespace _2Eat.Infrastructure.Migrations
                             RecipeId = 4,
                             IngredientId = 6,
                             Id = 14,
+                            IngredientMeasurementId = 14,
                             Order = 1
-                        },
-                        new
-                        {
-                            RecipeId = 4,
-                            IngredientId = 7,
-                            Id = 15,
-                            Order = 2
-                        },
-                        new
-                        {
-                            RecipeId = 4,
-                            IngredientId = 5,
-                            Id = 16,
-                            Order = 3
                         });
                 });
 
@@ -544,9 +657,9 @@ namespace _2Eat.Infrastructure.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("AllergensIngredient", b =>
+            modelBuilder.Entity("AllergenIngredient", b =>
                 {
-                    b.HasOne("_2Eat.Domain.Allergens", null)
+                    b.HasOne("_2Eat.Domain.Allergen", null)
                         .WithMany()
                         .HasForeignKey("AllergensId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -554,7 +667,7 @@ namespace _2Eat.Infrastructure.Migrations
 
                     b.HasOne("_2Eat.Domain.Ingredient", null)
                         .WithMany()
-                        .HasForeignKey("IngredientId")
+                        .HasForeignKey("IngredientsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -600,9 +713,11 @@ namespace _2Eat.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("_2Eat.Domain.Measurement", "Measurement")
-                        .WithMany()
-                        .HasForeignKey("MeasurementId");
+                    b.HasOne("_2Eat.Domain.IngredientMeasurement", "IngredientMeasurement")
+                        .WithOne()
+                        .HasForeignKey("_2Eat.Domain.RecipeIngredient", "IngredientMeasurementId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("_2Eat.Domain.Recipe", "Recipe")
                         .WithMany("Ingredients")
@@ -612,7 +727,7 @@ namespace _2Eat.Infrastructure.Migrations
 
                     b.Navigation("Ingredient");
 
-                    b.Navigation("Measurement");
+                    b.Navigation("IngredientMeasurement");
 
                     b.Navigation("Recipe");
                 });

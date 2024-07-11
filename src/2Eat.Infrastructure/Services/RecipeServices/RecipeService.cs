@@ -15,8 +15,6 @@ namespace _2Eat.Infrastructure.Services.RecipeServices
 
         public async Task<List<Recipe>> GetRecipesAsync()
         {
-            await Task.Delay(1000);
-
             var receipies = await _context.Recipes.ToListAsync();
 
             return receipies;
@@ -24,7 +22,9 @@ namespace _2Eat.Infrastructure.Services.RecipeServices
         public async Task<Recipe?> GetRecipeByIdAsync(int id) 
             => await _context.Recipes
                 .Include(x => x.Ingredients)
-                .ThenInclude(x => x.Ingredient)
+                    .ThenInclude(x => x.Ingredient)
+                .Include(x => x.Ingredients)
+                    .ThenInclude(x => x.IngredientMeasurement)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.Id == id);
 
@@ -44,7 +44,9 @@ namespace _2Eat.Infrastructure.Services.RecipeServices
         {
             var recipeEntity = await _context.Recipes
                 .Include(x => x.Ingredients)
-                .ThenInclude(i => i.Ingredient)
+                    .ThenInclude(x => x.Ingredient)
+                .Include(x => x.Ingredients)
+                    .ThenInclude(x => x.IngredientMeasurement)
                 .FirstOrDefaultAsync(x => x.Id == Id) ?? throw new Exception("Recipe not found");
 
             recipeEntity.Name = recipe.Name;
@@ -80,7 +82,7 @@ namespace _2Eat.Infrastructure.Services.RecipeServices
                         RecipeId = recipeEntity.Id,
                         IngredientId = addedIngredient.Id,
                         Order = recipeIngredient.Order,
-                        // Set other properties of RecipeIngredient if necessary, like Measurement
+                        IngredientMeasurement = recipeIngredient.IngredientMeasurement
                     };
 
                     recipeEntity.Ingredients.Add(newRecipeIngredient);
@@ -88,9 +90,9 @@ namespace _2Eat.Infrastructure.Services.RecipeServices
             }
 
             // Remove ingredients that are not in the updated recipe
-            recipeEntity.Ingredients = recipeEntity.Ingredients
-                .Where(ri => recipe.Ingredients.Any(i => i.Ingredient.Name == ri.Ingredient.Name))
-                .ToList();
+            //recipeEntity.Ingredients = recipeEntity.Ingredients
+            //    .Where(ri => recipe.Ingredients.Any(i => i.Ingredient.Name == ri?.Ingredient?.Name))
+            //    .ToList();
 
             await _context.SaveChangesAsync();
 

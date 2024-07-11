@@ -1,46 +1,73 @@
-﻿@rendermode @(new InteractiveWebAssemblyRenderMode(false))
+﻿@using _2Eat.Domain.Enums
+@rendermode @(new InteractiveWebAssemblyRenderMode(false))
 @inject IIngredientService IngredientService
 
-<h5>Ingredients</h5>
-
-<section>
-    <SortableList Id="dragHandles" Handle=".drag-handle" Items="recipeIngredients.ToList()" OnUpdate="@SortList" Context="recipeIngredient">
-        <SortableItemTemplate>
-            <div class="is-flex is-align-items-center">
-                <div class="has-cursor-grab">
-                    <div class="drag-handle mr-4">
-                        <i class="is-size-4 fas fa-grip-vertical"></i>
-                    </div>
-                </div>
-                <div class="is-flex-grow-1">
-                    <div class=" card has-border has-background-blazor has-text-white">
-                        @* <i class="fa-solid fa-circle-minus fa-fade remove-btn" @onclick="() => RemoveIngredient(recipeIngredient.Ingredient.Name)"></i>  *@
-                        <p class="is-size-4 p-2 ml-4">@recipeIngredient.Ingredient.Name</p>                        
-                    </div>
-                </div>
-            </div>
-        </SortableItemTemplate>
-    </SortableList>
-</section>
-
-<InputText class="styled-input" @bind-Value="Name" @oninput="OnInputChanged"></InputText>
-@if (suggestedIngredients.Any())
+<h5>Ingredienser</h5>
+@if (!Edit)
 {
-    @foreach (var ingredient in suggestedIngredients)
+    <div class="ingredient-list">
+        @foreach (var recipeIngredient in recipeIngredients.ToList())
+        {   
+            <div class="ingredient-item">
+                @* <i class="fa-solid fa-circle-minus fa-fade remove-btn" @onclick="() => RemoveIngredient(recipeIngredient.Ingredient.Name)"></i>  *@
+                <div class="noselect">@recipeIngredient.ToString()</div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="ingredient-list">
+        <SortableList Id="dragHandles" Handle=".drag-handle" Items="recipeIngredients.ToList()" OnUpdate="@SortList" Context="recipeIngredient">
+            <SortableItemTemplate>
+                <div class="ingredient-item">
+                    <div class="has-cursor-grab" style="padding-right: 5px">
+                        <div class="drag-handle mr-4">
+                            <i class="is-size-4 fas fa-grip-vertical"></i>
+                        </div>
+                    </div>
+                    @* <i class="fa-solid fa-circle-minus fa-fade remove-btn" @onclick="() => RemoveIngredient(recipeIngredient.Ingredient.Name)"></i>  *@
+                    <div class="noselect">@recipeIngredient.ToString()</div>                        
+                </div>
+            </SortableItemTemplate>
+        </SortableList>
+    </div>
+    @if (!string.IsNullOrEmpty(Name))
     {
-        <button @onclick="() => SelectIngredient(ingredient)" class="suggestion-button">
-            @ingredient.Name
-        </button>
+        <InputNumber class="styled-input" @bind-Value="ingredientMeasurement.Quantity"></InputNumber>
+        <InputSelect class="styled-input" @bind-Value="ingredientMeasurement.Unit">
+            @foreach (var unit in Enum.GetValues<UnitOfMeasurement>())
+            {
+                <option value="@unit">@unit</option>
+            }
+        </InputSelect>
+    }
+
+    <InputText class="styled-input" @bind-Value="Name" @oninput="OnInputChanged"></InputText>
+    @if (suggestedIngredients.Any())
+    {
+        @foreach (var ingredient in suggestedIngredients)
+        {
+            <button @onclick="() => SelectIngredient(ingredient)" class="suggestion-button">
+                @ingredient.Name
+            </button>
+        }
     }
 }
-<br />
-<button @onclick="AddIngredient" class="btn btn-primary">+</button>
+@if (Edit)
+{
+    <br />
+    <button @onclick="AddIngredient" class="btn btn-primary">+</button>
+}
 <hr />
 
 @code {
     private ICollection<RecipeIngredient> recipeIngredients = new List<RecipeIngredient>();
     private string? Name = string.Empty;
+    private IngredientMeasurement ingredientMeasurement = new IngredientMeasurement();
 
+    [Parameter]
+    public bool Edit { get; set;  } = false;
     [Parameter]
     public ICollection<RecipeIngredient> IngredientsList
     {
@@ -112,7 +139,8 @@
                 var newRecipeIngredient = new RecipeIngredient
                     {
                         Ingredient = new Ingredient { Name = Name },
-                        Order = maxOrder + 1 // Set the order to the last position
+                        Order = maxOrder + 1,
+                        IngredientMeasurement = new IngredientMeasurement() { Quantity = ingredientMeasurement.Quantity, Unit = ingredientMeasurement.Unit }
                     };
 
                 recipeIngredients.Add(newRecipeIngredient);

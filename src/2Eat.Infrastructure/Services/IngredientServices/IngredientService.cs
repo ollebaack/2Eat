@@ -9,8 +9,6 @@ namespace _2Eat.Infrastructure.Services.IngredientServices
 
         public async Task<List<Ingredient>> GetIngredientsAsync()
         {
-            await Task.Delay(1000);
-
             var ingredients = await _context.Ingredients.ToListAsync();
 
             return ingredients;

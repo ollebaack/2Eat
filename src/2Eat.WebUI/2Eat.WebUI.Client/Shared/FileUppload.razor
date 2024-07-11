@@ -1,0 +1,13 @@
+﻿<h3>FileUppload</h3>
+
+<InputFile OnChange="OnInputFileChange"/>
+
+@code {
+    private int maxAllowedFiles = 1;
+    private long maxFileSize = 10 * 1024 * 1024; // 10MB
+
+    private async Task OnInputFileChange(InputFileChangeEventArgs e)
+    {
+        
+    }
+}

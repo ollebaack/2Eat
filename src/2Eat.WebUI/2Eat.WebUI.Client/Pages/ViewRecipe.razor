@@ -1,0 +1,33 @@
+﻿@page "/recipe/{Id:int}"
+
+@rendermode @(new InteractiveWebAssemblyRenderMode(false))
+@attribute [StreamRendering]
+@inject IRecipeService RecipeService
+@inject NavigationManager NavigationManager
+
+
+<PageTitle>@recipe.Name</PageTitle>
+
+<h3>@recipe.Name</h3> <i class="fas fa-pencil-alt fa-xs" @onclick="EditRecipe"></i>
+
+<hr />
+
+<RecipeIngredients @bind-IngredientsList="recipe.Ingredients" />
+
+<h5>Instruktioner</h5>
+
+<p>@recipe.Instructions</p>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    private Recipe recipe = new Recipe();
+
+    protected override async Task OnInitializedAsync() 
+        => recipe = await RecipeService.GetRecipeByIdAsync(Id) ?? throw new Exception($"{nameof(recipe)} was null.");
+
+    protected void EditRecipe()
+    {
+        NavigationManager.NavigateTo($"/recipe/{Id}/edit");
+    }
+}

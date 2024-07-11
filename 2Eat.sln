@@ -15,7 +15,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "2Eat.WebUI", "src\2Eat.WebU
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "2Eat.WebUI.Client", "src\2Eat.WebUI\2Eat.WebUI.Client\2Eat.WebUI.Client.csproj", "{A45B1197-BA2F-4FC8-8F9D-14F7416F6420}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "2Eat.Web.API", "src\2Eat.Web.API\2Eat.Web.API.csproj", "{142819D3-1496-46A5-A5B1-9CDA6E8A29B0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "2Eat.Web.API", "src\2Eat.Web.API\2Eat.Web.API.csproj", "{142819D3-1496-46A5-A5B1-9CDA6E8A29B0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

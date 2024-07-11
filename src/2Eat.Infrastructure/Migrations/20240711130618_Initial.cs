@@ -14,16 +14,14 @@ namespace _2Eat.Infrastructure.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Allersgens",
+                name: "Allergens",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Allersgens", x => x.Id);
+                    table.PrimaryKey("PK_Allergens", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -40,16 +38,17 @@ namespace _2Eat.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Measurement",
+                name: "IngredientMeasurements",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", nullable: false)
+                    Quantity = table.Column<double>(type: "REAL", nullable: false),
+                    Unit = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Measurement", x => x.Id);
+                    table.PrimaryKey("PK_IngredientMeasurements", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -156,24 +155,24 @@ namespace _2Eat.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "AllergensIngredient",
+                name: "AllergenIngredient",
                 columns: table => new
                 {
                     AllergensId = table.Column<int>(type: "INTEGER", nullable: false),
-                    IngredientId = table.Column<int>(type: "INTEGER", nullable: false)
+                    IngredientsId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_AllergensIngredient", x => new { x.AllergensId, x.IngredientId });
+                    table.PrimaryKey("PK_AllergenIngredient", x => new { x.AllergensId, x.IngredientsId });
                     table.ForeignKey(
-                        name: "FK_AllergensIngredient_Allersgens_AllergensId",
+                        name: "FK_AllergenIngredient_Allergens_AllergensId",
                         column: x => x.AllergensId,
-                        principalTable: "Allersgens",
+                        principalTable: "Allergens",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_AllergensIngredient_Ingredients_IngredientId",
-                        column: x => x.IngredientId,
+                        name: "FK_AllergenIngredient_Ingredients_IngredientsId",
+                        column: x => x.IngredientsId,
                         principalTable: "Ingredients",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -187,22 +186,23 @@ namespace _2Eat.Infrastructure.Migrations
                     IngredientId = table.Column<int>(type: "INTEGER", nullable: false),
                     Id = table.Column<int>(type: "INTEGER", nullable: false),
                     Order = table.Column<int>(type: "INTEGER", nullable: false),
-                    MeasurementId = table.Column<int>(type: "INTEGER", nullable: true)
+                    IngredientMeasurementId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_RecipeIngredients", x => new { x.RecipeId, x.IngredientId });
+                    table.ForeignKey(
+                        name: "FK_RecipeIngredients_IngredientMeasurements_IngredientMeasurementId",
+                        column: x => x.IngredientMeasurementId,
+                        principalTable: "IngredientMeasurements",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_RecipeIngredients_Ingredients_IngredientId",
                         column: x => x.IngredientId,
                         principalTable: "Ingredients",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_RecipeIngredients_Measurement_MeasurementId",
-                        column: x => x.MeasurementId,
-                        principalTable: "Measurement",
-                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_RecipeIngredients_Recipes_RecipeId",
                         column: x => x.RecipeId,
@@ -229,6 +229,39 @@ namespace _2Eat.Infrastructure.Migrations
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.InsertData(
+                table: "Allergens",
+                column: "Id",
+                values: new object[]
+                {
+                    0,
+                    1,
+                    2,
+                    3,
+                    4
+                });
+
+            migrationBuilder.InsertData(
+                table: "IngredientMeasurements",
+                columns: new[] { "Id", "Quantity", "Unit" },
+                values: new object[,]
+                {
+                    { 1, 500.0, 0 },
+                    { 2, 250.0, 0 },
+                    { 3, 200.0, 0 },
+                    { 4, 3.0, 9 },
+                    { 5, 100.0, 0 },
+                    { 6, 250.0, 1 },
+                    { 7, 200.0, 0 },
+                    { 8, 2.0, 9 },
+                    { 9, 50.0, 0 },
+                    { 10, 1.0, 2 },
+                    { 11, 500.0, 0 },
+                    { 12, 100.0, 0 },
+                    { 13, 400.0, 0 },
+                    { 14, 200.0, 1 }
                 });
 
             migrationBuilder.InsertData(
@@ -262,39 +295,42 @@ namespace _2Eat.Infrastructure.Migrations
                 columns: new[] { "Id", "CategoryId", "CookTime", "CreatedAt", "Description", "ImageUrl", "Instructions", "Name", "PrepTime", "Rating", "Servings" },
                 values: new object[,]
                 {
-                    { 1, 0, 0, new DateTimeOffset(new DateTime(2024, 7, 10, 22, 10, 1, 130, DateTimeKind.Unspecified).AddTicks(4358), new TimeSpan(0, 2, 0, 0, 0)), "", null, "Mix ingredients and bake at 180°C for 15 minutes.", "Kanelbullar", 0, 0, 0 },
-                    { 2, 0, 0, new DateTimeOffset(new DateTime(2024, 7, 10, 22, 10, 1, 130, DateTimeKind.Unspecified).AddTicks(4430), new TimeSpan(0, 2, 0, 0, 0)), "", null, "Assemble the sandwich with bread, shrimps, mayonnaise, and dill.", "Räkmacka", 0, 0, 0 },
-                    { 3, 0, 0, new DateTimeOffset(new DateTime(2024, 7, 10, 22, 10, 1, 130, DateTimeKind.Unspecified).AddTicks(4434), new TimeSpan(0, 2, 0, 0, 0)), "", null, "Roast the moose meat with juniper berries and serve with potatoes and lingonberries.", "Älgstek", 0, 0, 0 },
-                    { 4, 0, 0, new DateTimeOffset(new DateTime(2024, 7, 10, 22, 10, 1, 130, DateTimeKind.Unspecified).AddTicks(4436), new TimeSpan(0, 2, 0, 0, 0)), "", null, "", "Lax med grädde", 0, 0, 0 }
+                    { 1, 0, 60, new DateTimeOffset(new DateTime(2024, 7, 11, 15, 6, 18, 265, DateTimeKind.Unspecified).AddTicks(5747), new TimeSpan(0, 2, 0, 0, 0)), "", null, "Mix ingredients and bake at 180°C for 15 minutes.", "Kanelbullar", 0, 0, 0 },
+                    { 2, 0, 0, new DateTimeOffset(new DateTime(2024, 7, 11, 15, 6, 18, 265, DateTimeKind.Unspecified).AddTicks(5804), new TimeSpan(0, 2, 0, 0, 0)), "", null, "Assemble the sandwich with bread, shrimps, mayonnaise, and dill.", "Räkmacka", 0, 0, 0 },
+                    { 3, 0, 0, new DateTimeOffset(new DateTime(2024, 7, 11, 15, 6, 18, 265, DateTimeKind.Unspecified).AddTicks(5806), new TimeSpan(0, 2, 0, 0, 0)), "", null, "Roast the moose meat with juniper berries and serve with potatoes and lingonberries.", "Älgstek", 0, 0, 0 },
+                    { 4, 0, 0, new DateTimeOffset(new DateTime(2024, 7, 11, 15, 6, 18, 265, DateTimeKind.Unspecified).AddTicks(5808), new TimeSpan(0, 2, 0, 0, 0)), "", null, "", "Lax med grädde", 0, 0, 0 }
                 });
 
             migrationBuilder.InsertData(
+                table: "AllergenIngredient",
+                columns: new[] { "AllergensId", "IngredientsId" },
+                values: new object[] { 0, 1 });
+
+            migrationBuilder.InsertData(
                 table: "RecipeIngredients",
-                columns: new[] { "IngredientId", "RecipeId", "Id", "MeasurementId", "Order" },
+                columns: new[] { "IngredientId", "RecipeId", "Id", "IngredientMeasurementId", "Order" },
                 values: new object[,]
                 {
-                    { 1, 1, 1, null, 0 },
-                    { 2, 1, 3, null, 2 },
-                    { 3, 1, 4, null, 3 },
-                    { 4, 1, 5, null, 4 },
-                    { 5, 1, 6, null, 5 },
-                    { 17, 1, 2, null, 1 },
-                    { 9, 2, 9, null, 2 },
-                    { 12, 2, 7, null, 0 },
-                    { 13, 2, 8, null, 1 },
-                    { 7, 3, 11, null, 1 },
-                    { 16, 3, 12, null, 2 },
-                    { 19, 3, 10, null, 0 },
-                    { 5, 4, 16, null, 3 },
-                    { 6, 4, 14, null, 1 },
-                    { 7, 4, 15, null, 2 },
-                    { 8, 4, 13, null, 0 }
+                    { 1, 1, 1, 1, 0 },
+                    { 2, 1, 3, 3, 2 },
+                    { 3, 1, 4, 4, 3 },
+                    { 4, 1, 5, 5, 4 },
+                    { 5, 1, 6, 6, 5 },
+                    { 17, 1, 2, 2, 1 },
+                    { 9, 2, 9, 9, 2 },
+                    { 12, 2, 7, 7, 0 },
+                    { 13, 2, 8, 8, 1 },
+                    { 7, 3, 11, 11, 1 },
+                    { 16, 3, 12, 12, 2 },
+                    { 19, 3, 10, 10, 0 },
+                    { 6, 4, 14, 14, 1 },
+                    { 8, 4, 13, 13, 0 }
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_AllergensIngredient_IngredientId",
-                table: "AllergensIngredient",
-                column: "IngredientId");
+                name: "IX_AllergenIngredient_IngredientsId",
+                table: "AllergenIngredient",
+                column: "IngredientsId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Ingredients_CategoryId",
@@ -318,9 +354,10 @@ namespace _2Eat.Infrastructure.Migrations
                 column: "IngredientId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_RecipeIngredients_MeasurementId",
+                name: "IX_RecipeIngredients_IngredientMeasurementId",
                 table: "RecipeIngredients",
-                column: "MeasurementId");
+                column: "IngredientMeasurementId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Recipes_CategoryId",
@@ -349,7 +386,7 @@ namespace _2Eat.Infrastructure.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "AllergensIngredient");
+                name: "AllergenIngredient");
 
             migrationBuilder.DropTable(
                 name: "MealPlans");
@@ -361,16 +398,16 @@ namespace _2Eat.Infrastructure.Migrations
                 name: "ShoppingListItems");
 
             migrationBuilder.DropTable(
-                name: "Allersgens");
+                name: "Allergens");
 
             migrationBuilder.DropTable(
                 name: "Users");
 
             migrationBuilder.DropTable(
-                name: "Ingredients");
+                name: "IngredientMeasurements");
 
             migrationBuilder.DropTable(
-                name: "Measurement");
+                name: "Ingredients");
 
             migrationBuilder.DropTable(
                 name: "Recipes");
