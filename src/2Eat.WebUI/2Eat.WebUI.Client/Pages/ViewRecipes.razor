@@ -1,7 +1,7 @@
 ﻿@page "/recipes"
 @attribute [StreamRendering]
 @rendermode @(new InteractiveWebAssemblyRenderMode(false))
-@inject IRecipeService RecipeService
+@inject IClient Client
 @inject NavigationManager NavigationManager
 
 <PageTitle>Recipes</PageTitle>
@@ -23,14 +23,14 @@ else if (recipes.Count == 0)
 }
 else
 {
-    <ul>
+    <div class="recipe-card-list">
         @foreach (var recipe in recipes)
         {
-            <li> 
-                <button @onclick="() => GetRecipe(recipe.Id)">@recipe.Name</button> 
-            </li>
-        }
-    </ul>
+            <div class="recipe-card" @onclick="() => GetRecipe(recipe.Id)">
+                @recipe.Name
+            </div>
+        }   
+    </div>
 }
 
 
@@ -39,7 +39,8 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        recipes = await RecipeService.GetRecipesAsync();
+        Client.SetEntityEndpoint("recipes");
+        recipes = await Client.GetAsync<Recipe>();
     }
     private void GetRecipe(int id)
     {

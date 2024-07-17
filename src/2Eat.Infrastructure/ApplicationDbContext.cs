@@ -22,6 +22,7 @@ namespace _2Eat.Infrastructure
         public DbSet<ShoppingList> ShoppingLists { get; set; } = default!;
         public DbSet<ShoppingListItem> ShoppingListItems { get; set; } = default!;
         public DbSet<User> Users { get; set; } = default!;
+        public DbSet<Domain.Files.FileUpload> Files { get; set; } = default!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

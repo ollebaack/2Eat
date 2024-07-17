@@ -1,6 +1,6 @@
 ﻿@using _2Eat.Domain.Enums
 @rendermode @(new InteractiveWebAssemblyRenderMode(false))
-@inject IIngredientService IngredientService
+@inject IClient Client
 
 <h5>Ingredienser</h5>
 @if (!Edit)
@@ -109,7 +109,8 @@ else
     {
         if (allIngredients == null || allIngredients.Count < 1)
         {
-            allIngredients = await IngredientService.GetIngredientsAsync();
+            Client.SetEntityEndpoint("ingredients");
+            allIngredients = await Client.GetAsync<Ingredient>();
         }
 
         suggestedIngredients.Clear();

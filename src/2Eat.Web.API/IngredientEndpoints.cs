@@ -1,5 +1,4 @@
-﻿using _2Eat.Application.Json;
-using _2Eat.Domain;
+﻿using _2Eat.Domain;
 using _2Eat.Infrastructure.Services.IngredientServices;
 using _2Eat.Infrastructure.Services.RecipeServices;
 using Microsoft.AspNetCore.Http.HttpResults;

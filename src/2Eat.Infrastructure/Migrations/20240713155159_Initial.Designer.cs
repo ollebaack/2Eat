@@ -11,7 +11,7 @@ using _2Eat.Infrastructure;
 namespace _2Eat.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240711130618_Initial")]
+    [Migration("20240713155159_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -88,6 +88,32 @@ namespace _2Eat.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Categories");
+                });
+
+            modelBuilder.Entity("_2Eat.Domain.Files.FileUpload", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ContentType")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("FileName")
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("FileSize")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsSuccess")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("StoredFileName")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Files");
                 });
 
             modelBuilder.Entity("_2Eat.Domain.Ingredient", b =>
@@ -408,7 +434,7 @@ namespace _2Eat.Infrastructure.Migrations
                             Id = 1,
                             CategoryId = 0,
                             CookTime = 60,
-                            CreatedAt = new DateTimeOffset(new DateTime(2024, 7, 11, 15, 6, 18, 265, DateTimeKind.Unspecified).AddTicks(5747), new TimeSpan(0, 2, 0, 0, 0)),
+                            CreatedAt = new DateTimeOffset(new DateTime(2024, 7, 13, 17, 51, 59, 36, DateTimeKind.Unspecified).AddTicks(3447), new TimeSpan(0, 2, 0, 0, 0)),
                             Description = "",
                             Instructions = "Mix ingredients and bake at 180°C for 15 minutes.",
                             Name = "Kanelbullar",
@@ -421,7 +447,7 @@ namespace _2Eat.Infrastructure.Migrations
                             Id = 2,
                             CategoryId = 0,
                             CookTime = 0,
-                            CreatedAt = new DateTimeOffset(new DateTime(2024, 7, 11, 15, 6, 18, 265, DateTimeKind.Unspecified).AddTicks(5804), new TimeSpan(0, 2, 0, 0, 0)),
+                            CreatedAt = new DateTimeOffset(new DateTime(2024, 7, 13, 17, 51, 59, 36, DateTimeKind.Unspecified).AddTicks(3518), new TimeSpan(0, 2, 0, 0, 0)),
                             Description = "",
                             Instructions = "Assemble the sandwich with bread, shrimps, mayonnaise, and dill.",
                             Name = "Räkmacka",
@@ -434,7 +460,7 @@ namespace _2Eat.Infrastructure.Migrations
                             Id = 3,
                             CategoryId = 0,
                             CookTime = 0,
-                            CreatedAt = new DateTimeOffset(new DateTime(2024, 7, 11, 15, 6, 18, 265, DateTimeKind.Unspecified).AddTicks(5806), new TimeSpan(0, 2, 0, 0, 0)),
+                            CreatedAt = new DateTimeOffset(new DateTime(2024, 7, 13, 17, 51, 59, 36, DateTimeKind.Unspecified).AddTicks(3521), new TimeSpan(0, 2, 0, 0, 0)),
                             Description = "",
                             Instructions = "Roast the moose meat with juniper berries and serve with potatoes and lingonberries.",
                             Name = "Älgstek",
@@ -447,7 +473,7 @@ namespace _2Eat.Infrastructure.Migrations
                             Id = 4,
                             CategoryId = 0,
                             CookTime = 0,
-                            CreatedAt = new DateTimeOffset(new DateTime(2024, 7, 11, 15, 6, 18, 265, DateTimeKind.Unspecified).AddTicks(5808), new TimeSpan(0, 2, 0, 0, 0)),
+                            CreatedAt = new DateTimeOffset(new DateTime(2024, 7, 13, 17, 51, 59, 36, DateTimeKind.Unspecified).AddTicks(3523), new TimeSpan(0, 2, 0, 0, 0)),
                             Description = "",
                             Instructions = "",
                             Name = "Lax med grädde",

@@ -44,6 +44,7 @@ app.UseCors("AllowSpecificOrigin");
 
 app.MapRecipeEndpoints();
 app.MapIngredientEndpoints();
+app.MapFileEndpoints();
 
 app.UseHttpsRedirection();
 app.Run();

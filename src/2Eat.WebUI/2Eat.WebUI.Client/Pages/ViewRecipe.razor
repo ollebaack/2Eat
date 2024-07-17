@@ -2,7 +2,7 @@
 
 @rendermode @(new InteractiveWebAssemblyRenderMode(false))
 @attribute [StreamRendering]
-@inject IRecipeService RecipeService
+@inject IClient Client
 @inject NavigationManager NavigationManager
 
 
@@ -23,8 +23,11 @@
     public int Id { get; set; }
     private Recipe recipe = new Recipe();
 
-    protected override async Task OnInitializedAsync() 
-        => recipe = await RecipeService.GetRecipeByIdAsync(Id) ?? throw new Exception($"{nameof(recipe)} was null.");
+    protected override async Task OnInitializedAsync()
+    {
+        Client.SetEntityEndpoint("recipes");
+        recipe = await Client.GetByIdAsync<Recipe>(Id) ?? throw new Exception($"{nameof(recipe)} was null.");
+    }
 
     protected void EditRecipe()
     {

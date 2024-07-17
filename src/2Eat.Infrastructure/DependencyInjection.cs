@@ -1,4 +1,6 @@
-﻿using _2Eat.Infrastructure.Services.IngredientServices;
+﻿using _2Eat.Infrastructure.Services.ClientServices;
+using _2Eat.Infrastructure.Services.FileServices;
+using _2Eat.Infrastructure.Services.IngredientServices;
 using _2Eat.Infrastructure.Services.RecipeServices;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -27,7 +29,7 @@ namespace _2Eat.Infrastructure
                 }
                 else
                 {
-                    string db = configuration.GetConnectionString("DefaultConnection");
+                    string db = configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("No database connection was found!");
                     var dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), db);
                     options.UseSqlite($"Data Source={dbPath}");
                 }
@@ -38,14 +40,14 @@ namespace _2Eat.Infrastructure
 
             services.AddScoped<IRecipeService, RecipeService>();
             services.AddScoped<IIngredientService, IngredientService>();
+            services.AddScoped<IFileService, FileService>();
 
             return services;
         }
 
         public static WebAssemblyHostBuilder AddClientInfrastructureExtensions(this WebAssemblyHostBuilder builder)
         {
-            builder.Services.AddScoped<IRecipeService, ClientRecipeService>();
-            builder.Services.AddScoped<IIngredientService, ClientIngredientService>();
+            builder.Services.AddScoped<IClient, Client>();
 
             builder.Services.AddScoped(http => new HttpClient
             {
