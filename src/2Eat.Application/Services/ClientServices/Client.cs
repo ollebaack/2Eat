@@ -2,7 +2,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace _2Eat.Infrastructure.Services.ClientServices
+namespace _2Eat.Application.Services.ClientServices
 {
     public class Client : IClient
     {

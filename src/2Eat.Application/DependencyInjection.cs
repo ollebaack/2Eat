@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using _2Eat.Application.Services.ClientServices;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace _2Eat.Application
 {
@@ -6,6 +7,8 @@ namespace _2Eat.Application
     {
         public static IServiceCollection AddApplicationExtensions(this IServiceCollection services)
         {
+            services.AddScoped<IClient, Client>();
+
             return services;
         }
     }

@@ -1,5 +1,5 @@
 ﻿
-namespace _2Eat.Infrastructure.Services.ClientServices
+namespace _2Eat.Application.Services.ClientServices
 {
     public interface IClient
     {

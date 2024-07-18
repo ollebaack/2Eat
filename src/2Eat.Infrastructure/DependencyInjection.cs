@@ -1,5 +1,4 @@
-﻿using _2Eat.Infrastructure.Services.ClientServices;
-using _2Eat.Infrastructure.Services.FileServices;
+﻿using _2Eat.Infrastructure.Services.FileServices;
 using _2Eat.Infrastructure.Services.IngredientServices;
 using _2Eat.Infrastructure.Services.RecipeServices;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -14,10 +13,9 @@ namespace _2Eat.Infrastructure
     {
         public static IServiceCollection AddInfrastructureExtensions(this IServiceCollection services, IConfiguration configuration)
         {
-
             services.AddScoped(http => new HttpClient
             {
-                BaseAddress = new Uri(configuration.GetSection("BaseUri").Value!)
+                BaseAddress = new Uri(configuration.GetSection("BaseUri").Value ?? "http://localhost:5264")
             });
 
             services.AddDbContext<ApplicationDbContext>(options => 
@@ -43,29 +41,6 @@ namespace _2Eat.Infrastructure
             services.AddScoped<IFileService, FileService>();
 
             return services;
-        }
-
-        public static IServiceCollection AddClientInfrastructureExtensions(this IServiceCollection services, IConfiguration configuration)
-        {
-            services.AddScoped(http => new HttpClient
-            {
-                BaseAddress = new Uri(configuration.GetSection("BaseUri").Value!)
-            });
-
-            services.AddScoped<IClient, Client>();
-            return services;
-        }
-
-        public static WebAssemblyHostBuilder AddClientInfrastructureExtensions(this WebAssemblyHostBuilder builder)
-        {
-            builder.Services.AddScoped<IClient, Client>();
-
-            builder.Services.AddScoped(http => new HttpClient
-            {
-                BaseAddress = new Uri(builder.Configuration.GetSection("BaseUri").Value!)
-            });
-
-            return builder;
         }
     }
 }

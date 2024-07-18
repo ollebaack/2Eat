@@ -1,6 +1,7 @@
 using _2Eat.WebUI.Web.Components;
 using _2Eat.WebUI.Shared.Services;
 using _2Eat.WebUI.Web.Services;
+using _2Eat.Application;
 using _2Eat.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,8 +10,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+builder.Services.AddApplicationExtensions();
 builder.Services.AddInfrastructureExtensions(builder.Configuration);
-builder.Services.AddClientInfrastructureExtensions(builder.Configuration);
 
 // Add device-specific services used by the _2Eat.WebUI.Shared project
 builder.Services.AddSingleton<IFormFactor, FormFactor>();
