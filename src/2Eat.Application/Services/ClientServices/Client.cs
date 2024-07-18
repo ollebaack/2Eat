@@ -9,7 +9,7 @@ namespace _2Eat.Application.Services.ClientServices
         private readonly HttpClient _httpClient;
         private readonly JsonSerializerOptions _jsonSerializerOptions;
 
-        private string BaseEndpoint;
+        private string BaseEndpoint = string.Empty;
 
         public Client(HttpClient httpClient)
         {
@@ -66,7 +66,8 @@ namespace _2Eat.Application.Services.ClientServices
 
                 if (response.IsSuccessStatusCode)
                 {
-                    var result = await response.Content.ReadFromJsonAsync<TResult>(_jsonSerializerOptions);
+                    var result = await response.Content.ReadFromJsonAsync<TResult>(_jsonSerializerOptions) 
+                        ?? throw new InvalidOperationException($"Something went wrong went returning {typeof(TResult)}");
                     return result;
                 }
 

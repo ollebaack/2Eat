@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
-using _2Eat.WebUI.Shared.Services;
+using _2Eat.Application.Services;
 using _2Eat.WebUI.App.Services;
 using _2Eat.Application;
 using _2Eat.Infrastructure;

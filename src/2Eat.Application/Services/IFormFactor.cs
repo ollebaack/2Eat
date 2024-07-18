@@ -1,4 +1,4 @@
-namespace _2Eat.WebUI.Shared.Services;
+namespace _2Eat.Application.Services;
 
 public interface IFormFactor
 {

@@ -1,4 +1,4 @@
-using _2Eat.WebUI.Shared.Services;
+using _2Eat.Application.Services;
 
 namespace _2Eat.WebUI.App.Services;
 

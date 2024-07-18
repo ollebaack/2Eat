@@ -1,8 +1,8 @@
 using _2Eat.WebUI.Web.Components;
-using _2Eat.WebUI.Shared.Services;
 using _2Eat.WebUI.Web.Services;
 using _2Eat.Application;
 using _2Eat.Infrastructure;
+using _2Eat.Application.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
