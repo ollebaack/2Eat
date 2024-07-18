@@ -1,4 +1,5 @@
-﻿using _2Eat.Domain.Files;
+﻿using System.Reflection;
+using _2Eat.Domain.Files;
 using _2Eat.Infrastructure.Services.FileServices;
 using Microsoft.AspNetCore.Http.HttpResults;
 
@@ -31,7 +32,8 @@ namespace _2Eat.Web.API
 
             memory.Position = 0;
 
-            //return File(memory, uploadResult.ContentType, Path.GetFileName(fileName));
+            // var file = new Mem(memory, uploadResult.ContentType, Path.GetFileName(fileName));
+            // return memory;
         }
 
         private static async Task<Results<Ok<FileUpload>, BadRequest>> CreateFile(IFormFile file, IWebHostEnvironment _env, IFileService _service)

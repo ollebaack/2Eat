@@ -41,22 +41,21 @@ else
     <EditForm Model="recipe" OnSubmit="HandleSubmit">
         <InputText @bind-Value="recipe.Name">@recipe.Name</InputText>
     </EditForm>
-    <hr />
 }
+<hr />
 
 <RecipeIngredients @bind-IngredientsList="recipe.Ingredients" Edit=true />
 
-<h5>Instructions</h5>
+<h5>Instruktioner</h5>
 <EditForm Model="recipe" OnSubmit="HandleSubmit">
-    br />
-    <button type="submit" class="btn btn-primary">Save</button>
+    <InputTextArea @bind-Value="recipe.Instructions" rows="10" style="width: 40vw">@recipe.Instructions</InputTextArea>
+    <br />
+    <button type="submit" class="btn btn-primary">Spara</button>
 </EditForm>
 
 @code {
     [Parameter]
     public int? Id { get; set; }
-
-    private string ingredient = string.Empty;
     private Recipe recipe = new Recipe();
     private bool isEditingName = false;
 

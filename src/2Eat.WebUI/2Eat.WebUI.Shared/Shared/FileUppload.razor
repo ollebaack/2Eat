@@ -3,7 +3,7 @@
 @inject IClient Client
 @inject IJSRuntime JS
 
-<h3>FileUppload</h3>
+<h3>Lägg till en bild</h3>
 
 <InputFile OnChange="OnInputFileChange"/>
 
@@ -14,9 +14,11 @@
         {
             <li>@fileName</li>
             <br />
-
-            <span>Stored File Name: @uploadResult?.StoredFileName</span>
-            <button @onclick"@(()=> DownloadFile(uploadResult?.StoredFileName, fileName))">Download file</button>
+            @* @if (!string.IsNullOrWhiteSpace(fileName))
+            {
+                <img src="2Eat.Web.API/uploads/@uploadResult?.StoredFileName" width="400"/>
+            } *@
+            @* <button @onclick"@(()=> DownloadFile(uploadResult?.StoredFileName, fileName))">Download file</button> *@
         }
     </ul>
 }
@@ -42,6 +44,13 @@
 
         Client.SetEntityEndpoint("files");
         uploadResult = await Client.CreateAsync<FileUpload, MultipartFormDataContent>(content);
+    }
+
+    private async Task<string> GetImg(string storedFileName)
+    {
+        Client.SetEntityEndpoint("files");
+        var fileUpload = await Client.GetByNameAsync<FileUpload>(storedFileName);
+        return $"../{storedFileName}";
     }
 
     private async Task DownloadFile(string storedFileName, string originalFileName)
