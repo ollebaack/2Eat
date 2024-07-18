@@ -1,0 +1,209 @@
+﻿@* @rendermode @(new InteractiveWebAssemblyRenderMode(false)) *@
+@inject IClient Client
+
+<h5>Ingredienser</h5>
+@if (!Edit)
+{
+    <div class="ingredient-list">
+        @foreach (var recipeIngredient in recipeIngredients.ToList())
+        {   
+            <div class="ingredient-item">
+                @* <i class="fa-solid fa-circle-minus fa-fade remove-btn" @onclick="() => RemoveIngredient(recipeIngredient.Ingredient.Name)"></i>  *@
+                <div class="noselect">@recipeIngredient.ToString()</div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    @* <div class="ingredient-list">
+        <SortableList Id="dragHandles" Handle=".drag-handle" Items="recipeIngredients.ToList()" OnUpdate="@SortList" Context="recipeIngredient">
+            <SortableItemTemplate>
+                <div class="ingredient-item">
+                    <div class="has-cursor-grab" style="padding-right: 5px">
+                        <div class="drag-handle mr-4">
+                            <i class="is-size-4 fas fa-grip-vertical"></i>
+                        </div>
+                    </div>
+                    <div class="noselect">@recipeIngredient.ToString()</div>                        
+                </div>
+            </SortableItemTemplate>
+        </SortableList>
+    </div> *@
+
+    <div class="ingredient-list">
+        @foreach (var recipeIngredient in recipeIngredients.ToList())
+        {
+            <div class="ingredient-item">
+                <div class="has-cursor-grab" style="padding-right: 5px">
+                    <div class="drag-handle mr-4">
+                        <i class="is-size-4 fas fa-grip-vertical"></i>
+                    </div>
+                </div>
+                @* <i class="fa-solid fa-circle-minus fa-fade remove-btn" @onclick="() => RemoveIngredient(recipeIngredient.Ingredient.Name)"></i>  *@
+                <div class="noselect">@recipeIngredient.ToString()</div>                        
+            </div>
+        }
+    </div>
+    @if (!string.IsNullOrEmpty(Name))
+    {
+        <InputNumber class="styled-input" @bind-Value="ingredientMeasurement.Quantity"></InputNumber>
+        <InputSelect class="styled-input" @bind-Value="ingredientMeasurement.Unit">
+            @foreach (var unit in Enum.GetValues<UnitOfMeasurement>())
+            {
+                <option value="@unit">@unit</option>
+            }
+        </InputSelect>
+    }
+
+    <InputText class="styled-input" @bind-Value="Name" @oninput="OnInputChanged"></InputText>
+    @if (suggestedIngredients.Any())
+    {
+        @foreach (var ingredient in suggestedIngredients)
+        {
+            <button @onclick="() => SelectIngredient(ingredient)" class="suggestion-button">
+                @ingredient.Name
+            </button>
+        }
+    }
+}
+@if (Edit)
+{
+    <br />
+    <button @onclick="AddIngredient" class="btn btn-primary">+</button>
+}
+<hr />
+
+@code {
+    private ICollection<RecipeIngredient> recipeIngredients = new List<RecipeIngredient>();
+    private string? Name = string.Empty;
+    private IngredientMeasurement ingredientMeasurement = new IngredientMeasurement();
+
+    [Parameter]
+    public bool Edit { get; set;  } = false;
+    [Parameter]
+    public ICollection<RecipeIngredient> IngredientsList
+    {
+        get => recipeIngredients;
+        set
+        {
+            // if (recipeIngredients != value)
+            // {
+            //     recipeIngredients = value;
+            //     IngredientsListChanged.InvokeAsync(value);
+            // }
+            var sortedValue = value.OrderBy(ri => ri.Order).ToList();
+            if (!recipeIngredients.SequenceEqual(sortedValue))
+            {
+                recipeIngredients = sortedValue;
+                IngredientsListChanged.InvokeAsync(value);
+            }
+        }
+    }
+
+    [Parameter]
+    public EventCallback<ICollection<RecipeIngredient>> IngredientsListChanged { get; set; }
+
+    private List<Ingredient> suggestedIngredients = new List<Ingredient>();
+    private List<Ingredient>? allIngredients = null;
+
+    // protected override void OnInitialized()
+    // {
+    //     recipeIngredients = IngredientsList.OrderBy(x => x.Order).ToList() ?? new List<RecipeIngredient>();
+    // }
+
+    private async Task OnInputChanged(ChangeEventArgs e)
+    {
+        Name = e.Value?.ToString();
+        await UpdateSuggestionsAsync();
+    }
+
+    private async Task UpdateSuggestionsAsync()
+    {
+        if (allIngredients == null || allIngredients.Count < 1)
+        {
+            Client.SetEntityEndpoint("ingredients");
+            allIngredients = await Client.GetAsync<Ingredient>();
+        }
+
+        suggestedIngredients.Clear();
+        if (!string.IsNullOrWhiteSpace(Name))
+        {
+            suggestedIngredients.AddRange(allIngredients.Where(i => !recipeIngredients.Any(x => x.IngredientId == i.Id) && i.Name.StartsWith(Name, StringComparison.OrdinalIgnoreCase)));
+        }
+    }
+
+    private void SelectIngredient(Ingredient ingredient)
+    {
+        Name = ingredient.Name;
+        suggestedIngredients.Clear();
+    }
+
+    private void AddIngredient()
+    {
+        if (!string.IsNullOrWhiteSpace(Name))
+        {
+            bool existingIngredient = recipeIngredients.Any(i => i.Ingredient.Name == Name);
+            if (!existingIngredient)
+            {
+                // Find the highest current order value in the list
+                int maxOrder = recipeIngredients.Any() ? recipeIngredients.Max(i => i.Order) : 0;
+
+                // Create a new RecipeIngredient with the Order set to the next value
+                var newRecipeIngredient = new RecipeIngredient
+                    {
+                        Ingredient = new Ingredient { Name = Name },
+                        Order = maxOrder + 1,
+                        IngredientMeasurement = new IngredientMeasurement() { Quantity = ingredientMeasurement.Quantity, Unit = ingredientMeasurement.Unit }
+                    };
+
+                recipeIngredients.Add(newRecipeIngredient);
+                Name = string.Empty;
+                IngredientsListChanged.InvokeAsync(recipeIngredients); // Notify parent component
+            }
+        }
+    }
+
+
+    private void RemoveIngredient(string ingredientName)
+    {
+        var ingredient = recipeIngredients.FirstOrDefault(i => i.Ingredient.Name == ingredientName);
+        if (ingredient != null)
+        {
+            recipeIngredients.Remove(ingredient);
+            IngredientsListChanged.InvokeAsync(recipeIngredients); // Notify parent component
+        }
+    }
+
+    private void SortList((int oldIndex, int newIndex) indices)
+    {
+        var (oldIndex, newIndex) = indices;
+
+        // Convert the collection to a list to work with indices
+        var items = recipeIngredients.OrderBy(ri => ri.Order).ToList();
+
+        var itemToMove = items[oldIndex];
+        items.RemoveAt(oldIndex);
+
+        if (newIndex < items.Count)
+        {
+            items.Insert(newIndex, itemToMove);
+        }
+        else
+        {
+            items.Add(itemToMove);
+        }
+
+        // Update the Order property of each item to reflect its new position
+        for (int i = 0; i < items.Count; i++)
+        {
+            items[i].Order = i;
+        }
+
+        // Update the recipeIngredients collection with the reordered items
+        recipeIngredients = items;
+
+        IngredientsListChanged.InvokeAsync(recipeIngredients); // Notify parent component
+        StateHasChanged();
+    }
+}

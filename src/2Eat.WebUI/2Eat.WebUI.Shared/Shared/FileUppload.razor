@@ -1,0 +1,56 @@
+﻿@* @rendermode @(new InteractiveWebAssemblyRenderMode(false)) *@
+@using System.Net.Http.Headers
+@inject IClient Client
+@inject IJSRuntime JS
+
+<h3>FileUppload</h3>
+
+<InputFile OnChange="OnInputFileChange"/>
+
+@if (fileNames.Count > 0)
+{
+    <ul>
+        @foreach (var fileName in fileNames)
+        {
+            <li>@fileName</li>
+            <br />
+
+            <span>Stored File Name: @uploadResult?.StoredFileName</span>
+            <button @onclick"@(()=> DownloadFile(uploadResult?.StoredFileName, fileName))">Download file</button>
+        }
+    </ul>
+}
+
+@code {
+    private int maxAllowedFiles = 1;
+    private long maxFileSize = 10 * 1024 * 1024; // 10MB
+    private List<string> fileNames = new List<string>();
+    private FileUpload? uploadResult = new FileUpload();
+
+    private async Task OnInputFileChange(InputFileChangeEventArgs e)
+    {
+        using var content = new MultipartFormDataContent();
+        var fileContent = new StreamContent(e.File.OpenReadStream(maxFileSize));
+        fileContent.Headers.ContentType = new MediaTypeHeaderValue(e.File.ContentType);
+
+        fileNames.Add(e.File.Name);
+
+        content.Add(
+            content: fileContent,
+            name: "file",
+            fileName: e.File.Name);
+
+        Client.SetEntityEndpoint("files");
+        uploadResult = await Client.CreateAsync<FileUpload, MultipartFormDataContent>(content);
+    }
+
+    private async Task DownloadFile(string storedFileName, string originalFileName)
+    {
+        Client.SetEntityEndpoint("files");
+        var fileUpload = await Client.GetByNameAsync<FileUpload>(storedFileName);
+
+        // var 
+
+        await JS.InvokeVoidAsync("downloadFile", storedFileName, originalFileName);
+    }
+}

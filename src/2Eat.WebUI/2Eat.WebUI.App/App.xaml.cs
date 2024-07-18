@@ -1,12 +1,11 @@
-﻿namespace _2Eat.WebUI.App
-{
-    public partial class App : Application
-    {
-        public App()
-        {
-            InitializeComponent();
+﻿namespace _2Eat.WebUI.App;
 
-            MainPage = new MainPage();
-        }
+public partial class App : Microsoft.Maui.Controls.Application
+{
+    public App()
+    {
+        InitializeComponent();
+
+        MainPage = new MainPage();
     }
 }

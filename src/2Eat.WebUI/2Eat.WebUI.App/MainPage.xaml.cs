@@ -1,10 +1,9 @@
-﻿namespace _2Eat.WebUI.App
+﻿namespace _2Eat.WebUI.App;
+
+public partial class MainPage : ContentPage
 {
-    public partial class MainPage : ContentPage
+    public MainPage()
     {
-        public MainPage()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
     }
 }

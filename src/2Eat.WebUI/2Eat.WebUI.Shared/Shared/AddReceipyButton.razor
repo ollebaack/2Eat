@@ -1,0 +1,11 @@
+﻿@* @rendermode InteractiveWebAssembly *@
+@inject NavigationManager NavigationManager
+
+<button @onclick="AddRecipe" class="btn btn-primary">Add Recipe</button>
+
+@code {
+    void AddRecipe()
+    {
+        NavigationManager.NavigateTo("/recipe");
+    }
+}

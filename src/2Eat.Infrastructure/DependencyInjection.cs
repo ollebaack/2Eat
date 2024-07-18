@@ -45,6 +45,17 @@ namespace _2Eat.Infrastructure
             return services;
         }
 
+        public static IServiceCollection AddClientInfrastructureExtensions(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.AddScoped(http => new HttpClient
+            {
+                BaseAddress = new Uri(configuration.GetSection("BaseUri").Value!)
+            });
+
+            services.AddScoped<IClient, Client>();
+            return services;
+        }
+
         public static WebAssemblyHostBuilder AddClientInfrastructureExtensions(this WebAssemblyHostBuilder builder)
         {
             builder.Services.AddScoped<IClient, Client>();
