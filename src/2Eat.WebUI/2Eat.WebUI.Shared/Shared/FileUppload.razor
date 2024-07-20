@@ -2,6 +2,7 @@
 @using System.Net.Http.Headers
 @inject IClient Client
 @inject IJSRuntime JS
+@inject HttpClient Http
 
 <h3>Lägg till en bild</h3>
 
@@ -12,13 +13,11 @@
     <ul>
         @foreach (var fileName in fileNames)
         {
-            <li>@fileName</li>
-            <br />
-            @* @if (!string.IsNullOrWhiteSpace(fileName))
+            @if (!string.IsNullOrWhiteSpace(fileName))
             {
-                <img src="2Eat.Web.API/uploads/@uploadResult?.StoredFileName" width="400"/>
-            } *@
-            @* <button @onclick"@(()=> DownloadFile(uploadResult?.StoredFileName, fileName))">Download file</button> *@
+                <img id="imgHolder" src="@imgSrc" width="400"/>
+                @* <button @onclick="@(()=> StreamFileAsync(uploadResult?.StoredFileName, fileName))">Stream file</button> *@
+            }
         }
     </ul>
 }
@@ -28,6 +27,7 @@
     private long maxFileSize = 10 * 1024 * 1024; // 10MB
     private List<string> fileNames = new List<string>();
     private FileUpload? uploadResult = new FileUpload();
+    private string? imgSrc = string.Empty;
 
     private async Task OnInputFileChange(InputFileChangeEventArgs e)
     {
@@ -44,6 +44,7 @@
 
         Client.SetEntityEndpoint("files");
         uploadResult = await Client.CreateAsync<FileUpload, MultipartFormDataContent>(content);
+        imgSrc = await StreamFileAsync(uploadResult.StoredFileName, uploadResult.FileName);
     }
 
     private async Task<string> GetImg(string storedFileName)
@@ -53,6 +54,22 @@
         return $"../{storedFileName}";
     }
 
+    private async Task<string> StreamFileAsync(string storedFileName, string originalFileName)
+    {
+        @* Client.SetEntityEndpoint("files"); *@
+        var response = await Http.GetAsync($"api/files/{storedFileName}");
+        if (response.IsSuccessStatusCode)
+        {
+            var fileStream = await response.Content.ReadAsStreamAsync();
+            using var streamRef = new DotNetStreamReference(fileStream);
+            @* await JS.InvokeVoidAsync("IMAGE_STREAMER.UpdateImg", "imgHolder", streamRef); *@
+            string test = await JS.InvokeAsync<string>("IMAGE_STREAMER.GetImgSrc", streamRef);
+            return test;
+            @* await JS.InvokeVoidAsync("IMAGE_STREAMER.DownloadFileFromStream", originalFileName, streamRef); *@
+        }
+        return string.Empty;
+        
+    }
     private async Task DownloadFile(string storedFileName, string originalFileName)
     {
         Client.SetEntityEndpoint("files");

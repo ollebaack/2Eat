@@ -51,8 +51,18 @@ namespace _2Eat.Application.Services.ClientServices
         public async Task<TResult> GetByNameAsync<TResult>(string name)
         {
             CheckIfEndpointSet();
-            return await _httpClient.GetFromJsonAsync<TResult>($"{BaseEndpoint}/{name}", _jsonSerializerOptions)
-                ?? throw new InvalidOperationException($"Something went wrong went returning {typeof(TResult)}");
+            var response = await _httpClient.GetAsync($"{BaseEndpoint}/{name}");
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadFromJsonAsync<TResult>(_jsonSerializerOptions)
+                    ?? throw new InvalidOperationException($"Something went wrong went returning {typeof(TResult)}");
+            }
+            else
+            {
+                throw new InvalidOperationException($"Failed to fetch entity. Reason: {response.ReasonPhrase}");
+            }
+            // return await _httpClient.GetFromJsonAsync<TResult>($"{BaseEndpoint}/{name}", _jsonSerializerOptions)
+            //     ?? throw new InvalidOperationException($"Something went wrong went returning {typeof(TResult)}");
         }
 
         public async Task<TResult> CreateAsync<TResult, TEntity>(TEntity entity)

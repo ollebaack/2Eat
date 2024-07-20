@@ -2,6 +2,7 @@
 using _2Eat.Domain.Files;
 using _2Eat.Infrastructure.Services.FileServices;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 
 namespace _2Eat.Web.API
 {
@@ -18,20 +19,37 @@ namespace _2Eat.Web.API
             //endpoints.MapDelete("/api/files/{id}", DeleteFile);
         }
 
-        private static async Task DownloadFileByFileName(string fileName, IFileService _service, IWebHostEnvironment _env)
+        private static async Task<IResult> DownloadFileByFileName(string fileName, IFileService _service, IWebHostEnvironment _env, HttpClient Http)
         {
             var uploadResult = await _service.GetFileByFileNameAsync(fileName);
+
+            if (uploadResult == null)
+            {
+                return TypedResults.NotFound();
+            }
 
             var path = Path.Combine(_env.ContentRootPath, "uploads", fileName);
 
             var memory = new MemoryStream();
 
-            await using var stream = new FileStream(path, FileMode.Open);
-
-            await stream.CopyToAsync(memory);
+            using (var stream = new FileStream(path, FileMode.Open))
+            {
+                await stream.CopyToAsync(memory);   
+            }
 
             memory.Position = 0;
+            // return memory.ToArray();
+            return Results.File(memory.ToArray(), uploadResult.ContentType, uploadResult.FileName);
+            // return TypedResults.Ok(new FileContentResult(memory.ToArray(), uploadResult.ContentType));
+            // return memory;
 
+            // await using var file = await Http.GetStreamAsync(path);
+            // using var memoryStream = new MemoryStream();
+            
+            // await file.CopyToAsync(memoryStream);
+            // return memoryStream.ToArray();
+            
+            // return imgStreamRef;
             // var file = new Mem(memory, uploadResult.ContentType, Path.GetFileName(fileName));
             // return memory;
         }
