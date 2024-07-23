@@ -1,31 +1,47 @@
-﻿@* @rendermode @(new InteractiveWebAssemblyRenderMode(false)) *@
-@using System.Net.Http.Headers
+﻿@using System.Net.Http.Headers
 @inject IClient Client
 @inject IJSRuntime JS
 @inject HttpClient Http
 
-<h3>Lägg till en bild</h3>
-
-<InputFile OnChange="OnInputFileChange"/>
-
-@if (fileNames.Count > 0)
+@if (Edit)
 {
-    <ul>
-        @foreach (var fileName in fileNames)
-        {
-            @if (!string.IsNullOrWhiteSpace(fileName))
-            {
-                <img id="imgHolder" src="@imgSrc" width="400"/>
-                @* <button @onclick="@(()=> StreamFileAsync(uploadResult?.StoredFileName, fileName))">Stream file</button> *@
-            }
-        }
-    </ul>
+    @* <div class="mb-3">
+        <label for="formFile" class="form-label">Lägg till bild</label>
+        <InputFile OnChange="OnInputFileChange"/>
+    </div> *@
+
+    <label for="inputFile" class="btn btn-secondary me-1">
+        <InputFile id="inputFile" OnChange="OnInputFileChange" class="d-none" />
+        Upload File
+    </label>
 }
 
+@* @if (!string.IsNullOrWhiteSpace(_recipe?.ImageUrl))
+{
+    <img id="imgHolder" src="@_recipe.ImageUrl" width="400"/>
+} *@
+
 @code {
-    private int maxAllowedFiles = 1;
+    [Parameter]
+    public bool Edit { get; set;  } = false;
+    [Parameter]
+    public Recipe? recipe
+    {
+        get => _recipe; // Return the backing field
+        set
+        {
+            if (_recipe != value) // Compare with the backing field
+            {
+                _recipe = value; // Assign the new value to the backing field
+                recipeChanged.InvokeAsync(value);
+            }
+        }
+    }
+    [Parameter]
+    public EventCallback<Recipe> recipeChanged { get; set; }
+    private Recipe? _recipe; // Private backing field
+
     private long maxFileSize = 10 * 1024 * 1024; // 10MB
-    private List<string> fileNames = new List<string>();
     private FileUpload? uploadResult = new FileUpload();
     private string? imgSrc = string.Empty;
 
@@ -35,8 +51,6 @@
         var fileContent = new StreamContent(e.File.OpenReadStream(maxFileSize));
         fileContent.Headers.ContentType = new MediaTypeHeaderValue(e.File.ContentType);
 
-        fileNames.Add(e.File.Name);
-
         content.Add(
             content: fileContent,
             name: "file",
@@ -44,39 +58,23 @@
 
         Client.SetEntityEndpoint("files");
         uploadResult = await Client.CreateAsync<FileUpload, MultipartFormDataContent>(content);
-        imgSrc = await StreamFileAsync(uploadResult.StoredFileName, uploadResult.FileName);
-    }
 
-    private async Task<string> GetImg(string storedFileName)
-    {
-        Client.SetEntityEndpoint("files");
-        var fileUpload = await Client.GetByNameAsync<FileUpload>(storedFileName);
-        return $"../{storedFileName}";
+        _recipe.ImageUrl = await StreamFileAsync(uploadResult.StoredFileName, uploadResult.FileName);
+        Client.SetEntityEndpoint("recipes");
+        _recipe = await Client.UpdateAsync<Recipe, Recipe>(_recipe.Id, _recipe);
+        recipeChanged.InvokeAsync(_recipe); // Notify parent component
+        StateHasChanged();
     }
 
     private async Task<string> StreamFileAsync(string storedFileName, string originalFileName)
     {
-        @* Client.SetEntityEndpoint("files"); *@
         var response = await Http.GetAsync($"api/files/{storedFileName}");
         if (response.IsSuccessStatusCode)
         {
             var fileStream = await response.Content.ReadAsStreamAsync();
             using var streamRef = new DotNetStreamReference(fileStream);
-            @* await JS.InvokeVoidAsync("IMAGE_STREAMER.UpdateImg", "imgHolder", streamRef); *@
-            string test = await JS.InvokeAsync<string>("IMAGE_STREAMER.GetImgSrc", streamRef);
-            return test;
-            @* await JS.InvokeVoidAsync("IMAGE_STREAMER.DownloadFileFromStream", originalFileName, streamRef); *@
+            return await JS.InvokeAsync<string>("IMAGE_STREAMER.GetImgSrc", streamRef);
         }
         return string.Empty;
-        
-    }
-    private async Task DownloadFile(string storedFileName, string originalFileName)
-    {
-        Client.SetEntityEndpoint("files");
-        var fileUpload = await Client.GetByNameAsync<FileUpload>(storedFileName);
-
-        // var 
-
-        await JS.InvokeVoidAsync("downloadFile", storedFileName, originalFileName);
     }
 }

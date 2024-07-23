@@ -5,7 +5,7 @@
 @if (!Edit)
 {
     <div class="ingredient-list">
-        @foreach (var recipeIngredient in recipeIngredients.ToList())
+        @foreach (var recipeIngredient in _recipeIngredients.ToList())
         {   
             <div class="ingredient-item">
                 @* <i class="fa-solid fa-circle-minus fa-fade remove-btn" @onclick="() => RemoveIngredient(recipeIngredient.Ingredient.Name)"></i>  *@
@@ -32,7 +32,7 @@ else
     </div> *@
 
     <div class="ingredient-list">
-        @foreach (var recipeIngredient in recipeIngredients.ToList())
+        @foreach (var recipeIngredient in _recipeIngredients.ToList())
         {
             <div class="ingredient-item">
                 <div class="has-cursor-grab" style="padding-right: 5px">
@@ -75,7 +75,7 @@ else
 <hr />
 
 @code {
-    private ICollection<RecipeIngredient> recipeIngredients = new List<RecipeIngredient>();
+    private ICollection<RecipeIngredient> _recipeIngredients = new List<RecipeIngredient>();
     private string? Name = string.Empty;
     private IngredientMeasurement ingredientMeasurement = new IngredientMeasurement();
 
@@ -84,7 +84,7 @@ else
     [Parameter]
     public ICollection<RecipeIngredient> IngredientsList
     {
-        get => recipeIngredients;
+        get => _recipeIngredients;
         set
         {
             // if (recipeIngredients != value)
@@ -93,9 +93,9 @@ else
             //     IngredientsListChanged.InvokeAsync(value);
             // }
             var sortedValue = value.OrderBy(ri => ri.Order).ToList();
-            if (!recipeIngredients.SequenceEqual(sortedValue))
+            if (!_recipeIngredients.SequenceEqual(sortedValue))
             {
-                recipeIngredients = sortedValue;
+                _recipeIngredients = sortedValue;
                 IngredientsListChanged.InvokeAsync(value);
             }
         }
@@ -129,7 +129,7 @@ else
         suggestedIngredients.Clear();
         if (!string.IsNullOrWhiteSpace(Name))
         {
-            suggestedIngredients.AddRange(allIngredients.Where(i => !recipeIngredients.Any(x => x.IngredientId == i.Id) && i.Name.StartsWith(Name, StringComparison.OrdinalIgnoreCase)));
+            suggestedIngredients.AddRange(allIngredients.Where(i => !_recipeIngredients.Any(x => x.IngredientId == i.Id) && i.Name.StartsWith(Name, StringComparison.OrdinalIgnoreCase)));
         }
     }
 
@@ -143,11 +143,11 @@ else
     {
         if (!string.IsNullOrWhiteSpace(Name))
         {
-            bool existingIngredient = recipeIngredients.Any(i => i.Ingredient.Name == Name);
+            bool existingIngredient = _recipeIngredients.Any(i => i.Ingredient.Name == Name);
             if (!existingIngredient)
             {
                 // Find the highest current order value in the list
-                int maxOrder = recipeIngredients.Any() ? recipeIngredients.Max(i => i.Order) : 0;
+                int maxOrder = _recipeIngredients.Any() ? _recipeIngredients.Max(i => i.Order) : 0;
 
                 // Create a new RecipeIngredient with the Order set to the next value
                 var newRecipeIngredient = new RecipeIngredient
@@ -157,9 +157,9 @@ else
                         IngredientMeasurement = new IngredientMeasurement() { Quantity = ingredientMeasurement.Quantity, Unit = ingredientMeasurement.Unit }
                     };
 
-                recipeIngredients.Add(newRecipeIngredient);
+                _recipeIngredients.Add(newRecipeIngredient);
                 Name = string.Empty;
-                IngredientsListChanged.InvokeAsync(recipeIngredients); // Notify parent component
+                IngredientsListChanged.InvokeAsync(_recipeIngredients); // Notify parent component
             }
         }
     }
@@ -167,11 +167,11 @@ else
 
     private void RemoveIngredient(string ingredientName)
     {
-        var ingredient = recipeIngredients.FirstOrDefault(i => i.Ingredient.Name == ingredientName);
+        var ingredient = _recipeIngredients.FirstOrDefault(i => i.Ingredient.Name == ingredientName);
         if (ingredient != null)
         {
-            recipeIngredients.Remove(ingredient);
-            IngredientsListChanged.InvokeAsync(recipeIngredients); // Notify parent component
+            _recipeIngredients.Remove(ingredient);
+            IngredientsListChanged.InvokeAsync(_recipeIngredients); // Notify parent component
         }
     }
 
@@ -180,7 +180,7 @@ else
         var (oldIndex, newIndex) = indices;
 
         // Convert the collection to a list to work with indices
-        var items = recipeIngredients.OrderBy(ri => ri.Order).ToList();
+        var items = _recipeIngredients.OrderBy(ri => ri.Order).ToList();
 
         var itemToMove = items[oldIndex];
         items.RemoveAt(oldIndex);
@@ -201,9 +201,9 @@ else
         }
 
         // Update the recipeIngredients collection with the reordered items
-        recipeIngredients = items;
+        _recipeIngredients = items;
 
-        IngredientsListChanged.InvokeAsync(recipeIngredients); // Notify parent component
+        IngredientsListChanged.InvokeAsync(_recipeIngredients); // Notify parent component
         StateHasChanged();
     }
 }

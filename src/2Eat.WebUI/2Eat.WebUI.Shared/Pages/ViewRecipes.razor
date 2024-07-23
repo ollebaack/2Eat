@@ -23,24 +23,35 @@ else if (recipes.Count == 0)
 }
 else
 {
-    <div class="recipe-card-list">
+    @* <div class="recipe-card-list">
         @foreach (var recipe in recipes)
         {
             <div class="recipe-card" @onclick="() => GetRecipe(recipe.Id)">
                 @recipe.Name
             </div>
         }   
-    </div>
+    </div> *@
+    @foreach (var recipe in recipes)
+    {
+        <div class="card" style="width: 18rem;">
+            <img src="@recipe.ImageUrl" class="card-img-top" alt="...">
+            <div class="card-body">
+                <h5 class="card-title">@recipe.Name</h5>
+                <p class="card-text">@recipe.Description</p>
+                <a href="#" class="btn btn-primary" @onclick="() => GetRecipe(recipe.Id)">Go somewhere</a>
+            </div>
+        </div>
+    }   
 }
 
 
 @code {
-    List<Recipe>? recipes = null;
+    List<Recipe>? recipes;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
         Client.SetEntityEndpoint("recipes");
-        recipes = await Client.GetAsync<Recipe>();
+        recipes ??= await Client.GetAsync<Recipe>();
     }
     private void GetRecipe(int id)
     {

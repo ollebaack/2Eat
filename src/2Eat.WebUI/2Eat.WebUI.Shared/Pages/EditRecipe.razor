@@ -27,7 +27,7 @@ else
 }
 <hr />
 
-<FileUppload></FileUppload>
+<FileUppload @bind-recipe="recipe" Edit=true></FileUppload>
 
 @if (recipe.ImageUrl is not null)
 {

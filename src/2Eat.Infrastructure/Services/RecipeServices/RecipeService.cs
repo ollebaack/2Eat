@@ -51,6 +51,7 @@ namespace _2Eat.Infrastructure.Services.RecipeServices
 
             recipeEntity.Name = recipe.Name;
             recipeEntity.Instructions = recipe.Instructions;
+            recipeEntity.ImageUrl = recipe.ImageUrl;
 
             // Update and add new ingredients
             foreach (var recipeIngredient in recipe.Ingredients)
