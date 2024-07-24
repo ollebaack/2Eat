@@ -19,6 +19,8 @@ namespace _2Eat.Infrastructure.Services.RecipeServices
 
             return receipies;
         }
+        public async Task<List<Recipe>> GetRandomRecipesAsync(int count) 
+            => await _context.Recipes.AsNoTracking().OrderBy(r => Guid.NewGuid()).Take(count).ToListAsync();
         public async Task<Recipe?> GetRecipeByIdAsync(int id) 
             => await _context.Recipes
                 .Include(x => x.Ingredients)
@@ -50,8 +52,10 @@ namespace _2Eat.Infrastructure.Services.RecipeServices
                 .FirstOrDefaultAsync(x => x.Id == Id) ?? throw new Exception("Recipe not found");
 
             recipeEntity.Name = recipe.Name;
+            recipeEntity.Description = recipe.Description;
             recipeEntity.Instructions = recipe.Instructions;
             recipeEntity.ImageUrl = recipe.ImageUrl;
+            recipeEntity.LastModified = DateTimeOffset.Now;
 
             // Update and add new ingredients
             foreach (var recipeIngredient in recipe.Ingredients)

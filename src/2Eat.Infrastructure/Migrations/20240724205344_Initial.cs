@@ -43,9 +43,9 @@ namespace _2Eat.Infrastructure.Migrations
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    FileName = table.Column<string>(type: "TEXT", nullable: true),
-                    StoredFileName = table.Column<string>(type: "TEXT", nullable: true),
-                    ContentType = table.Column<string>(type: "TEXT", nullable: true),
+                    FileName = table.Column<string>(type: "TEXT", nullable: false),
+                    StoredFileName = table.Column<string>(type: "TEXT", nullable: false),
+                    ContentType = table.Column<string>(type: "TEXT", nullable: false),
                     FileSize = table.Column<long>(type: "INTEGER", nullable: false),
                     IsSuccess = table.Column<bool>(type: "INTEGER", nullable: false)
                 },
@@ -111,11 +111,12 @@ namespace _2Eat.Infrastructure.Migrations
                     Name = table.Column<string>(type: "TEXT", maxLength: 64, nullable: false),
                     Description = table.Column<string>(type: "TEXT", nullable: false),
                     Instructions = table.Column<string>(type: "TEXT", nullable: false),
+                    ImageUrl = table.Column<string>(type: "TEXT", nullable: true),
                     Servings = table.Column<int>(type: "INTEGER", nullable: false),
                     Rating = table.Column<int>(type: "INTEGER", nullable: false),
                     CookTime = table.Column<int>(type: "INTEGER", nullable: false),
                     PrepTime = table.Column<int>(type: "INTEGER", nullable: false),
-                    ImageUrl = table.Column<string>(type: "TEXT", nullable: true),
+                    LastModified = table.Column<DateTimeOffset>(type: "TEXT", nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "TEXT", nullable: false),
                     CategoryId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
@@ -309,13 +310,13 @@ namespace _2Eat.Infrastructure.Migrations
 
             migrationBuilder.InsertData(
                 table: "Recipes",
-                columns: new[] { "Id", "CategoryId", "CookTime", "CreatedAt", "Description", "ImageUrl", "Instructions", "Name", "PrepTime", "Rating", "Servings" },
+                columns: new[] { "Id", "CategoryId", "CookTime", "CreatedAt", "Description", "ImageUrl", "Instructions", "LastModified", "Name", "PrepTime", "Rating", "Servings" },
                 values: new object[,]
                 {
-                    { 1, 0, 60, new DateTimeOffset(new DateTime(2024, 7, 13, 17, 51, 59, 36, DateTimeKind.Unspecified).AddTicks(3447), new TimeSpan(0, 2, 0, 0, 0)), "", null, "Mix ingredients and bake at 180°C for 15 minutes.", "Kanelbullar", 0, 0, 0 },
-                    { 2, 0, 0, new DateTimeOffset(new DateTime(2024, 7, 13, 17, 51, 59, 36, DateTimeKind.Unspecified).AddTicks(3518), new TimeSpan(0, 2, 0, 0, 0)), "", null, "Assemble the sandwich with bread, shrimps, mayonnaise, and dill.", "Räkmacka", 0, 0, 0 },
-                    { 3, 0, 0, new DateTimeOffset(new DateTime(2024, 7, 13, 17, 51, 59, 36, DateTimeKind.Unspecified).AddTicks(3521), new TimeSpan(0, 2, 0, 0, 0)), "", null, "Roast the moose meat with juniper berries and serve with potatoes and lingonberries.", "Älgstek", 0, 0, 0 },
-                    { 4, 0, 0, new DateTimeOffset(new DateTime(2024, 7, 13, 17, 51, 59, 36, DateTimeKind.Unspecified).AddTicks(3523), new TimeSpan(0, 2, 0, 0, 0)), "", null, "", "Lax med grädde", 0, 0, 0 }
+                    { 1, 1, 15, new DateTimeOffset(new DateTime(2024, 7, 24, 22, 53, 44, 272, DateTimeKind.Unspecified).AddTicks(3913), new TimeSpan(0, 2, 0, 0, 0)), "Traditionella svenska kanelbullar", null, "Blanda ingredienser och baka i 180°C i 15 minuter.", new DateTimeOffset(new DateTime(2024, 7, 24, 22, 53, 44, 272, DateTimeKind.Unspecified).AddTicks(3854), new TimeSpan(0, 2, 0, 0, 0)), "Kanelbullar", 45, 5, 4 },
+                    { 2, 2, 0, new DateTimeOffset(new DateTime(2024, 7, 24, 22, 53, 44, 272, DateTimeKind.Unspecified).AddTicks(3920), new TimeSpan(0, 2, 0, 0, 0)), "En klassisk svensk räkmacka", null, "Montera mackan med bröd, räkor, majonnäs och dill.", new DateTimeOffset(new DateTime(2024, 7, 24, 22, 53, 44, 272, DateTimeKind.Unspecified).AddTicks(3919), new TimeSpan(0, 2, 0, 0, 0)), "Räkmacka", 10, 4, 2 },
+                    { 3, 3, 120, new DateTimeOffset(new DateTime(2024, 7, 24, 22, 53, 44, 272, DateTimeKind.Unspecified).AddTicks(3924), new TimeSpan(0, 2, 0, 0, 0)), "Älgstek med enbär", null, "Rosta älgköttet med enbär och servera med potatis och lingon.", new DateTimeOffset(new DateTime(2024, 7, 24, 22, 53, 44, 272, DateTimeKind.Unspecified).AddTicks(3923), new TimeSpan(0, 2, 0, 0, 0)), "Älgstek", 30, 5, 6 },
+                    { 4, 4, 30, new DateTimeOffset(new DateTime(2024, 7, 24, 22, 53, 44, 272, DateTimeKind.Unspecified).AddTicks(3927), new TimeSpan(0, 2, 0, 0, 0)), "Lax i en krämig sås", null, "Laga laxen i en gräddig sås med dill och servera med kokt potatis.", new DateTimeOffset(new DateTime(2024, 7, 24, 22, 53, 44, 272, DateTimeKind.Unspecified).AddTicks(3926), new TimeSpan(0, 2, 0, 0, 0)), "Lax med grädde", 20, 4, 4 }
                 });
 
             migrationBuilder.InsertData(

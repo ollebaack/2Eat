@@ -9,9 +9,9 @@ namespace _2Eat.Domain.Files
     public class FileUpload
     {
         public int Id { get; set; }
-        public string? FileName { get; set; }
-        public string? StoredFileName { get; set; }
-        public string? ContentType { get; set; }
+        public string FileName { get; set; } = default!;
+        public string StoredFileName { get; set; } = default!;
+        public string ContentType { get; set; } = default!;
         public long FileSize { get; set; }
         public bool IsSuccess { get; set; }
     }

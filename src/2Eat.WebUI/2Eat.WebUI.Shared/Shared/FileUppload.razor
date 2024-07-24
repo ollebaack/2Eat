@@ -42,11 +42,16 @@
     private Recipe? _recipe; // Private backing field
 
     private long maxFileSize = 10 * 1024 * 1024; // 10MB
-    private FileUpload? uploadResult = new FileUpload();
-    private string? imgSrc = string.Empty;
+    private FileUpload uploadResult = new FileUpload();
+    private string imgSrc = string.Empty;
 
     private async Task OnInputFileChange(InputFileChangeEventArgs e)
     {
+        if (_recipe == null)
+        {
+            return;
+        }
+
         using var content = new MultipartFormDataContent();
         var fileContent = new StreamContent(e.File.OpenReadStream(maxFileSize));
         fileContent.Headers.ContentType = new MediaTypeHeaderValue(e.File.ContentType);
@@ -57,12 +62,12 @@
             fileName: e.File.Name);
 
         Client.SetEntityEndpoint("files");
-        uploadResult = await Client.CreateAsync<FileUpload, MultipartFormDataContent>(content);
+        uploadResult = await Client.CreateAsync<FileUpload, MultipartFormDataContent>(content) ?? throw new Exception($"{nameof(uploadResult)} was null.");
 
         _recipe.ImageUrl = await StreamFileAsync(uploadResult.StoredFileName, uploadResult.FileName);
         Client.SetEntityEndpoint("recipes");
-        _recipe = await Client.UpdateAsync<Recipe, Recipe>(_recipe.Id, _recipe);
-        recipeChanged.InvokeAsync(_recipe); // Notify parent component
+        _recipe = await Client.UpdateAsync<Recipe, Recipe>(_recipe.Id, _recipe) ?? throw new Exception($"{nameof(_recipe)} was null.");
+        await recipeChanged.InvokeAsync(_recipe); // Notify parent component
         StateHasChanged();
     }
 

@@ -113,10 +113,10 @@ namespace _2Eat.Infrastructure
 
             // Seed Recipes
             modelBuilder.Entity<Recipe>().HasData(
-                new Recipe { Id = 1, Name = "Kanelbullar", CookTime = 60, Instructions = "Mix ingredients and bake at 180°C for 15 minutes." },
-                new Recipe { Id = 2, Name = "Räkmacka", Instructions = "Assemble the sandwich with bread, shrimps, mayonnaise, and dill." },
-                new Recipe { Id = 3, Name = "Älgstek", Instructions = "Roast the moose meat with juniper berries and serve with potatoes and lingonberries." },
-                new Recipe { Id = 4, Name = "Lax med grädde", Instructions = "" }
+                new Recipe { Id = 1, Name = "Kanelbullar", Description = "Traditionella svenska kanelbullar", CategoryId = 1, Instructions = "Blanda ingredienser och baka i 180°C i 15 minuter.", Servings = 4, Rating = 5, CookTime = 15, PrepTime = 45, LastModified = new DateTimeOffset(2021, 10, 10, 10, 30, 0, TimeSpan.Zero) },
+                new Recipe { Id = 2, Name = "Räkmacka", Description = "En klassisk svensk räkmacka", CategoryId = 2, Instructions = "Montera mackan med bröd, räkor, majonnäs och dill.", Servings = 2, Rating = 4, CookTime = 0, PrepTime = 10, LastModified = new DateTimeOffset(2021, 10, 10, 12, 0, 0, TimeSpan.Zero) },
+                new Recipe { Id = 3, Name = "Älgstek", Description = "Älgstek med enbär", CategoryId = 3, Instructions = "Rosta älgköttet med enbär och servera med potatis och lingon.", Servings = 6, Rating = 5, CookTime = 120, PrepTime = 30, LastModified = new DateTimeOffset(2023, 10, 10, 15, 45, 0, TimeSpan.Zero) },
+                new Recipe { Id = 4, Name = "Lax med grädde", Description = "Lax i en krämig sås", CategoryId = 4, Instructions = "Laga laxen i en gräddig sås med dill och servera med kokt potatis.", Servings = 4, Rating = 4, CookTime = 30, PrepTime = 20, LastModified = new DateTimeOffset(2024, 10, 10, 9, 15, 0, TimeSpan.Zero) }
             );
 
             modelBuilder.Entity<IngredientMeasurement>().HasData(

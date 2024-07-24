@@ -10,6 +10,8 @@ namespace _2Eat.Web.API
         {
             endpoints.MapGet("/api/recipes", GetRecipes);
 
+            endpoints.MapGet("/api/recipes/random/{count}", GetRandomRecipes);
+
             endpoints.MapGet("/api/recipes/{id}", GetRecipeById);
 
             endpoints.MapPost("/api/recipes", CreateRecipe);
@@ -28,6 +30,17 @@ namespace _2Eat.Web.API
             }
 
             return TypedResults.Ok(recipes);
+        }
+
+        public static async Task<Results<Ok<List<Recipe>>, NotFound>> GetRandomRecipes(int count, IRecipeService _service)
+        {
+            var randomRecipes = await _service.GetRandomRecipesAsync(count);
+            if (randomRecipes == null)
+            {
+                return TypedResults.NotFound();
+            }
+
+            return TypedResults.Ok(randomRecipes);
         }
 
         public static async Task<Results<Ok<Recipe>, NotFound>> GetRecipeById(int id, IRecipeService _service)

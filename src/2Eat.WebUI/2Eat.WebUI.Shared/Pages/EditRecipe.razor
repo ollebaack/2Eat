@@ -1,7 +1,6 @@
 ﻿@page "/recipe"
 @page "/recipe/{Id:int}/edit"
 
-@* @rendermode @(new InteractiveWebAssemblyRenderMode(false)) *@
 @attribute [StreamRendering]
 @inject IClient Client
 @inject NavigationManager NavigationManager
@@ -9,16 +8,10 @@
 @if (Id.HasValue)
 {
     <PageTitle>Recept</PageTitle>
-    @if (isEditingName)
-    {
-        <EditForm Model="recipe" OnSubmit="HandleSubmit">
-            <InputText @bind-Value="recipe.Name" class="form-control" />
-        </EditForm>
-    }
-    else
-    {
-        <h3>@recipe.Name <i class="fas fa-pencil-alt fa-xs" @onclick="() => isEditingName = true"></i></h3>
-    }
+    
+    <EditForm Model="recipe" OnSubmit="HandleSubmit">
+        <InputText @bind-Value="recipe.Name" class="form-control" />
+    </EditForm>
 }
 else
 {
@@ -29,35 +22,35 @@ else
 
 <FileUppload @bind-recipe="recipe" Edit=true></FileUppload>
 
-@if (recipe.ImageUrl is not null)
-{
-    <p>
-        <img src="@recipe.ImageUrl" />
-    </p>
-}
+<img class="recipe-img" src="@(recipe?.ImageUrl ?? "_content/2Eat.WebUI.Shared/defaultimg/Keto-meat-pie-h.png")" />
 
 @if (!Id.HasValue)
 {
     <EditForm Model="recipe" OnSubmit="HandleSubmit">
-        <InputText @bind-Value="recipe.Name">@recipe.Name</InputText>
+        <InputText @bind-Value="recipe!.Name">@recipe.Name</InputText>
     </EditForm>
 }
 <hr />
 
-<RecipeIngredients @bind-IngredientsList="recipe.Ingredients" Edit=true />
+<RecipeIngredients @bind-IngredientsList="recipe!.Ingredients" Edit=true />
 
 <h5>Instruktioner</h5>
 <EditForm Model="recipe" OnSubmit="HandleSubmit">
     <InputTextArea @bind-Value="recipe.Instructions" rows="10" style="width: 40vw">@recipe.Instructions</InputTextArea>
     <br />
-    <button type="submit" class="btn btn-primary">Spara</button>
+    <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+        @if (Id.HasValue)
+        {
+            <button class="btn btn-primary me-md-2" onclick="() => HandleBack()">Backa</button>   
+        }
+        <button type="submit" class="btn btn-success">Spara</button>   
+    </div>
 </EditForm>
 
 @code {
     [Parameter]
     public int? Id { get; set; }
     private Recipe recipe = new Recipe();
-    private bool isEditingName = false;
 
 
     protected override async Task OnInitializedAsync()
@@ -75,7 +68,6 @@ else
         {
             Client.SetEntityEndpoint("recipes");
             recipe = await Client.UpdateAsync<Recipe, Recipe>(Id.Value, recipe);
-            isEditingName = false;
         }
         else
         {
@@ -83,6 +75,11 @@ else
             recipe = await Client.CreateAsync<Recipe, Recipe>(recipe);
         }
 
+        NavigationManager.NavigateTo($"/recipe/{recipe.Id}");
+    }
+
+    protected void HandleBack()
+    {
         NavigationManager.NavigateTo($"/recipe/{recipe.Id}");
     }
 }

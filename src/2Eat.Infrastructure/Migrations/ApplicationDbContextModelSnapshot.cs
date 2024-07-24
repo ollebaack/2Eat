@@ -94,9 +94,11 @@ namespace _2Eat.Infrastructure.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("ContentType")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("FileName")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<long>("FileSize")
@@ -106,6 +108,7 @@ namespace _2Eat.Infrastructure.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("StoredFileName")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -402,6 +405,9 @@ namespace _2Eat.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<DateTimeOffset>("LastModified")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(64)
@@ -429,54 +435,58 @@ namespace _2Eat.Infrastructure.Migrations
                         new
                         {
                             Id = 1,
-                            CategoryId = 0,
-                            CookTime = 60,
-                            CreatedAt = new DateTimeOffset(new DateTime(2024, 7, 13, 17, 51, 59, 36, DateTimeKind.Unspecified).AddTicks(3447), new TimeSpan(0, 2, 0, 0, 0)),
-                            Description = "",
-                            Instructions = "Mix ingredients and bake at 180°C for 15 minutes.",
+                            CategoryId = 1,
+                            CookTime = 15,
+                            CreatedAt = new DateTimeOffset(new DateTime(2024, 7, 24, 22, 53, 44, 272, DateTimeKind.Unspecified).AddTicks(3913), new TimeSpan(0, 2, 0, 0, 0)),
+                            Description = "Traditionella svenska kanelbullar",
+                            Instructions = "Blanda ingredienser och baka i 180°C i 15 minuter.",
+                            LastModified = new DateTimeOffset(new DateTime(2024, 7, 24, 22, 53, 44, 272, DateTimeKind.Unspecified).AddTicks(3854), new TimeSpan(0, 2, 0, 0, 0)),
                             Name = "Kanelbullar",
-                            PrepTime = 0,
-                            Rating = 0,
-                            Servings = 0
+                            PrepTime = 45,
+                            Rating = 5,
+                            Servings = 4
                         },
                         new
                         {
                             Id = 2,
-                            CategoryId = 0,
+                            CategoryId = 2,
                             CookTime = 0,
-                            CreatedAt = new DateTimeOffset(new DateTime(2024, 7, 13, 17, 51, 59, 36, DateTimeKind.Unspecified).AddTicks(3518), new TimeSpan(0, 2, 0, 0, 0)),
-                            Description = "",
-                            Instructions = "Assemble the sandwich with bread, shrimps, mayonnaise, and dill.",
+                            CreatedAt = new DateTimeOffset(new DateTime(2024, 7, 24, 22, 53, 44, 272, DateTimeKind.Unspecified).AddTicks(3920), new TimeSpan(0, 2, 0, 0, 0)),
+                            Description = "En klassisk svensk räkmacka",
+                            Instructions = "Montera mackan med bröd, räkor, majonnäs och dill.",
+                            LastModified = new DateTimeOffset(new DateTime(2024, 7, 24, 22, 53, 44, 272, DateTimeKind.Unspecified).AddTicks(3919), new TimeSpan(0, 2, 0, 0, 0)),
                             Name = "Räkmacka",
-                            PrepTime = 0,
-                            Rating = 0,
-                            Servings = 0
+                            PrepTime = 10,
+                            Rating = 4,
+                            Servings = 2
                         },
                         new
                         {
                             Id = 3,
-                            CategoryId = 0,
-                            CookTime = 0,
-                            CreatedAt = new DateTimeOffset(new DateTime(2024, 7, 13, 17, 51, 59, 36, DateTimeKind.Unspecified).AddTicks(3521), new TimeSpan(0, 2, 0, 0, 0)),
-                            Description = "",
-                            Instructions = "Roast the moose meat with juniper berries and serve with potatoes and lingonberries.",
+                            CategoryId = 3,
+                            CookTime = 120,
+                            CreatedAt = new DateTimeOffset(new DateTime(2024, 7, 24, 22, 53, 44, 272, DateTimeKind.Unspecified).AddTicks(3924), new TimeSpan(0, 2, 0, 0, 0)),
+                            Description = "Älgstek med enbär",
+                            Instructions = "Rosta älgköttet med enbär och servera med potatis och lingon.",
+                            LastModified = new DateTimeOffset(new DateTime(2024, 7, 24, 22, 53, 44, 272, DateTimeKind.Unspecified).AddTicks(3923), new TimeSpan(0, 2, 0, 0, 0)),
                             Name = "Älgstek",
-                            PrepTime = 0,
-                            Rating = 0,
-                            Servings = 0
+                            PrepTime = 30,
+                            Rating = 5,
+                            Servings = 6
                         },
                         new
                         {
                             Id = 4,
-                            CategoryId = 0,
-                            CookTime = 0,
-                            CreatedAt = new DateTimeOffset(new DateTime(2024, 7, 13, 17, 51, 59, 36, DateTimeKind.Unspecified).AddTicks(3523), new TimeSpan(0, 2, 0, 0, 0)),
-                            Description = "",
-                            Instructions = "",
+                            CategoryId = 4,
+                            CookTime = 30,
+                            CreatedAt = new DateTimeOffset(new DateTime(2024, 7, 24, 22, 53, 44, 272, DateTimeKind.Unspecified).AddTicks(3927), new TimeSpan(0, 2, 0, 0, 0)),
+                            Description = "Lax i en krämig sås",
+                            Instructions = "Laga laxen i en gräddig sås med dill och servera med kokt potatis.",
+                            LastModified = new DateTimeOffset(new DateTime(2024, 7, 24, 22, 53, 44, 272, DateTimeKind.Unspecified).AddTicks(3926), new TimeSpan(0, 2, 0, 0, 0)),
                             Name = "Lax med grädde",
-                            PrepTime = 0,
-                            Rating = 0,
-                            Servings = 0
+                            PrepTime = 20,
+                            Rating = 4,
+                            Servings = 4
                         });
                 });
 

@@ -29,7 +29,7 @@ namespace _2Eat.Application.Services.ClientServices
 
         public async Task<List<TResult>> GetAsync<TResult>()
         {
-            CheckIfEndpointSet();
+            await CheckIfEndpointSetAsync();
 
             var response = await _httpClient.GetAsync(BaseEndpoint);
             if (response.IsSuccessStatusCode)
@@ -41,16 +41,30 @@ namespace _2Eat.Application.Services.ClientServices
             throw new InvalidOperationException($"Failed to fetch entities. Reason: {response.ReasonPhrase}");
         }
 
+        public async Task<List<TResult>> GetRandomAsync<TResult>(int count)
+        {
+            await CheckIfEndpointSetAsync();
+
+            var response = await _httpClient.GetAsync($"{BaseEndpoint}/random/{count}");
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadFromJsonAsync<List<TResult>>(_jsonSerializerOptions)
+                    ?? throw new InvalidOperationException($"Something went wrong went returning {typeof(List<TResult>)}");
+            }
+
+            throw new InvalidOperationException($"Failed to fetch entities. Reason: {response.ReasonPhrase}");
+        }
+
         public async Task<TResult> GetByIdAsync<TResult>(int id)
         {
-            CheckIfEndpointSet();
+            await CheckIfEndpointSetAsync();
             return await _httpClient.GetFromJsonAsync<TResult>($"{BaseEndpoint}/{id}", _jsonSerializerOptions)
                 ?? throw new InvalidOperationException($"Something went wrong went returning {typeof(TResult)}");
         }
 
         public async Task<TResult> GetByNameAsync<TResult>(string name)
         {
-            CheckIfEndpointSet();
+            await CheckIfEndpointSetAsync();
             var response = await _httpClient.GetAsync($"{BaseEndpoint}/{name}");
             if (response.IsSuccessStatusCode)
             {
@@ -67,7 +81,7 @@ namespace _2Eat.Application.Services.ClientServices
 
         public async Task<TResult> CreateAsync<TResult, TEntity>(TEntity entity)
         {
-            CheckIfEndpointSet();
+            await CheckIfEndpointSetAsync();
             HttpResponseMessage response;
 
             if (entity is HttpContent content)
@@ -97,7 +111,7 @@ namespace _2Eat.Application.Services.ClientServices
 
         public async Task<TResult> UpdateAsync<TResult, TEntity>(int id, TEntity entity)
         {
-            CheckIfEndpointSet();
+            await CheckIfEndpointSetAsync();
 
             // Implement the PUT request to update an existing entity
             var response = await _httpClient.PutAsJsonAsync($"{BaseEndpoint}/{id}", entity, _jsonSerializerOptions);
@@ -112,7 +126,7 @@ namespace _2Eat.Application.Services.ClientServices
 
         public async Task<TResult> DeleteAsync<TResult>(int id)
         {
-            CheckIfEndpointSet();
+            await CheckIfEndpointSetAsync();
 
             // Implement the DELETE request to delete a entity
             var response = await _httpClient.DeleteAsync($"{BaseEndpoint}/{id}");
@@ -125,8 +139,9 @@ namespace _2Eat.Application.Services.ClientServices
             throw new InvalidOperationException($"Failed to delete entity. Reason: {response.ReasonPhrase}");
         }
 
-        private void CheckIfEndpointSet()
+        private async Task CheckIfEndpointSetAsync()
         {
+            await Task.Delay(3000);
             if (string.IsNullOrEmpty(BaseEndpoint))
             {
                 throw new InvalidOperationException("Entity endpoint is not set. Please set the entity endpoint before making a request.");

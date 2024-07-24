@@ -10,6 +10,7 @@ namespace _2Eat.Infrastructure.Services.RecipeServices
     public interface IRecipeService
     {
         Task<List<Recipe>> GetRecipesAsync();
+        Task<List<Recipe>> GetRandomRecipesAsync(int count);
         Task<Recipe?> GetRecipeByIdAsync(int id);
         Task<Recipe> AddRecipeAsync(Recipe recipe);
         Task<Recipe> UpdateRecipeAsync(int Id, Recipe recipe);

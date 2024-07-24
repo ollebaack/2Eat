@@ -1,6 +1,5 @@
 ﻿@page "/recipes"
 @attribute [StreamRendering]
-@* @rendermode @(new InteractiveWebAssemblyRenderMode(false)) *@
 @inject IClient Client
 @inject NavigationManager NavigationManager
 
@@ -15,7 +14,31 @@
 
 @if (recipes == null)
 {
-    <span>Loading...</span>
+    <div class="row row-cols-1 row-cols-md-2 g-4">
+        @for (int i = 0; i < 4; i++)
+        {
+            <div class="col">
+                <div class="card h-100" aria-hidden="true">
+                    <img src="_content/2Eat.WebUI.Shared/defaultimg/Keto-meat-pie-h.png" class="card-img-top" alt="..."/>
+                    <div class="card-body">
+                        <h5 class="card-title placeholder-glow">
+                            <span class="placeholder col-6"></span>
+                        </h5>
+                        <p class="card-text placeholder-glow">
+                            <span class="placeholder col-7"></span>
+                            <span class="placeholder col-4"></span>
+                            <span class="placeholder col-4"></span>
+                            <span class="placeholder col-6"></span>
+                            <span class="placeholder col-8"></span>
+                        </p>
+                    </div>
+                    <div class="card-footer placeholder-glow">
+                        <span class="placeholder col-8"></span>
+                    </div>
+                </div>
+            </div>
+        }   
+    </div>
 }
 else if (recipes.Count == 0)
 {
@@ -23,25 +46,24 @@ else if (recipes.Count == 0)
 }
 else
 {
-    @* <div class="recipe-card-list">
+    <div class="row row-cols-1 row-cols-md-2 g-4">
         @foreach (var recipe in recipes)
         {
-            <div class="recipe-card" @onclick="() => GetRecipe(recipe.Id)">
-                @recipe.Name
+            @* <a href="#" class="btn btn-primary" @onclick="() => GetRecipe(recipe.Id)">Go to recipe</a> *@
+            <div class="col" @onclick="() => GetRecipe(recipe.Id)">
+                <div class="card h-100">
+                    <img src="@(recipe?.ImageUrl ?? "_content/2Eat.WebUI.Shared/defaultimg/Keto-meat-pie-h.png")" class="card-img-top" alt="..."/>
+                    <div class="card-body">
+                        <h5 class="card-title">@recipe!.Name</h5>
+                        <p class="card-text">@recipe!.Description</p>
+                    </div>
+                    <div class="card-footer">
+                        <small class="text-body-secondary">@recipe.GetLastModifiedTimeAgo()</small>
+                    </div>
+                </div>
             </div>
         }   
-    </div> *@
-    @foreach (var recipe in recipes)
-    {
-        <div class="card" style="width: 18rem;">
-            <img src="@recipe.ImageUrl" class="card-img-top" alt="...">
-            <div class="card-body">
-                <h5 class="card-title">@recipe.Name</h5>
-                <p class="card-text">@recipe.Description</p>
-                <a href="#" class="btn btn-primary" @onclick="() => GetRecipe(recipe.Id)">Go somewhere</a>
-            </div>
-        </div>
-    }   
+    </div>
 }
 
 

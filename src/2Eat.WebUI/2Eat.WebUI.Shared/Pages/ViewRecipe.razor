@@ -1,29 +1,36 @@
 ﻿@page "/recipe/{Id:int}"
 
-@* @rendermode @(new InteractiveWebAssemblyRenderMode(false)) *@
 @attribute [StreamRendering]
 @inject IClient Client
 @inject NavigationManager NavigationManager
 
+@if (recipe == null)
+{
+    <PageTitle>Recept @Id</PageTitle>
+    <span>loading...</span>
+}
+else
+{
+    <PageTitle>@recipe.Name</PageTitle>
 
-<PageTitle>@recipe.Name</PageTitle>
+    <h3>@recipe.Name</h3> <i class="fas fa-pencil-alt fa-xs" @onclick="EditRecipe"></i>
 
-<h3>@recipe.Name</h3> <i class="fas fa-pencil-alt fa-xs" @onclick="EditRecipe"></i>
+    <img class="recipe-img" src="@(recipe?.ImageUrl ?? "_content/2Eat.WebUI.Shared/defaultimg/Keto-meat-pie-h.png")" />
+    
+    <hr />
 
-<hr />
+    <RecipeIngredients @bind-IngredientsList="recipe!.Ingredients" />
 
-<FileUppload @bind-recipe="recipe"></FileUppload>
+    <h5>Instruktioner</h5>
 
-<RecipeIngredients @bind-IngredientsList="recipe.Ingredients" />
+    <p>@recipe.Instructions</p>
 
-<h5>Instruktioner</h5>
-
-<p>@recipe.Instructions</p>
+}
 
 @code {
     [Parameter]
     public int Id { get; set; }
-    private Recipe recipe = new Recipe();
+    private Recipe? recipe;
 
     protected override async Task OnInitializedAsync()
     {
