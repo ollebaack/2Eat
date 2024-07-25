@@ -5,38 +5,37 @@
 @inject IClient Client
 @inject NavigationManager NavigationManager
 
-@if (Id.HasValue)
-{
-    <PageTitle>Recept</PageTitle>
-    
-    <EditForm Model="recipe" OnSubmit="HandleSubmit">
+<EditForm FormName="editRecipe" Context="RecipeForm" Model="recipe" OnSubmit="HandleSubmit">
+    @if (Id.HasValue)
+    {
+        <PageTitle>Recept</PageTitle>
+        
         <InputText @bind-Value="recipe.Name" class="form-control" />
-    </EditForm>
-}
-else
-{
-    <PageTitle>Skapa Recept</PageTitle>
-    <h3>Skapa Recept</h3>
-}
-<hr />
-
-<FileUppload @bind-recipe="recipe" Edit=true></FileUppload>
-
-<img class="recipe-img" src="@(recipe?.ImageUrl ?? "_content/2Eat.WebUI.Shared/defaultimg/Keto-meat-pie-h.png")" />
-
-@if (!Id.HasValue)
-{
-    <EditForm Model="recipe" OnSubmit="HandleSubmit">
+    }
+    else
+    {
+        <PageTitle>Skapa Recept</PageTitle>
         <InputText @bind-Value="recipe!.Name">@recipe.Name</InputText>
-    </EditForm>
-}
-<hr />
+    }
+    <hr />
 
-<RecipeIngredients @bind-IngredientsList="recipe!.Ingredients" Edit=true />
+    <img class="recipe-img" src="@(recipe?.ImageUrl ?? "_content/2Eat.WebUI.Shared/defaultimg/Keto-meat-pie-h.png")" />
+    <br />
+    <br />
+    <FileUppload @bind-recipe="recipe" Edit=true></FileUppload>
 
-<h5>Instruktioner</h5>
-<EditForm Model="recipe" OnSubmit="HandleSubmit">
-    <InputTextArea @bind-Value="recipe.Instructions" rows="10" style="width: 40vw">@recipe.Instructions</InputTextArea>
+    <hr />
+
+    <h5>Beskrivning</h5>
+
+    <p>@recipe!.Description</p>
+
+    <RecipeIngredients @bind-IngredientsList="recipe!.Ingredients" Edit=true />
+
+    <h5>Instruktioner</h5>
+    <InputTextArea @bind-Value="recipe.Instructions" rows="10" style="width: 40vw">@recipe.Instructions.AsMarkup()</InputTextArea>
+
+
     <br />
     <div class="d-grid gap-2 d-md-flex justify-content-md-start">
         @if (Id.HasValue)

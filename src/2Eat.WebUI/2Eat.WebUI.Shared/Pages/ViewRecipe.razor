@@ -19,11 +19,15 @@ else
     
     <hr />
 
+    <h5>Beskrivning</h5>
+
+    <p>@recipe!.Description</p>
+
     <RecipeIngredients @bind-IngredientsList="recipe!.Ingredients" />
 
     <h5>Instruktioner</h5>
 
-    <p>@recipe.Instructions</p>
+    <p>@recipe.Instructions.AsMarkup()</p>
 
 }
 

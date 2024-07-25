@@ -1,4 +1,5 @@
 ﻿using _2Eat.Domain;
+using _2Eat.Application.Extensions.MarkupExtension;
 using Microsoft.EntityFrameworkCore;
 
 namespace _2Eat.Infrastructure.Services.RecipeServices
@@ -53,7 +54,7 @@ namespace _2Eat.Infrastructure.Services.RecipeServices
 
             recipeEntity.Name = recipe.Name;
             recipeEntity.Description = recipe.Description;
-            recipeEntity.Instructions = recipe.Instructions;
+            recipeEntity.Instructions = recipe.Instructions.AsHtml();
             recipeEntity.ImageUrl = recipe.ImageUrl;
             recipeEntity.LastModified = DateTimeOffset.Now;
 

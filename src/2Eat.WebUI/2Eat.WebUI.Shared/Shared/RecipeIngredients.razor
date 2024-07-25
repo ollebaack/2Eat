@@ -45,18 +45,19 @@ else
             </div>
         }
     </div>
-    @if (!string.IsNullOrEmpty(Name))
-    {
-        <InputNumber class="styled-input" @bind-Value="ingredientMeasurement.Quantity"></InputNumber>
-        <InputSelect class="styled-input" @bind-Value="ingredientMeasurement.Unit">
-            @foreach (var unit in Enum.GetValues<UnitOfMeasurement>())
-            {
-                <option value="@unit">@unit</option>
-            }
-        </InputSelect>
-    }
+    <EditForm FormName="editRecipeIngredient" Context="RecipeIngredientForm" Model="_recipeIngredients">
+        @if (!string.IsNullOrEmpty(Name))
+        {
+            <InputNumber class="styled-input" @bind-Value="ingredientMeasurement.Quantity"></InputNumber>
+            <InputSelect class="styled-input" @bind-Value="ingredientMeasurement.Unit">
+                @foreach (var unit in Enum.GetValues<UnitOfMeasurement>())
+                {
+                    <option value="@unit">@unit</option>
+                }
+            </InputSelect>
+        }
 
-    <InputText class="styled-input" @bind-Value="Name" @oninput="OnInputChanged"></InputText>
+        <InputText class="styled-input" @bind-Value="Name" @oninput="OnInputChanged"></InputText>
     @if (suggestedIngredients.Any())
     {
         @foreach (var ingredient in suggestedIngredients)
@@ -66,11 +67,10 @@ else
             </button>
         }
     }
-}
-@if (Edit)
-{
+
     <br />
-    <button @onclick="AddIngredient" class="btn btn-primary">+</button>
+    <button type="submit" class="btn btn-primary" @onclick="AddIngredient">+</button>
+    </EditForm>
 }
 <hr />
 
