@@ -3,12 +3,15 @@ using _2Eat.WebUI.Web.Services;
 using _2Eat.Application;
 using _2Eat.Infrastructure;
 using _2Eat.Application.Services;
+using Radzen;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+builder.Services.AddRadzenComponents();
 
 builder.Services.AddApplicationExtensions();
 builder.Services.AddInfrastructureExtensions(builder.Configuration);

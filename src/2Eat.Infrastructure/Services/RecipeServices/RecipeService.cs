@@ -54,7 +54,7 @@ namespace _2Eat.Infrastructure.Services.RecipeServices
 
             recipeEntity.Name = recipe.Name;
             recipeEntity.Description = recipe.Description;
-            recipeEntity.Instructions = recipe.Instructions.AsHtml();
+            recipeEntity.Instructions = recipe.Instructions;
             recipeEntity.ImageUrl = recipe.ImageUrl;
             recipeEntity.LastModified = DateTimeOffset.Now;
 

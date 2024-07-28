@@ -13,8 +13,11 @@ else
 {
     <PageTitle>@recipe.Name</PageTitle>
 
-    <h3>@recipe.Name</h3> <i class="fas fa-pencil-alt fa-xs" @onclick="EditRecipe"></i>
-
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Start" Wrap="FlexWrap.Wrap">
+        <h3>@recipe.Name</h3> 
+        <RadzenButton ButtonType="ButtonType.Button" Text="Ändra" Click="@EditRecipe" />
+    </RadzenStack>
+    
     <img class="recipe-img" src="@(recipe?.ImageUrl ?? "_content/2Eat.WebUI.Shared/defaultimg/Keto-meat-pie-h.png")" />
     
     <hr />
@@ -27,7 +30,7 @@ else
 
     <h5>Instruktioner</h5>
 
-    <p>@recipe.Instructions.AsMarkup()</p>
+    <p>@recipe.Instructions</p>
 
 }
 

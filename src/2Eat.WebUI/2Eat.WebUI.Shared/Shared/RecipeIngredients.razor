@@ -16,21 +16,6 @@
 }
 else
 {
-    @* <div class="ingredient-list">
-        <SortableList Id="dragHandles" Handle=".drag-handle" Items="recipeIngredients.ToList()" OnUpdate="@SortList" Context="recipeIngredient">
-            <SortableItemTemplate>
-                <div class="ingredient-item">
-                    <div class="has-cursor-grab" style="padding-right: 5px">
-                        <div class="drag-handle mr-4">
-                            <i class="is-size-4 fas fa-grip-vertical"></i>
-                        </div>
-                    </div>
-                    <div class="noselect">@recipeIngredient.ToString()</div>                        
-                </div>
-            </SortableItemTemplate>
-        </SortableList>
-    </div> *@
-
     <div class="ingredient-list">
         @foreach (var recipeIngredient in _recipeIngredients.ToList())
         {
@@ -40,58 +25,44 @@ else
                         <i class="is-size-4 fas fa-grip-vertical"></i>
                     </div>
                 </div>
-                @* <i class="fa-solid fa-circle-minus fa-fade remove-btn" @onclick="() => RemoveIngredient(recipeIngredient.Ingredient.Name)"></i>  *@
                 <div class="noselect">@recipeIngredient.ToString()</div>                        
             </div>
         }
     </div>
-    <EditForm FormName="editRecipeIngredient" Context="RecipeIngredientForm" Model="_recipeIngredients">
-        @if (!string.IsNullOrEmpty(Name))
-        {
-            <InputNumber class="styled-input" @bind-Value="ingredientMeasurement.Quantity"></InputNumber>
-            <InputSelect class="styled-input" @bind-Value="ingredientMeasurement.Unit">
-                @foreach (var unit in Enum.GetValues<UnitOfMeasurement>())
-                {
-                    <option value="@unit">@unit</option>
-                }
-            </InputSelect>
-        }
 
-        <InputText class="styled-input" @bind-Value="Name" @oninput="OnInputChanged"></InputText>
-    @if (suggestedIngredients.Any())
-    {
-        @foreach (var ingredient in suggestedIngredients)
-        {
-            <button @onclick="() => SelectIngredient(ingredient)" class="suggestion-button">
-                @ingredient.Name
-            </button>
-        }
-    }
-
-    <br />
-    <button type="submit" class="btn btn-primary" @onclick="AddIngredient">+</button>
-    </EditForm>
+    <RadzenTemplateForm TItem="RecipeIngredient" Data=@recipeIngredient Submit=@OnSubmit>
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Normal" JustifyContent="JustifyContent.Left" Wrap="FlexWrap.Wrap" Gap="1rem" class="rz-p-sm-12">
+            <RadzenFormField Text="Ingrediens" Variant="@variant">
+                <ChildContent>
+                    <RadzenAutoComplete @bind-Value=@Name Data=@ingredientNames LoadData=@LoadData/>
+                </ChildContent>
+            </RadzenFormField>
+            <RadzenFormField Text="Mängd" Variant="@variant">
+                <ChildContent>
+                    <RadzenNumeric @bind-Value="ingredientMeasurement.Quantity" />
+                </ChildContent>
+            </RadzenFormField>
+            <RadzenFormField Text="Enhet" Variant="@variant">
+                <ChildContent>
+                    <RadzenDropDown @bind-Value=@ingredientMeasurement.Unit Data=@units />
+                </ChildContent>
+            </RadzenFormField>
+            <RadzenButton ButtonType="ButtonType.Submit" Text="Submit" ></RadzenButton>
+        </RadzenStack>
+    </RadzenTemplateForm>
 }
 <hr />
 
 @code {
-    private ICollection<RecipeIngredient> _recipeIngredients = new List<RecipeIngredient>();
-    private string? Name = string.Empty;
-    private IngredientMeasurement ingredientMeasurement = new IngredientMeasurement();
-
     [Parameter]
     public bool Edit { get; set;  } = false;
+
     [Parameter]
     public ICollection<RecipeIngredient> IngredientsList
     {
         get => _recipeIngredients;
         set
         {
-            // if (recipeIngredients != value)
-            // {
-            //     recipeIngredients = value;
-            //     IngredientsListChanged.InvokeAsync(value);
-            // }
             var sortedValue = value.OrderBy(ri => ri.Order).ToList();
             if (!_recipeIngredients.SequenceEqual(sortedValue))
             {
@@ -104,42 +75,28 @@ else
     [Parameter]
     public EventCallback<ICollection<RecipeIngredient>> IngredientsListChanged { get; set; }
 
-    private List<Ingredient> suggestedIngredients = new List<Ingredient>();
-    private List<Ingredient>? allIngredients = null;
+    private Variant variant = Variant.Text;
+    private ICollection<RecipeIngredient> _recipeIngredients = new List<RecipeIngredient>();
+    private string? Name = string.Empty;
+    private IngredientMeasurement ingredientMeasurement = new IngredientMeasurement();
+    private UnitOfMeasurement[] units = Enum.GetValues<UnitOfMeasurement>();
+    private RecipeIngredient recipeIngredient = new RecipeIngredient() { Ingredient = new Ingredient() };
 
-    // protected override void OnInitialized()
-    // {
-    //     recipeIngredients = IngredientsList.OrderBy(x => x.Order).ToList() ?? new List<RecipeIngredient>();
-    // }
-
-    private async Task OnInputChanged(ChangeEventArgs e)
+    private List<Ingredient>? allIngredients { get; set; }
+    private IEnumerable<string>? ingredientNames { get; set; }
+    private async Task LoadData(LoadDataArgs args)
     {
-        Name = e.Value?.ToString();
-        await UpdateSuggestionsAsync();
-    }
-
-    private async Task UpdateSuggestionsAsync()
-    {
-        if (allIngredients == null || allIngredients.Count < 1)
+        if (allIngredients == null)
         {
             Client.SetEntityEndpoint("ingredients");
             allIngredients = await Client.GetAsync<Ingredient>();
+            allIngredients.RemoveAll(i => _recipeIngredients.Any(ri => ri.Ingredient.Name == i.Name));
         }
 
-        suggestedIngredients.Clear();
-        if (!string.IsNullOrWhiteSpace(Name))
-        {
-            suggestedIngredients.AddRange(allIngredients.Where(i => !_recipeIngredients.Any(x => x.IngredientId == i.Id) && i.Name.StartsWith(Name, StringComparison.OrdinalIgnoreCase)));
-        }
+        ingredientNames = allIngredients.Select(i => i.Name).Where(x => x.StartsWith(args.Filter));
     }
 
-    private void SelectIngredient(Ingredient ingredient)
-    {
-        Name = ingredient.Name;
-        suggestedIngredients.Clear();
-    }
-
-    private void AddIngredient()
+    private void OnSubmit(RecipeIngredient recipeIngredient)
     {
         if (!string.IsNullOrWhiteSpace(Name))
         {
@@ -149,61 +106,14 @@ else
                 // Find the highest current order value in the list
                 int maxOrder = _recipeIngredients.Any() ? _recipeIngredients.Max(i => i.Order) : 0;
 
-                // Create a new RecipeIngredient with the Order set to the next value
-                var newRecipeIngredient = new RecipeIngredient
-                    {
-                        Ingredient = new Ingredient { Name = Name },
-                        Order = maxOrder + 1,
-                        IngredientMeasurement = new IngredientMeasurement() { Quantity = ingredientMeasurement.Quantity, Unit = ingredientMeasurement.Unit }
-                    };
+                recipeIngredient.Ingredient.Name = Name;
+                recipeIngredient.Order = maxOrder + 1;
+                recipeIngredient.IngredientMeasurement = new IngredientMeasurement() { Quantity = ingredientMeasurement.Quantity, Unit = ingredientMeasurement.Unit };
 
-                _recipeIngredients.Add(newRecipeIngredient);
+                _recipeIngredients.Add(recipeIngredient);
                 Name = string.Empty;
                 IngredientsListChanged.InvokeAsync(_recipeIngredients); // Notify parent component
             }
         }
-    }
-
-
-    private void RemoveIngredient(string ingredientName)
-    {
-        var ingredient = _recipeIngredients.FirstOrDefault(i => i.Ingredient.Name == ingredientName);
-        if (ingredient != null)
-        {
-            _recipeIngredients.Remove(ingredient);
-            IngredientsListChanged.InvokeAsync(_recipeIngredients); // Notify parent component
-        }
-    }
-
-    private void SortList((int oldIndex, int newIndex) indices)
-    {
-        var (oldIndex, newIndex) = indices;
-
-        // Convert the collection to a list to work with indices
-        var items = _recipeIngredients.OrderBy(ri => ri.Order).ToList();
-
-        var itemToMove = items[oldIndex];
-        items.RemoveAt(oldIndex);
-
-        if (newIndex < items.Count)
-        {
-            items.Insert(newIndex, itemToMove);
-        }
-        else
-        {
-            items.Add(itemToMove);
-        }
-
-        // Update the Order property of each item to reflect its new position
-        for (int i = 0; i < items.Count; i++)
-        {
-            items[i].Order = i;
-        }
-
-        // Update the recipeIngredients collection with the reordered items
-        _recipeIngredients = items;
-
-        IngredientsListChanged.InvokeAsync(_recipeIngredients); // Notify parent component
-        StateHasChanged();
     }
 }

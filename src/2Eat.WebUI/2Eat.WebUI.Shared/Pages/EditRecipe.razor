@@ -30,10 +30,11 @@
 
     <p>@recipe!.Description</p>
 
-    <RecipeIngredients @bind-IngredientsList="recipe!.Ingredients" Edit=true />
+    <RecipeIngredients @bind-IngredientsList="recipe.Ingredients" Edit=true />
 
     <h5>Instruktioner</h5>
-    <InputTextArea @bind-Value="recipe.Instructions" rows="10" style="width: 40vw">@recipe.Instructions.AsMarkup()</InputTextArea>
+    @* <InputTextArea @bind-Value="recipe.Instructions" rows="10" style="width: 40vw">@recipe.Instructions.AsMarkup()</InputTextArea> *@
+    <RadzenHtmlEditor @bind-Value=@recipe.Instructions style="height: 300px;" Input=@OnInput Change=@OnChange Paste=@OnPaste Execute=@OnExecute UploadUrl="upload/image" />
 
 
     <br />
@@ -54,6 +55,8 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await base.OnInitializedAsync();
+        Console.WriteLine("EditRecipe OnInitializedAsync called");
         if (Id.HasValue)
         {
             Client.SetEntityEndpoint("recipes");
@@ -80,5 +83,25 @@
     protected void HandleBack()
     {
         NavigationManager.NavigateTo($"/recipe/{recipe.Id}");
+    }
+
+    void OnPaste(HtmlEditorPasteEventArgs args)
+    {
+        @* console.Log($"Paste: {args.Html}"); *@
+    }
+
+    void OnChange(string html)
+    {
+        @* console.Log($"Change: {html}"); *@
+    }
+
+    void OnInput(string html)
+    {
+        @* console.Log($"Input: {html}"); *@
+    }
+
+    void OnExecute(HtmlEditorExecuteEventArgs args)
+    {
+        @* console.Log($"Execute: {args.CommandName}"); *@
     }
 }

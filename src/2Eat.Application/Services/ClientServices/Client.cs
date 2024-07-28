@@ -141,7 +141,7 @@ namespace _2Eat.Application.Services.ClientServices
 
         private async Task CheckIfEndpointSetAsync()
         {
-            await Task.Delay(3000);
+            await Task.Delay(1000);
             if (string.IsNullOrEmpty(BaseEndpoint))
             {
                 throw new InvalidOperationException("Entity endpoint is not set. Please set the entity endpoint before making a request.");
