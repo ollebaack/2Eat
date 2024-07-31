@@ -26,25 +26,26 @@
 
     <hr />
 
-    <h5>Beskrivning</h5>
+    <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Start" Wrap="FlexWrap.Wrap">
+        <h5>Beskrivning</h5>
 
-    <p>@recipe!.Description</p>
+        <RadzenHtmlEditor @bind-Value=@recipe!.Description style="height: 300px;width: 62vw;border-radius: 1rem;" Input=@OnInput Change=@OnChange Paste=@OnPaste Execute=@OnExecute UploadUrl="upload/image" />
 
-    <RecipeIngredients @bind-IngredientsList="recipe.Ingredients" Edit=true />
+        <RecipeIngredients @bind-IngredientsList="recipe.Ingredients" Edit=true />
 
-    <h5>Instruktioner</h5>
-    @* <InputTextArea @bind-Value="recipe.Instructions" rows="10" style="width: 40vw">@recipe.Instructions.AsMarkup()</InputTextArea> *@
-    <RadzenHtmlEditor @bind-Value=@recipe.Instructions style="height: 300px;" Input=@OnInput Change=@OnChange Paste=@OnPaste Execute=@OnExecute UploadUrl="upload/image" />
+        <h5>Instruktioner</h5>
+        @* <InputTextArea @bind-Value="recipe.Instructions" rows="10" style="width: 40vw">@recipe.Instructions.AsMarkup()</InputTextArea> *@
+        <RadzenHtmlEditor @bind-Value=@recipe.Instructions style="height: 300px;width: 62vw;border-radius: 1rem;" Input=@OnInput Change=@OnChange Paste=@OnPaste Execute=@OnExecute UploadUrl="upload/image" />
 
-
-    <br />
-    <div class="d-grid gap-2 d-md-flex justify-content-md-start">
-        @if (Id.HasValue)
-        {
-            <button class="btn btn-primary me-md-2" onclick="() => HandleBack()">Backa</button>   
-        }
-        <button type="submit" class="btn btn-success">Spara</button>   
-    </div>
+        <br />
+        <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+            @if (Id.HasValue)
+            {
+                <button class="btn btn-primary me-md-2" onclick="() => HandleBack()">Backa</button>   
+            }
+            <button type="submit" class="btn btn-success">Spara</button>   
+        </div>
+    </RadzenStack>
 </EditForm>
 
 @code {

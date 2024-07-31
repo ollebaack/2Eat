@@ -68,14 +68,14 @@ else
             <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Start" Wrap="FlexWrap.Wrap">
                 <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Start" Wrap="FlexWrap.Wrap">
                     <h5>Beskrivning</h5>
-                    <p>@recipe!.Description</p>
+                    <p>@recipe!.Description.AsMarkup()</p>
                 </RadzenStack>
 
                 <RecipeIngredients @bind-IngredientsList="recipe!.Ingredients" />
 
                 <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Start" Wrap="FlexWrap.Wrap">            
                     <h5>Instruktioner</h5>
-                    <p>@recipe.Instructions</p>
+                    <p>@recipe.Instructions.AsMarkup()</p>
                 </RadzenStack>
             </RadzenStack>
         </RadzenCard>
