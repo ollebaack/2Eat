@@ -3,6 +3,7 @@ using _2Eat.Application.Services;
 using _2Eat.WebUI.App.Services;
 using _2Eat.Application;
 using _2Eat.Infrastructure;
+using Radzen;
 
 namespace _2Eat.WebUI.App;
 
@@ -18,6 +19,8 @@ public static class MauiProgram
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
             });
 
+        builder.Services.AddRadzenComponents();
+        
         builder.Services.AddApplicationExtensions();
         builder.Services.AddInfrastructureExtensions(builder.Configuration);
 
