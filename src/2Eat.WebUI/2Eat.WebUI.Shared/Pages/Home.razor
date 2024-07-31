@@ -2,6 +2,7 @@
 @inject IFormFactor FormFactor
 @inject IClient Client
 @inject IJSRuntime JS
+@inject NavigationManager NavigationManager
 
 <PageTitle>Home</PageTitle>
 
@@ -25,7 +26,7 @@ else
             @foreach (var recipe in randomRecipes)
             {
                 <div class="carousel-item @(recipe == randomRecipes.First() ? "active" : "")">
-                    <div class="carousel-caption d-none d-md-block">
+                    <div class="carousel-caption d-none d-md-block" style="cursor: pointer;" @onclick="() => GetRecipe(recipe.Id)">
                         <h5>@recipe.Name</h5>
                         <p>@recipe.Description</p>
                     </div>
@@ -68,5 +69,10 @@ else
     private Recipe GetRandomRecipe()
     {
         return randomRecipes![new Random().Next(0, randomRecipes.Count)];
+    }
+
+    private void GetRecipe(int id)
+    {
+        NavigationManager.NavigateTo($"/recipe/{id}");
     }
 }

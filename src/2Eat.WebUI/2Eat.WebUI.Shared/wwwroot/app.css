@@ -55,6 +55,7 @@ h1:focus {
 .recipe-img {
     width: 100vh;
     height: auto;
+    object-fit: cover;
     border-radius: 1rem;
     margin-bottom: 10px;
 }

@@ -7,31 +7,80 @@
 @if (recipe == null)
 {
     <PageTitle>Recept @Id</PageTitle>
-    <span>loading...</span>
+    <RadzenCard class="rz-my-12 rz-mx-auto" Style="width: fit-content;padding: 4rem 5rem 1rem 5rem;" AlignItems>
+
+        <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Start" Wrap="FlexWrap.Wrap">
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" AlignItems="AlignItems.Start" Wrap="FlexWrap.Wrap">
+                <h5 class="card-title placeholder-glow" style="width: 25vw;">
+                    <span class="placeholder col-6"></span>
+                </h5>
+            </RadzenStack>
+            <RadzenImage class="recipe-img" Path="@(recipe?.ImageUrl ?? "_content/2Eat.WebUI.Shared/defaultimg/Keto-meat-pie-h.png")" />
+        </RadzenStack>
+        
+        <RadzenCard class="rz-my-12 rz-mx-auto" AlignItems>
+            <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Start" Wrap="FlexWrap.Wrap">
+                <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Start" Wrap="FlexWrap.Wrap">
+                    <h5>Beskrivning</h5>
+                    <p class="card-text placeholder-glow" style="width: 60vw;">
+                        <span class="placeholder col-7"></span>
+                        <span class="placeholder col-4"></span>
+                        <span class="placeholder col-4"></span>
+                        <span class="placeholder col-6"></span>
+                        <span class="placeholder col-8"></span>
+                        <span class="placeholder col-7"></span>
+                    </p>
+                </RadzenStack>
+
+                <RecipeIngredients IsBuffering=@(recipe == null ? true : false)/>
+
+                <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Start" Wrap="FlexWrap.Wrap">            
+                    <h5>Instruktioner</h5>
+                    <p class="card-text placeholder-glow" style="width: 60vw;">
+                        <span class="placeholder col-7"></span>
+                        <span class="placeholder col-4"></span>
+                        <span class="placeholder col-4"></span>
+                        <span class="placeholder col-6"></span>
+                        <span class="placeholder col-8"></span>
+                        <span class="placeholder col-7"></span>
+                    </p>
+                </RadzenStack>
+            </RadzenStack>
+        </RadzenCard>
+
+    </RadzenCard>
 }
 else
 {
     <PageTitle>@recipe.Name</PageTitle>
 
-    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Start" Wrap="FlexWrap.Wrap">
-        <h3>@recipe.Name</h3> 
-        <RadzenButton ButtonType="ButtonType.Button" Text="Ändra" Click="@EditRecipe" />
-    </RadzenStack>
-    
-    <img class="recipe-img" src="@(recipe?.ImageUrl ?? "_content/2Eat.WebUI.Shared/defaultimg/Keto-meat-pie-h.png")" />
-    
-    <hr />
+    <RadzenCard class="rz-my-12 rz-mx-auto" Style="width: fit-content;padding: 4rem 5rem 1rem 5rem;" AlignItems>
 
-    <h5>Beskrivning</h5>
+        <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Start" Wrap="FlexWrap.Wrap">
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" AlignItems="AlignItems.Start" Wrap="FlexWrap.Wrap">
+                <h3>@recipe.Name</h3> 
+                <RadzenButton ButtonType="ButtonType.Button" Text="Ändra" Click="@EditRecipe" />
+            </RadzenStack>
+            <RadzenImage class="recipe-img" Path="@(recipe?.ImageUrl ?? "_content/2Eat.WebUI.Shared/defaultimg/Keto-meat-pie-h.png")" />
+        </RadzenStack>
+        
+        <RadzenCard class="rz-my-12 rz-mx-auto" AlignItems>
+            <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Start" Wrap="FlexWrap.Wrap">
+                <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Start" Wrap="FlexWrap.Wrap">
+                    <h5>Beskrivning</h5>
+                    <p>@recipe!.Description</p>
+                </RadzenStack>
 
-    <p>@recipe!.Description</p>
+                <RecipeIngredients @bind-IngredientsList="recipe!.Ingredients" />
 
-    <RecipeIngredients @bind-IngredientsList="recipe!.Ingredients" />
+                <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Start" Wrap="FlexWrap.Wrap">            
+                    <h5>Instruktioner</h5>
+                    <p>@recipe.Instructions</p>
+                </RadzenStack>
+            </RadzenStack>
+        </RadzenCard>
 
-    <h5>Instruktioner</h5>
-
-    <p>@recipe.Instructions</p>
-
+    </RadzenCard>
 }
 
 @code {
