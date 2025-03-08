@@ -1,6 +1,7 @@
 using _2Eat.Web.API;
 using _2Eat.Application;
 using _2Eat.Infrastructure;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer()
     .ConfigureHttpJsonOptions(options =>
     {
-        options.SerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+        options.SerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
         options.SerializerOptions.PropertyNameCaseInsensitive = true;
     });
 builder.Services.AddSwaggerGen();
@@ -21,7 +22,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy(name: "AllowSpecificOrigin",
         builder =>
         {
-            builder.WithOrigins("https://localhost:5197","http://localhost:5197","https://localhost:5264","http://localhost:5264")
+            builder.AllowAnyOrigin()
                    .AllowAnyHeader()
                    .AllowAnyMethod();
         });
@@ -42,9 +43,10 @@ if (app.Environment.IsDevelopment())
 // Apply the CORS policy
 app.UseCors("AllowSpecificOrigin");
 
+app.UseHttpsRedirection();
+
 app.MapRecipeEndpoints();
 app.MapIngredientEndpoints();
 app.MapFileEndpoints();
 
-app.UseHttpsRedirection();
 app.Run();

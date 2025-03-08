@@ -16,9 +16,8 @@ namespace _2Eat.Infrastructure.Services.RecipeServices
 
         public async Task<List<Recipe>> GetRecipesAsync()
         {
-            var receipies = await _context.Recipes.ToListAsync();
-
-            return receipies;
+            var recipes = await _context.Recipes.ToListAsync();
+            return recipes;
         }
         public async Task<List<Recipe>> GetRandomRecipesAsync(int count) 
             => await _context.Recipes.AsNoTracking().OrderBy(r => Guid.NewGuid()).Take(count).ToListAsync();
