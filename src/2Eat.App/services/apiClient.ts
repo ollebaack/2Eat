@@ -1,16 +1,16 @@
 import axios from "axios";
-import { Platform } from "react-native";
 
-const hostName = Platform.OS === "web" ? "localhost" : "192.168.0.114";
+const hostName = "192.168.0.114";
+
+console.log(`Using host: ${hostName}`);
+
+const apiUrl = `https://${hostName}:7112/api`;
+
+console.log(`Using API URL: ${apiUrl}`);
 
 // Create a new instance of the axios client
 const apiClient = axios.create({
-  baseURL: `https://${hostName}:7112/api`,
-  // Disable SSL verification for development purposes
-  // Note: This is not recommended for production
-  validateStatus: function (status) {
-    return status >= 200 && status < 300; // default
-  },
+  baseURL: apiUrl,
 });
 
 apiClient.interceptors.request.use((config) => {

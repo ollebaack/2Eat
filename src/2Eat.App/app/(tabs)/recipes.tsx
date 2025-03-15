@@ -1,13 +1,8 @@
-import { StyleSheet, Image } from "react-native";
+import { StyleSheet, View } from "react-native";
 import RecipeCard from "@/features/recipe/components/recipeCard";
-import ParallaxScrollView from "@/components/ParallaxScrollView";
 
 export default function RecipesScreen() {
-  return (
-    <>
-      <RecipeCard />
-    </>
-  );
+  return <RecipeCard />;
 }
 
 const styles = StyleSheet.create({
