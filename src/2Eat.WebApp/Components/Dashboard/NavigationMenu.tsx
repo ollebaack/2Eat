@@ -4,6 +4,7 @@ function classNames(...classes: string[]) {
 
 export default function NavigationMenu({
   navigation,
+  ToggleOpen: toggleOpen,
 }: {
   navigation: {
     name: string;
@@ -11,14 +12,15 @@ export default function NavigationMenu({
     current: boolean;
     visible: boolean;
   }[];
+  ToggleOpen: () => void;
 }) {
   return (
     <div className="flex items-center">
       <div className="shrink-0">
         <img
           alt="Your Company"
-          src="https://tailwindui.com/plus-assets/img/logos/mark.svg?color=indigo&shade=500"
-          className="size-8"
+          onClick={() => toggleOpen()}
+          className="size-8 cursor-pointer"
         />
       </div>
       <div className="hidden md:block">

@@ -6,6 +6,8 @@ import Header from "./Header";
 import MobileMenu from "./MobileMenu";
 import MobileMenuButton from "./MobileMenuButton";
 import { User } from "../../Models/user";
+import SideBar from "./SideBar/SideBar";
+import { useState } from "react";
 
 const currentUser: User = {
   id: 1,
@@ -46,12 +48,16 @@ export default function Dashboard() {
     { name: "Sign out", href: "#" },
   ];
 
+  const [open, setOpen] = useState(false);
+  const toggleOpen = () => {
+    setOpen(!open);
+  };
   return (
     <div className="min-h-full">
       <Disclosure as="nav" className="bg-gray-800">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
-            <NavigationMenu navigation={navigation} />
+            <NavigationMenu ToggleOpen={toggleOpen} navigation={navigation} />
             <div className="hidden md:block">
               <div className="ml-4 flex items-center md:ml-6">
                 <ProfileDropdown
@@ -69,12 +75,17 @@ export default function Dashboard() {
           userNavigation={userNavigation}
         />
       </Disclosure>
-      <Header title={navigation.find((x) => x.current)?.name as string} />
-      <main>
-        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-          <Outlet />
+      <div className="flex">
+        <SideBar open={open} />
+        <div className="flex-1 min-w-0">
+          <Header title={navigation.find((x) => x.current)?.name as string} />
+          <main>
+            <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+              <Outlet />
+            </div>
+          </main>
         </div>
-      </main>
+      </div>
     </div>
   );
 }
