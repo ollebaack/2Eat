@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import { getFileUrl } from '@/lib/api'
 import { recipeSwatch } from '@/lib/recipeUtils'
 import { cn } from '@/lib/utils'
@@ -25,7 +26,7 @@ export function PhotoSlot({
   className,
   fill = false,
 }: PhotoSlotProps) {
-  const uid = `sw${Math.random().toString(36).slice(2, 8)}`
+  const uid = useId()
   const resolvedSwatch =
     swatch ?? (recipeId != null ? recipeSwatch(recipeId) : 'oklch(0.65 0.08 60)')
 

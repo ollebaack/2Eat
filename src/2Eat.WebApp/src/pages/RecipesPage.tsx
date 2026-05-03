@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from 'react'
+import { useState, useMemo, useEffect, useCallback, useId } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Plus, Shuffle, Clock, Users, Trash2, Bookmark, Search, X, LayoutGrid, List, Star } from 'lucide-react'
@@ -30,7 +30,7 @@ function recipeSwatch(id: number) { return SWATCHES[id % SWATCHES.length] }
 function PhotoSlot({ imageUrl, swatch, label = '', aspect = '5/4', height }: {
   imageUrl?: string; swatch?: string; label?: string; aspect?: string; height?: string
 }) {
-  const uid = `sw${Math.random().toString(36).slice(2, 8)}`
+  const uid = useId()
   const containerStyle: React.CSSProperties = {
     position: 'relative', width: '100%',
     height: height ?? 'auto',
@@ -98,8 +98,9 @@ function Pill({ children, tone = 'default', size = 'md' }: {
 }
 
 // ── Hero feature ──────────────────────────────────────────────────────────
+const currentWeek = Math.ceil((Date.now() - +new Date(new Date().getFullYear(), 0, 1)) / (7 * 86400000))
 function HeroFeature({ recipe }: { recipe: Recipe; onOpen?: (id: number) => void }) {
-  const week = Math.ceil((Date.now() - +new Date(new Date().getFullYear(), 0, 1)) / (7 * 86400000))
+  const week = currentWeek
   return (
     <div style={{
       display: 'grid', gridTemplateColumns: '1.1fr 1fr',
@@ -268,19 +269,18 @@ function CardSkeleton() {
 function ShuffleModal({ open, recipes, onClose, onPick }: {
   open: boolean; recipes: Recipe[]; onClose: () => void; onPick: (id: number) => void
 }) {
-  const [phase, setPhase] = useState<'idle' | 'rolling' | 'done'>('idle')
+  const [phase, setPhase] = useState<'rolling' | 'done'>('rolling')
   const [idx, setIdx] = useState(0)
 
   useEffect(() => {
-    if (!open || recipes.length === 0) { setPhase('idle'); return }
-    setPhase('rolling')
+    if (!open || recipes.length === 0) return
     let n = 0
     const iv = setInterval(() => {
       setIdx(Math.floor(Math.random() * recipes.length))
       n++
       if (n > 14) { clearInterval(iv); setPhase('done') }
     }, 80)
-    return () => clearInterval(iv)
+    return () => { clearInterval(iv); setPhase('rolling') }
   }, [open])
 
   if (!open || recipes.length === 0) return null

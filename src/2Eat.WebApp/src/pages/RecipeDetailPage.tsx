@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useId } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, Pencil, Trash2, Bookmark, Star, Check, Plus } from 'lucide-react'
@@ -28,6 +28,7 @@ function recipeSwatch(id: number) { return SWATCHES[id % SWATCHES.length] }
 function PhotoSlot({ imageUrl, swatch, label = '', aspect = '4/5', height }: {
   imageUrl?: string; swatch?: string; label?: string; aspect?: string; height?: string
 }) {
+  const uid = useId()
   const containerStyle: React.CSSProperties = {
     position: 'relative', width: '100%',
     height: height ?? 'auto',
@@ -37,7 +38,6 @@ function PhotoSlot({ imageUrl, swatch, label = '', aspect = '4/5', height }: {
   if (imageUrl) {
     return <div style={containerStyle}><img src={getFileUrl(imageUrl)} alt={label} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /></div>
   }
-  const uid = `sw${Math.random().toString(36).slice(2, 8)}`
   const fill = swatch ?? 'oklch(0.65 0.08 60)'
   return (
     <div style={{ ...containerStyle, background: fill }}>
@@ -203,7 +203,7 @@ export function RecipeDetailPage() {
   // Parse instructions into steps array (split on numbered lines or newlines)
   const steps = (recipe.instructions ?? '')
     .split(/\n+/)
-    .map(s => s.replace(/^\d+[\.\)]\s*/, '').trim())
+    .map(s => s.replace(/^\d+[.)]\s*/, '').trim())
     .filter(Boolean)
 
   const related = (allRecipes ?? []).filter(r => r.id !== recipe.id && r.category?.name === recipe.category?.name).slice(0, 3)
