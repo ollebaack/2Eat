@@ -15,13 +15,25 @@ namespace _2Eat.Infrastructure.Services.RecipeServices
 
         public async Task<List<Recipe>> GetRecipesAsync()
         {
-            var recipes = await _context.Recipes.ToListAsync();
-            return recipes;
+            return await _context.Recipes
+                .Include(x => x.Category)
+                .Include(x => x.Ingredients)
+                    .ThenInclude(x => x.Ingredient)
+                .Include(x => x.Ingredients)
+                    .ThenInclude(x => x.IngredientMeasurement)
+                .AsNoTracking()
+                .ToListAsync();
         }
-        public async Task<List<Recipe>> GetRandomRecipesAsync(int count) 
-            => await _context.Recipes.AsNoTracking().OrderBy(r => Guid.NewGuid()).Take(count).ToListAsync();
-        public async Task<Recipe?> GetRecipeByIdAsync(int id) 
+        public async Task<List<Recipe>> GetRandomRecipesAsync(int count)
             => await _context.Recipes
+                .Include(x => x.Category)
+                .AsNoTracking()
+                .OrderBy(r => Guid.NewGuid())
+                .Take(count)
+                .ToListAsync();
+        public async Task<Recipe?> GetRecipeByIdAsync(int id)
+            => await _context.Recipes
+                .Include(x => x.Category)
                 .Include(x => x.Ingredients)
                     .ThenInclude(x => x.Ingredient)
                 .Include(x => x.Ingredients)
