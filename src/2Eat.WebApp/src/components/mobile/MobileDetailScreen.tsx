@@ -106,7 +106,7 @@ export function MobileDetailScreen({ recipe }: { recipe: Recipe }) {
             letterSpacing: '0.12em', color: 'rgba(255,255,255,0.75)',
             textTransform: 'uppercase', marginBottom: 6,
           }}>
-            {recipe.category.name}
+            {recipe.category?.name}
           </div>
           <h1 style={{
             fontFamily: 'var(--font-serif)', fontSize: 34, lineHeight: 1.0,

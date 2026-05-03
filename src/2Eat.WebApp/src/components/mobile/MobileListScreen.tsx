@@ -60,12 +60,12 @@ export function MobileListScreen({ recipes }: MobileListScreenProps) {
   const monthNames = ['jan', 'feb', 'mars', 'apr', 'maj', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec']
   const dateStr = `${dayNames[today.getDay()]} · ${today.getDate()} ${monthNames[today.getMonth()]}`
 
-  const categoryNames = ['Alla', ...Array.from(new Set(recipes.map(r => r.category.name)))]
+  const categoryNames = ['Alla', ...Array.from(new Set(recipes.map(r => r.category?.name).filter(Boolean)))]
 
   const filtered = recipes.filter(r => {
     const matchesQ = !q || r.name.toLowerCase().includes(q.toLowerCase()) ||
       r.description?.toLowerCase().includes(q.toLowerCase())
-    const matchesCat = activeCategory === 'Alla' || r.category.name === activeCategory
+    const matchesCat = activeCategory === 'Alla' || r.category?.name === activeCategory
     return matchesQ && matchesCat
   })
 
@@ -167,7 +167,7 @@ export function MobileListScreen({ recipes }: MobileListScreenProps) {
                 letterSpacing: '0.12em', color: 'var(--ink-50)',
                 textTransform: 'uppercase', marginBottom: 6,
               }}>
-                {featured.category.name} · {featured.totalTime} min · {featured.servings} pers
+                {featured.category?.name} · {featured.totalTime} min · {featured.servings} pers
               </div>
               <h2 style={{
                 fontFamily: 'var(--font-serif)', fontSize: 26, lineHeight: 1.05,
@@ -243,7 +243,7 @@ export function MobileListScreen({ recipes }: MobileListScreenProps) {
                 fontFamily: 'var(--font-mono)', fontSize: 10,
                 letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--ink-50)',
               }}>
-                {r.totalTime} min · {r.servings} pers · {r.category.name}
+                {r.totalTime} min · {r.servings} pers · {r.category?.name}
               </div>
             </div>
             {r.rating > 0 && (

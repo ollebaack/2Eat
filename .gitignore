@@ -398,8 +398,8 @@ FodyWeavers.xsd
 *.sln.iml
 
 # Claude Code
-.claude/*
-mystifying-moser-40ddd9/
+.claude/worktree/*
+.claude/settings.local.json
 
 # User-uploaded files
 uploads/

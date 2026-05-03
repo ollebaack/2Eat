@@ -31,6 +31,7 @@ cd src/2Eat.WebApp
 npm install
 npm run dev    # http://localhost:5173 (proxies /api to backend)
 npm run build
+npm run test   # Playwright smoke tests (desktop + mobile) against http://localhost
 ```
 
 ### Docker (full stack)
