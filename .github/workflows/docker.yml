@@ -14,6 +14,9 @@ jobs:
   build-api:
     name: Build API image
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
 
     steps:
       - uses: actions/checkout@v4
@@ -48,6 +51,9 @@ jobs:
   build-webapp:
     name: Build WebApp image
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
 
     steps:
       - uses: actions/checkout@v4
