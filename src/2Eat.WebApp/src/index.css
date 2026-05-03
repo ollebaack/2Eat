@@ -26,6 +26,20 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+
+  /* 2Eat extended palette — exposed as Tailwind utilities */
+  --color-ink: var(--ink);
+  --color-ink-70: var(--ink-70);
+  --color-ink-60: var(--ink-60);
+  --color-ink-50: var(--ink-50);
+  --color-ink-40: var(--ink-40);
+  --color-ink-30: var(--ink-30);
+  --color-paper: var(--paper);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-brand: var(--2eat-accent);
+  --color-brand-deep: var(--2eat-accent-deep);
 }
 
 :root {
