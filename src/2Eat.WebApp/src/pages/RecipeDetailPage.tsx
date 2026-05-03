@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Pencil, Trash2, Bookmark, Check, Sparkles, Plus } from 'lucide-react'
+import { ArrowLeft, Pencil, Trash2, Bookmark, Star, Check, Plus } from 'lucide-react'
 import { toast } from 'sonner'
-import { getRecipeById, deleteRecipe, getRecipes } from '@/lib/api'
-import { recipeSwatch } from '@/lib/recipeUtils'
+import { getRecipeById, deleteRecipe, getRecipes, getFileUrl } from '@/lib/api'
 import type { Recipe } from '@/types'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
@@ -20,50 +20,82 @@ import {
 } from '@/components/ui/dialog'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import { MobileDetailScreen } from '@/components/mobile/MobileDetailScreen'
-import { PhotoSlot } from '@/components/PhotoSlot'
-import { StarRating } from '@/components/StarRating'
-import { Pill } from '@/components/Pill'
+
+// ── Photo placeholder ─────────────────────────────────────────────────────
+const SWATCHES = ['oklch(0.65 0.12 50)','oklch(0.6 0.1 145)','oklch(0.62 0.12 30)','oklch(0.6 0.08 210)','oklch(0.58 0.1 330)','oklch(0.65 0.1 90)']
+function recipeSwatch(id: number) { return SWATCHES[id % SWATCHES.length] }
+
+function PhotoSlot({ imageUrl, swatch, label = '', aspect = '4/5', height }: {
+  imageUrl?: string; swatch?: string; label?: string; aspect?: string; height?: string
+}) {
+  const containerStyle: React.CSSProperties = {
+    position: 'relative', width: '100%',
+    height: height ?? 'auto',
+    aspectRatio: height ? undefined : aspect,
+    overflow: 'hidden', borderRadius: 'inherit',
+  }
+  if (imageUrl) {
+    return <div style={containerStyle}><img src={getFileUrl(imageUrl)} alt={label} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /></div>
+  }
+  const uid = `sw${Math.random().toString(36).slice(2, 8)}`
+  const fill = swatch ?? 'oklch(0.65 0.08 60)'
+  return (
+    <div style={{ ...containerStyle, background: fill }}>
+      <svg width="100%" height="100%" style={{ position: 'absolute', inset: 0 }} aria-hidden>
+        <defs>
+          <pattern id={uid} width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(35)">
+            <line x1="0" y1="0" x2="0" y2="14" stroke="rgba(255,255,255,0.08)" strokeWidth="6" />
+          </pattern>
+          <radialGradient id={uid + 'r'} cx="30%" cy="25%" r="80%">
+            <stop offset="0%" stopColor="rgba(255,255,255,0.22)" />
+            <stop offset="100%" stopColor="rgba(0,0,0,0.18)" />
+          </radialGradient>
+        </defs>
+        <rect width="100%" height="100%" fill={`url(#${uid})`} />
+        <rect width="100%" height="100%" fill={`url(#${uid}r)`} />
+      </svg>
+    </div>
+  )
+}
+
+// ── Stars ─────────────────────────────────────────────────────────────────
+function Stars({ value = 0, size = 13 }: { value: number; size?: number }) {
+  return (
+    <span style={{ display: 'inline-flex', gap: 2 }}>
+      {[1,2,3,4,5].map(i => (
+        <Star key={i} size={size} strokeWidth={1.5}
+          fill={i <= value ? 'var(--2eat-accent)' : 'none'}
+          stroke={i <= value ? 'var(--2eat-accent)' : 'var(--ink-30)'} />
+      ))}
+    </span>
+  )
+}
+
+// ── Pill (Badge wrapper) ──────────────────────────────────────────────────
+function Pill({ children, tone = 'default', size = 'md' }: { children: React.ReactNode; tone?: 'default' | 'accent'; size?: 'sm' | 'md' }) {
+  const style = tone === 'accent'
+    ? { background: 'color-mix(in oklch, var(--2eat-accent) 12%, transparent)', color: 'var(--2eat-accent-deep)', borderColor: 'color-mix(in oklch, var(--2eat-accent) 35%, transparent)' }
+    : { background: 'var(--surface-2)', color: 'var(--ink-70)', borderColor: 'var(--line)' }
+  return (
+    <Badge
+      variant="outline"
+      style={{ ...style, fontFamily: 'var(--font-mono)', fontSize: size === 'sm' ? 10.5 : 11.5, letterSpacing: '0.06em', textTransform: 'uppercase', lineHeight: 1, padding: size === 'sm' ? '2px 8px' : '4px 10px' }}
+    >
+      {children}
+    </Badge>
+  )
+}
 
 // ── Servings scaler ───────────────────────────────────────────────────────
-function ScalerControl({
-  servings,
-  setServings,
-  base,
-}: {
-  servings: number
-  setServings: (n: number) => void
-  base: number
-}) {
-  const factor = servings / base
+function ScalerControl({ servings, setServings }: { servings: number; setServings: (n: number) => void }) {
   return (
-    <div className="inline-flex items-center border border-line rounded-full overflow-hidden bg-paper">
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-[34px] w-[34px] rounded-none text-lg text-ink-60"
-        onClick={() => setServings(Math.max(1, servings - 1))}
-      >
-        −
-      </Button>
-      <div className="px-[10px] flex flex-col items-center min-w-[72px] leading-none">
-        <span className="text-ink" style={{ fontFamily: 'var(--font-serif)', fontSize: 18 }}>
-          {servings}
-        </span>
-        <span
-          className="text-ink-50 uppercase mt-[2px]"
-          style={{ fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '0.1em' }}
-        >
-          ×{factor.toFixed(1)}
-        </span>
+    <div style={{ display: 'inline-flex', alignItems: 'center', border: '1px solid var(--line)', borderRadius: 999, overflow: 'hidden', background: 'var(--paper)' }}>
+      <Button variant="ghost" size="icon" className="h-[34px] w-[34px] rounded-none text-lg" style={{ color: 'var(--ink-60)' }} onClick={() => setServings(Math.max(1, servings - 1))}>−</Button>
+      <div style={{ padding: '0 10px', display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 72, lineHeight: 1 }}>
+        <span style={{ fontFamily: 'var(--font-serif)', fontSize: 18, color: 'var(--ink)' }}>{servings}</span>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--ink-50)', letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: 2 }}>portioner</span>
       </div>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-[34px] w-[34px] rounded-none text-lg text-ink-60"
-        onClick={() => setServings(servings + 1)}
-      >
-        +
-      </Button>
+      <Button variant="ghost" size="icon" className="h-[34px] w-[34px] rounded-none text-lg" style={{ color: 'var(--ink-60)' }} onClick={() => setServings(servings + 1)}>+</Button>
     </div>
   )
 }
@@ -79,39 +111,30 @@ function fmtQty(q: number): string {
   return (Math.round(q * 10) / 10).toString().replace('.', ',')
 }
 
-// ── Mini recipe card for related section ──────────────────────────────────
+// ── Mini recipe card for related section ────────────────────��────────────
 function RelatedCard({ recipe }: { recipe: Recipe }) {
   const [hovered, setHovered] = useState(false)
   return (
     <Link
       to={`/recipes/${recipe.id}`}
-      className="no-underline"
+      style={{ textDecoration: 'none' }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      <article
-        className="flex flex-col bg-paper rounded-[18px] overflow-hidden transition-[transform,border-color] duration-200"
-        style={{
-          border: `1px solid ${hovered ? 'var(--ink-30)' : 'var(--line)'}`,
-          transform: hovered ? 'translateY(-2px)' : 'none',
-        }}
-      >
+      <article style={{
+        display: 'flex', flexDirection: 'column',
+        background: 'var(--paper)',
+        border: `1px solid ${hovered ? 'var(--ink-30)' : 'var(--line)'}`,
+        borderRadius: 18, overflow: 'hidden',
+        transform: hovered ? 'translateY(-2px)' : 'none',
+        transition: 'transform 0.2s, border-color 0.15s',
+      }}>
         <PhotoSlot imageUrl={recipe.imageUrl} swatch={recipeSwatch(recipe.id)} aspect="5/4" />
-        <div className="p-4 flex flex-col gap-[6px]">
-          <h4
-            className="text-ink m-0 font-normal leading-[1.15]"
-            style={{ fontFamily: 'var(--font-serif)', fontSize: 19, letterSpacing: '-0.02em' }}
-          >
-            {recipe.name}
-          </h4>
-          <div className="flex items-center justify-between">
-            <span
-              className="text-ink-50"
-              style={{ fontFamily: 'var(--font-mono)', fontSize: 10.5, letterSpacing: '0.06em' }}
-            >
-              {recipe.totalTime} MIN · {recipe.servings} PERS
-            </span>
-            <StarRating value={recipe.rating} size={10} />
+        <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <h4 style={{ fontFamily: 'var(--font-serif)', fontSize: 19, letterSpacing: '-0.02em', color: 'var(--ink)', margin: 0, fontWeight: 400, lineHeight: 1.15 }}>{recipe.name}</h4>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10.5, color: 'var(--ink-50)', letterSpacing: '0.06em' }}>{recipe.totalTime} MIN · {recipe.servings} PERS</span>
+            <Stars value={recipe.rating} size={10} />
           </div>
         </div>
       </article>
@@ -122,9 +145,9 @@ function RelatedCard({ recipe }: { recipe: Recipe }) {
 // ── Loading skeleton ──────────────────────────────────────────────────────
 function DetailSkeleton() {
   return (
-    <div className="max-w-[1240px] mx-auto px-10 pt-6 pb-[80px]">
+    <div style={{ maxWidth: 1240, margin: '0 auto', padding: '24px 40px 80px' }}>
       <Skeleton className="h-8 w-48 mb-8" />
-      <div className="grid gap-10 mb-9" style={{ gridTemplateColumns: '1.1fr 1fr' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: 40, marginBottom: 36 }}>
         <div className="flex flex-col gap-4">
           <Skeleton className="h-6 w-32" />
           <Skeleton className="h-20 w-full" />
@@ -157,24 +180,16 @@ export function RecipeDetailPage() {
 
   const deleteMutation = useMutation({
     mutationFn: () => deleteRecipe(Number(id)),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['recipes'] })
-      toast.success('Recept borttaget')
-      navigate('/')
-    },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['recipes'] }); toast.success('Recept borttaget'); navigate('/') },
     onError: () => toast.error('Kunde inte ta bort receptet'),
   })
 
   if (isLoading) return <DetailSkeleton />
   if (!recipe) {
     return (
-      <div className="flex flex-col items-center justify-center gap-4 p-12 text-ink-50">
-        <p className="text-ink m-0" style={{ fontFamily: 'var(--font-serif)', fontSize: 22 }}>
-          Receptet hittades inte.
-        </p>
-        <Button asChild variant="outline" className="rounded-full">
-          <Link to="/">Tillbaka</Link>
-        </Button>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, padding: 48, color: 'var(--ink-50)' }}>
+        <p style={{ fontFamily: 'var(--font-serif)', fontSize: 22, color: 'var(--ink)' }}>Receptet hittades inte.</p>
+        <Button asChild variant="outline" className="rounded-full"><Link to="/">Tillbaka</Link></Button>
       </div>
     )
   }
@@ -185,65 +200,48 @@ export function RecipeDetailPage() {
   const currentServings = servings ?? recipe.servings
   const factor = currentServings / (recipe.servings || 1)
 
+  // Parse instructions into steps array (split on numbered lines or newlines)
   const steps = (recipe.instructions ?? '')
     .split(/\n+/)
     .map(s => s.replace(/^\d+[\.\)]\s*/, '').trim())
     .filter(Boolean)
 
-  const related = (allRecipes ?? [])
-    .filter(r => r.id !== recipe.id && r.category?.name === recipe.category?.name)
-    .slice(0, 3)
+  const related = (allRecipes ?? []).filter(r => r.id !== recipe.id && r.category?.name === recipe.category?.name).slice(0, 3)
 
-  const lastModified = new Date(recipe.lastModified ?? recipe.createdAt).toLocaleDateString('sv-SE', {
-    year: 'numeric',
-    month: 'long',
-  })
+  const lastModified = new Date(recipe.lastModified ?? recipe.createdAt).toLocaleDateString('sv-SE', { year: 'numeric', month: 'long' })
 
   return (
-    <div className="max-w-[1240px] mx-auto px-10 pt-6 pb-[80px] w-full">
+    <div style={{ maxWidth: 1240, margin: '0 auto', padding: '24px 40px 80px', width: '100%' }}>
 
-      {/* ── Top bar ─────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between pb-6">
+      {/* ── Top bar ───────────────────���─────────────────────────── */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 24 }}>
         <Button
           variant="ghost"
-          className="gap-2 -ml-2 text-ink-60"
-          style={{ fontFamily: 'var(--font-sans)', fontSize: 13 }}
+          className="gap-2 -ml-2"
+          style={{ color: 'var(--ink-60)', fontFamily: 'var(--font-sans)', fontSize: 13 }}
           onClick={() => navigate(-1)}
         >
           <ArrowLeft size={14} strokeWidth={1.5} /> Tillbaka till alla recept
         </Button>
-        <div className="flex gap-[6px]">
-          <Button variant="outline" size="icon" className="h-9 w-9 rounded-full" title="Spara">
-            <Bookmark size={15} strokeWidth={1.5} />
-          </Button>
+        <div style={{ display: 'flex', gap: 6 }}>
+          <Button variant="outline" size="icon" className="h-9 w-9 rounded-full" title="Spara"><Bookmark size={15} strokeWidth={1.5} /></Button>
           <Button variant="outline" size="icon" className="h-9 w-9 rounded-full" title="Redigera" asChild>
             <Link to={`/recipes/${recipe.id}/edit`}><Pencil size={15} strokeWidth={1.5} /></Link>
           </Button>
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="outline" size="icon" className="h-9 w-9 rounded-full" title="Radera">
-                <Trash2 size={15} strokeWidth={1.5} />
-              </Button>
+              <Button variant="outline" size="icon" className="h-9 w-9 rounded-full" title="Radera"><Trash2 size={15} strokeWidth={1.5} /></Button>
             </DialogTrigger>
             <DialogContent style={{ background: 'var(--paper)', border: '1px solid var(--line)', borderRadius: 20 }}>
               <DialogHeader>
-                <DialogTitle style={{ fontFamily: 'var(--font-serif)', fontSize: 26, letterSpacing: '-0.02em', fontWeight: 400 }}>
-                  Ta bort recept?
-                </DialogTitle>
+                <DialogTitle style={{ fontFamily: 'var(--font-serif)', fontSize: 26, letterSpacing: '-0.02em', fontWeight: 400 }}>Ta bort recept?</DialogTitle>
                 <DialogDescription style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-60)' }}>
                   Det här raderar <strong style={{ color: 'var(--ink)' }}>{recipe.name}</strong> permanent.
                 </DialogDescription>
               </DialogHeader>
               <DialogFooter>
                 <Button variant="outline" className="rounded-full">Avbryt</Button>
-                <Button
-                  variant="destructive"
-                  className="rounded-full"
-                  disabled={deleteMutation.isPending}
-                  onClick={() => deleteMutation.mutate()}
-                >
-                  Ta bort
-                </Button>
+                <Button variant="destructive" className="rounded-full" disabled={deleteMutation.isPending} onClick={() => deleteMutation.mutate()}>Ta bort</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
@@ -251,87 +249,44 @@ export function RecipeDetailPage() {
       </div>
 
       {/* ── Editorial header ─────────────────────────────────────── */}
-      <header className="grid gap-10 items-stretch mb-9" style={{ gridTemplateColumns: '1.1fr 1fr' }}>
-        <div className="flex flex-col gap-6">
-          <div className="flex items-center gap-[10px] flex-wrap">
+      <header style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: 40, alignItems: 'stretch', marginBottom: 36 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
             {recipe.category && <Pill tone="accent" size="sm">{recipe.category.name}</Pill>}
-            <span
-              className="text-ink-50 uppercase"
-              style={{ fontFamily: 'var(--font-mono)', fontSize: 10.5, letterSpacing: '0.12em' }}
-            >
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10.5, color: 'var(--ink-50)', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
               Recept №{String(recipe.id).padStart(3, '0')} · {lastModified}
             </span>
           </div>
-          <h1
-            className="text-ink m-0 font-normal leading-[1.0]"
-            style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: 'clamp(48px, 6vw, 72px)',
-              letterSpacing: '-0.04em',
-            }}
-          >
+          <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(48px, 6vw, 72px)', lineHeight: 1.0, letterSpacing: '-0.04em', color: 'var(--ink)', margin: 0, fontWeight: 400 }}>
             {recipe.name}
           </h1>
-          <p
-            className="text-ink-70 italic m-0 max-w-[520px]"
-            style={{ fontFamily: 'var(--font-serif)', fontSize: 18, lineHeight: 1.5 }}
-          >
+          <p style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontSize: 18, lineHeight: 1.5, color: 'var(--ink-70)', margin: 0, maxWidth: 520 }}>
             "{recipe.description}"
           </p>
-          <div className="flex items-center gap-[14px] mt-auto">
-            <StarRating value={recipe.rating} size={14} />
-            <span className="w-px h-4 bg-line inline-block" />
-            <span className="text-ink-60" style={{ fontFamily: 'var(--font-sans)', fontSize: 13 }}>
-              Sparat · {lastModified}
-            </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 'auto' }}>
+            <Stars value={recipe.rating} size={14} />
+            <span style={{ width: 1, height: 16, background: 'var(--line)', display: 'inline-block' }} />
+            <span style={{ fontFamily: 'var(--font-sans)', fontSize: 13, color: 'var(--ink-60)' }}>Senast ändrad {lastModified}</span>
           </div>
         </div>
-        <div className="rounded-[24px] overflow-hidden">
-          <PhotoSlot
-            imageUrl={recipe.imageUrl}
-            swatch={recipeSwatch(recipe.id)}
-            aspect="4/5"
-            label={recipe.name}
-          />
+        <div style={{ borderRadius: 24, overflow: 'hidden' }}>
+          <PhotoSlot imageUrl={recipe.imageUrl} swatch={recipeSwatch(recipe.id)} aspect="4/5" label={recipe.name} />
         </div>
       </header>
 
-      {/* ── Stat strip ──────────────────────────────────────────── */}
-      <section
-        className="grid bg-paper border border-line rounded-[18px] px-7 py-6 mb-10"
-        style={{ gridTemplateColumns: 'repeat(5, 1fr)' }}
-      >
+      {/* ── Stat strip ─────────────────────────────��────────────── */}
+      <section style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', background: 'var(--paper)', border: '1px solid var(--line)', borderRadius: 18, padding: '24px 28px', marginBottom: 40 }}>
         {[
-          { k: 'Förberedelse', v: recipe.prepTime,        u: 'min' },
-          { k: 'Tillagning',   v: recipe.cookTime,        u: 'min' },
-          { k: 'Total tid',    v: recipe.totalTime,       u: 'min' },
-          { k: 'Portioner',    v: currentServings,        u: 'st'  },
-          { k: 'Betyg',        v: `${recipe.rating}`,    u: '/ 5' },
+          { k: 'Förberedelse', v: recipe.prepTime,   u: 'min' },
+          { k: 'Tillagning',   v: recipe.cookTime,   u: 'min' },
+          { k: 'Total tid',    v: recipe.totalTime,  u: 'min' },
+          { k: 'Portioner',    v: currentServings,         u: 'st'  },
+          { k: 'Svårighet',    v: recipe.difficulty || 'Medel', u: '' },
         ].map((s, i) => (
-          <div
-            key={s.k}
-            className="flex flex-col gap-[6px]"
-            style={{ paddingLeft: i === 0 ? 0 : 28, borderLeft: i === 0 ? 'none' : '1px solid var(--line)' }}
-          >
-            <span
-              className="text-ink-50 uppercase"
-              style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.14em' }}
-            >
-              {s.k}
-            </span>
-            <span
-              className="text-ink leading-none"
-              style={{ fontFamily: 'var(--font-serif)', fontSize: 34, letterSpacing: '-0.025em' }}
-            >
-              {s.v}
-              {s.u && (
-                <span
-                  className="text-ink-50 ml-[6px]"
-                  style={{ fontFamily: 'var(--font-sans)', fontSize: 13 }}
-                >
-                  {s.u}
-                </span>
-              )}
+          <div key={s.k} style={{ display: 'flex', flexDirection: 'column', gap: 6, paddingLeft: i === 0 ? 0 : 28, borderLeft: i === 0 ? 'none' : '1px solid var(--line)' }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--ink-50)' }}>{s.k}</span>
+            <span style={{ fontFamily: 'var(--font-serif)', fontSize: 34, lineHeight: 1, color: 'var(--ink)', letterSpacing: '-0.025em' }}>
+              {s.v}{s.u && <span style={{ fontFamily: 'var(--font-sans)', fontSize: 13, color: 'var(--ink-50)', marginLeft: 6 }}>{s.u}</span>}
             </span>
           </div>
         ))}
@@ -339,13 +294,8 @@ export function RecipeDetailPage() {
 
       {/* ── Allergens ───────────────────────────────────────────── */}
       {sortedIngredients.some(ri => ri.ingredient?.allergens?.length > 0) && (
-        <section className="flex items-center gap-3 mb-9 flex-wrap">
-          <span
-            className="text-ink-50 uppercase"
-            style={{ fontFamily: 'var(--font-mono)', fontSize: 10.5, letterSpacing: '0.12em' }}
-          >
-            Innehåller / passar
-          </span>
+        <section style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 36, flexWrap: 'wrap' }}>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10.5, color: 'var(--ink-50)', letterSpacing: '0.12em', textTransform: 'uppercase' }}>Innehåller / passar</span>
           {[...new Set(sortedIngredients.flatMap(ri => ri.ingredient?.allergens?.map(a => a.id) ?? []))].map(a => (
             <Pill key={a} tone="default" size="sm">{a}</Pill>
           ))}
@@ -353,24 +303,15 @@ export function RecipeDetailPage() {
       )}
 
       {/* ── Magazine body (ingredients + instructions) ──────────── */}
-      <section className="grid gap-14" style={{ gridTemplateColumns: '1fr 1.5fr' }}>
+      <section style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: 56 }}>
 
         {/* Ingredients (sticky) */}
-        <aside className="sticky top-6 self-start">
-          <div className="flex items-baseline justify-between mb-[18px]">
-            <h2
-              className="text-ink m-0 font-normal"
-              style={{ fontFamily: 'var(--font-serif)', fontSize: 28, letterSpacing: '-0.025em' }}
-            >
-              Ingredienser
-            </h2>
-            <ScalerControl
-              servings={currentServings}
-              setServings={v => setServings(v)}
-              base={recipe.servings}
-            />
+        <aside style={{ position: 'sticky', top: 24, alignSelf: 'flex-start' }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 18 }}>
+            <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 28, letterSpacing: '-0.025em', color: 'var(--ink)', margin: 0, fontWeight: 400 }}>Ingredienser</h2>
+            <ScalerControl servings={currentServings} setServings={v => setServings(v)} />
           </div>
-          <ul className="list-none p-0 m-0 flex flex-col">
+          <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column' }}>
             {sortedIngredients.map((ri, i) => {
               const qty = (ri.ingredientMeasurement?.quantity ?? 0) * factor
               const isOn = !!checked[ri.id]
@@ -378,52 +319,35 @@ export function RecipeDetailPage() {
                 <li
                   key={ri.id}
                   onClick={() => setChecked(c => ({ ...c, [ri.id]: !c[ri.id] }))}
-                  className="grid gap-3 items-baseline py-3 cursor-pointer transition-opacity duration-150"
                   style={{
-                    gridTemplateColumns: '20px 1fr auto',
+                    display: 'grid', gridTemplateColumns: '20px 1fr auto',
+                    gap: 12, alignItems: 'baseline',
+                    padding: '12px 0',
                     borderBottom: i === sortedIngredients.length - 1 ? 'none' : '1px dotted var(--line)',
-                    opacity: isOn ? 0.45 : 1,
+                    cursor: 'pointer', opacity: isOn ? 0.45 : 1, transition: 'opacity 0.15s',
                   }}
                 >
-                  <span
-                    className="grid place-items-center transition-all duration-150"
-                    style={{
-                      width: 18,
-                      height: 18,
-                      borderRadius: '50%',
-                      flexShrink: 0,
-                      border: `1.5px solid ${isOn ? 'var(--2eat-accent)' : 'var(--ink-30)'}`,
-                      background: isOn ? 'var(--2eat-accent)' : 'transparent',
-                      color: 'var(--paper)',
-                    }}
-                  >
+                  <span style={{
+                    width: 18, height: 18, borderRadius: '50%', flexShrink: 0,
+                    border: `1.5px solid ${isOn ? 'var(--2eat-accent)' : 'var(--ink-30)'}`,
+                    background: isOn ? 'var(--2eat-accent)' : 'transparent',
+                    color: 'var(--paper)', display: 'grid', placeItems: 'center',
+                    transition: 'all 0.15s',
+                  }}>
                     {isOn && <Check size={11} strokeWidth={2.5} color="var(--paper)" />}
                   </span>
-                  <span
-                    className="text-ink"
-                    style={{
-                      fontFamily: 'var(--font-sans)',
-                      fontSize: 14.5,
-                      textDecoration: isOn ? 'line-through' : 'none',
-                    }}
-                  >
+                  <span style={{ fontFamily: 'var(--font-sans)', fontSize: 14.5, color: 'var(--ink)', textDecoration: isOn ? 'line-through' : 'none' }}>
                     {ri.ingredient?.name}
                   </span>
-                  <span
-                    className="text-ink-60 whitespace-nowrap"
-                    style={{ fontFamily: 'var(--font-mono)', fontSize: 12, letterSpacing: '0.02em' }}
-                  >
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--ink-60)', letterSpacing: '0.02em', whiteSpace: 'nowrap' }}>
                     {fmtQty(qty)} {ri.ingredientMeasurement?.unit}
                   </span>
                 </li>
               )
             })}
           </ul>
-          <div className="mt-[18px] p-[14px] bg-surface-1 rounded-xl flex items-center justify-between gap-[10px]">
-            <span
-              className="text-ink-60 uppercase"
-              style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.06em' }}
-            >
+          <div style={{ marginTop: 18, padding: 14, background: 'var(--surface-1)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--ink-60)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
               {Object.values(checked).filter(Boolean).length} / {sortedIngredients.length} ikryssat
             </span>
             <Button variant="outline" size="sm" className="rounded-full gap-1.5 text-xs">
@@ -434,48 +358,38 @@ export function RecipeDetailPage() {
 
         {/* Instructions */}
         <div>
-          <h2
-            className="text-ink font-normal"
-            style={{ fontFamily: 'var(--font-serif)', fontSize: 28, letterSpacing: '-0.025em', margin: '0 0 24px' }}
-          >
-            Så här gör du
-          </h2>
+          <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 28, letterSpacing: '-0.025em', color: 'var(--ink)', margin: '0 0 24px', fontWeight: 400 }}>Så här gör du</h2>
           {steps.length > 0 ? (
-            <ol className="list-none p-0 m-0 flex flex-col">
+            <ol style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column' }}>
               {steps.map((step, i) => {
                 const isDone = !!stepDone[i]
                 return (
                   <li
                     key={i}
                     onClick={() => setStepDone(s => ({ ...s, [i]: !s[i] }))}
-                    className="grid gap-6 items-start py-6 cursor-pointer"
                     style={{
-                      gridTemplateColumns: '64px 1fr',
+                      display: 'grid', gridTemplateColumns: '64px 1fr', gap: 24,
+                      alignItems: 'flex-start', padding: '24px 0',
                       borderTop: i === 0 ? 'none' : '1px solid var(--line)',
+                      cursor: 'pointer',
                     }}
                   >
-                    <span
-                      className="font-normal italic transition-colors duration-200"
-                      style={{
-                        fontFamily: 'var(--font-serif)',
-                        fontSize: 54,
-                        lineHeight: 0.85,
-                        letterSpacing: '-0.04em',
-                        color: isDone ? 'var(--ink-30)' : 'var(--2eat-accent-deep)',
-                      }}
-                    >
+                    <span style={{
+                      fontFamily: 'var(--font-serif)', fontSize: 54, lineHeight: 0.85,
+                      letterSpacing: '-0.04em',
+                      color: isDone ? 'var(--ink-30)' : 'var(--2eat-accent-deep)',
+                      fontWeight: 400, fontStyle: 'italic',
+                      transition: 'color 0.2s',
+                    }}>
                       {String(i + 1).padStart(2, '0')}
                     </span>
-                    <p
-                      className="m-0 mt-[6px] transition-colors duration-200"
-                      style={{
-                        fontFamily: 'var(--font-serif)',
-                        fontSize: 19,
-                        lineHeight: 1.5,
-                        color: isDone ? 'var(--ink-50)' : 'var(--ink)',
-                        textDecoration: isDone ? 'line-through' : 'none',
-                      }}
-                    >
+                    <p style={{
+                      fontFamily: 'var(--font-serif)', fontSize: 19, lineHeight: 1.5,
+                      color: isDone ? 'var(--ink-50)' : 'var(--ink)',
+                      margin: 0, marginTop: 6,
+                      textDecoration: isDone ? 'line-through' : 'none',
+                      transition: 'color 0.2s',
+                    }}>
                       {step}
                     </p>
                   </li>
@@ -483,29 +397,18 @@ export function RecipeDetailPage() {
               })}
             </ol>
           ) : (
-            <p
-              className="text-ink italic"
-              style={{ fontFamily: 'var(--font-serif)', fontSize: 17, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}
-            >
-              {recipe.instructions}
-            </p>
+            <p style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontSize: 17, lineHeight: 1.6, color: 'var(--ink)', whiteSpace: 'pre-wrap' }}>{recipe.instructions}</p>
           )}
 
           {/* Chef tip */}
-          <div className="mt-8 p-[24px_28px] bg-surface-1 rounded-[18px] border border-line">
-            <div className="flex items-center gap-[10px] mb-2">
-              <Sparkles size={14} strokeWidth={1.5} style={{ color: 'var(--2eat-accent-deep)' }} />
-              <span
-                className="text-brand-deep uppercase"
-                style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.14em' }}
-              >
+          <div style={{ marginTop: 32, padding: '24px 28px', background: 'var(--surface-1)', borderRadius: 18, border: '1px solid var(--line)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+              <span style={{ color: 'var(--2eat-accent-deep)' }}>✦</span>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.14em', color: 'var(--2eat-accent-deep)', textTransform: 'uppercase' }}>
                 Kockens tips
               </span>
             </div>
-            <p
-              className="text-ink italic m-0"
-              style={{ fontFamily: 'var(--font-serif)', fontSize: 17, lineHeight: 1.5 }}
-            >
+            <p style={{ fontFamily: 'var(--font-serif)', fontSize: 17, fontStyle: 'italic', lineHeight: 1.5, color: 'var(--ink)', margin: 0 }}>
               Smaka av och justera kryddorna i slutet av tillagningen — det gör en stor skillnad för slutresultatet.
             </p>
           </div>
@@ -514,24 +417,15 @@ export function RecipeDetailPage() {
 
       {/* ── Related recipes ──────────────────────────────────────── */}
       {related.length > 0 && (
-        <section className="mt-[80px]">
-          <Separator className="mb-10 bg-line" />
-          <div className="flex items-baseline justify-between mb-6">
-            <h2
-              className="text-ink m-0 font-normal"
-              style={{ fontFamily: 'var(--font-serif)', fontSize: 32, letterSpacing: '-0.03em' }}
-            >
-              Mer från{' '}
-              <em className="italic text-brand-deep">{recipe.category?.name?.toLowerCase()}</em>
+        <section style={{ marginTop: 80 }}>
+          <Separator style={{ marginBottom: 40, background: 'var(--line)' }} />
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 24 }}>
+            <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 32, letterSpacing: '-0.03em', margin: 0, fontWeight: 400 }}>
+              Mer från <em style={{ fontStyle: 'italic', color: 'var(--2eat-accent-deep)' }}>{recipe.category?.name?.toLowerCase()}</em>
             </h2>
-            <span
-              className="text-ink-50 uppercase"
-              style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.1em' }}
-            >
-              Liknande recept
-            </span>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--ink-50)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Liknande recept</span>
           </div>
-          <div className="grid grid-cols-3 gap-[18px]">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 18 }}>
             {related.map(r => <RelatedCard key={r.id} recipe={r} />)}
           </div>
         </section>

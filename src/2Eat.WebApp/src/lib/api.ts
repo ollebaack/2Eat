@@ -1,4 +1,12 @@
-import type { FileUpload, Ingredient, Recipe } from '@/types'
+import type { FileUpload, Ingredient, Recipe, AllergenId } from '@/types'
+
+export const ALLERGEN_OPTIONS: AllergenId[] = [
+  'Gluten',
+  'Vegetariskt',
+  'Veganskt',
+  'Laktos',
+  'Nötter',
+]
 
 const BASE = '/api'
 

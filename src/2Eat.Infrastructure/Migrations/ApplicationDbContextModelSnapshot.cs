@@ -435,6 +435,11 @@ namespace _2Eat.Infrastructure.Migrations
                     b.Property<int>("CookTime")
                         .HasColumnType("integer");
 
+                    b.Property<string>("Difficulty")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -483,6 +488,7 @@ namespace _2Eat.Infrastructure.Migrations
                             CookTime = 15,
                             CreatedAt = new DateTimeOffset(new DateTime(2026, 5, 3, 15, 1, 48, 78, DateTimeKind.Unspecified).AddTicks(2833), new TimeSpan(0, 2, 0, 0, 0)),
                             Description = "Traditionella svenska kanelbullar",
+                            Difficulty = "Medel",
                             Instructions = "Blanda ingredienser och baka i 180°C i 15 minuter.",
                             LastModified = new DateTimeOffset(new DateTime(2021, 10, 10, 10, 30, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             Name = "Kanelbullar",
@@ -497,6 +503,7 @@ namespace _2Eat.Infrastructure.Migrations
                             CookTime = 0,
                             CreatedAt = new DateTimeOffset(new DateTime(2026, 5, 3, 15, 1, 48, 78, DateTimeKind.Unspecified).AddTicks(4192), new TimeSpan(0, 2, 0, 0, 0)),
                             Description = "En klassisk svensk räkmacka",
+                            Difficulty = "Lätt",
                             Instructions = "Montera mackan med bröd, räkor, majonnäs och dill.",
                             LastModified = new DateTimeOffset(new DateTime(2021, 10, 10, 12, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             Name = "Räkmacka",
@@ -511,6 +518,7 @@ namespace _2Eat.Infrastructure.Migrations
                             CookTime = 120,
                             CreatedAt = new DateTimeOffset(new DateTime(2026, 5, 3, 15, 1, 48, 78, DateTimeKind.Unspecified).AddTicks(4197), new TimeSpan(0, 2, 0, 0, 0)),
                             Description = "Älgstek med enbär",
+                            Difficulty = "Svår",
                             Instructions = "Rosta älgköttet med enbär och servera med potatis och lingon.",
                             LastModified = new DateTimeOffset(new DateTime(2023, 10, 10, 15, 45, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             Name = "Älgstek",
@@ -525,6 +533,7 @@ namespace _2Eat.Infrastructure.Migrations
                             CookTime = 30,
                             CreatedAt = new DateTimeOffset(new DateTime(2026, 5, 3, 15, 1, 48, 78, DateTimeKind.Unspecified).AddTicks(4201), new TimeSpan(0, 2, 0, 0, 0)),
                             Description = "Lax i en krämig sås",
+                            Difficulty = "Lätt",
                             Instructions = "Laga laxen i en gräddig sås med dill och servera med kokt potatis.",
                             LastModified = new DateTimeOffset(new DateTime(2024, 10, 10, 9, 15, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             Name = "Lax med grädde",

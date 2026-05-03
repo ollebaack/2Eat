@@ -6,6 +6,8 @@ import { RecipesPage } from '@/pages/RecipesPage'
 import { RecipeDetailPage } from '@/pages/RecipeDetailPage'
 import { RecipeFormPage } from '@/pages/RecipeFormPage'
 import { IngredientsPage } from '@/pages/IngredientsPage'
+import { VeckoplanPage } from '@/pages/VeckoplanPage'
+import { SkafferiPage } from '@/pages/SkafferiPage'
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000 } },
@@ -22,6 +24,8 @@ export default function App() {
             <Route path="recipes/:id" element={<RecipeDetailPage />} />
             <Route path="recipes/:id/edit" element={<RecipeFormPage />} />
             <Route path="ingredients" element={<IngredientsPage />} />
+            <Route path="veckoplan" element={<VeckoplanPage />} />
+            <Route path="skafferi" element={<SkafferiPage />} />
           </Route>
         </Routes>
       </BrowserRouter>

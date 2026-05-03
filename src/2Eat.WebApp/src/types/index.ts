@@ -45,6 +45,7 @@ export interface Recipe {
   ingredients: RecipeIngredient[]
   servings: number
   rating: number
+  difficulty?: string
   cookTime: number
   prepTime: number
   totalTime: number
