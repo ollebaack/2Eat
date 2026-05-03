@@ -69,7 +69,8 @@ Domain entities never reference Application or Infrastructure. Application defin
 - **API client**: all HTTP calls go through the generic wrapper in `src/lib/api.ts`.
 - **Server state**: TanStack React Query with 30s stale time. Mutations should invalidate relevant query keys.
 - **Routing**: React Router v7 with nested routes under a `Layout` component.
-- **UI components**: custom components in `src/components/ui/` built on Radix UI primitives (Shadcn-style). Use these before reaching for Radix directly.
+- **UI components**: custom components in `src/components/ui/` built on Radix UI primitives (Shadcn-style). Always prefer these over one-off inline elements. When building new UI, extract reusable Shadcn-style components into `src/components/ui/` rather than duplicating markup across pages.
+- **Responsive design**: all UI must support phone screens. Use Tailwind responsive prefixes (`sm:`, `md:`) and verify mobile layouts when making frontend changes.
 - **Notifications**: Sonner for toasts.
 - **Styling**: Tailwind CSS v4 (Vite plugin, no separate config file needed).
 
