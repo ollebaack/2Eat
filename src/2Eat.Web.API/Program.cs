@@ -1,6 +1,7 @@
 using _2Eat.Web.API;
 using _2Eat.Infrastructure;
 using System.Text.Json.Serialization;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,10 +30,11 @@ var app = builder.Build();
 
 app.Services.ApplyMigrations();
 
-// if (app.Environment.IsDevelopment())
-// {
+if (app.Environment.IsDevelopment())
+{
     app.MapOpenApi();
-// }
+    app.MapScalarApiReference();
+}
 
 app.UseCors("AllowSpecificOrigin");
 
