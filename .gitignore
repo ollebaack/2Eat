@@ -399,6 +399,7 @@ FodyWeavers.xsd
 
 # Claude Code
 .claude/*
+mystifying-moser-40ddd9/
 
 # User-uploaded files
 uploads/
