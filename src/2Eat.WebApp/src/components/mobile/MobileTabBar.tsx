@@ -1,19 +1,10 @@
 import { useNavigate, useMatch } from 'react-router-dom'
-import { BookOpen, Carrot, Calendar, Users } from 'lucide-react'
-import type { LucideIcon } from 'lucide-react'
 
-interface Tab {
-  key: string
-  label: string
-  icon: LucideIcon
-  to: string
-}
-
-const TABS: Tab[] = [
-  { key: 'home',        label: 'Recept',       icon: BookOpen, to: '/'            },
-  { key: 'ingredients', label: 'Ingredienser', icon: Carrot,   to: '/ingredients' },
-  { key: 'veckoplan',   label: 'Veckoplan',    icon: Calendar, to: '/veckoplan'   },
-  { key: 'me',          label: 'Mig',          icon: Users,    to: ''             },
+const TABS = [
+  { key: 'home',        label: 'Recept',      icon: '📖', to: '/'            },
+  { key: 'ingredients', label: 'Ingredienser', icon: '🥕', to: '/ingredients' },
+  { key: 'veckoplan',   label: 'Plan',         icon: '📅', to: '/veckoplan'   },
+  { key: 'me',          label: 'Profil',       icon: '👤', to: ''             },
 ]
 
 export function MobileTabBar() {
@@ -22,10 +13,10 @@ export function MobileTabBar() {
   const isIngredients = !!useMatch('/ingredients')
   const isVeckoplan   = !!useMatch('/veckoplan')
 
-  function isActive(tab: Tab) {
-    if (tab.key === 'home')        return isHome
-    if (tab.key === 'ingredients') return isIngredients
-    if (tab.key === 'veckoplan')   return isVeckoplan
+  function isActive(key: string) {
+    if (key === 'home')        return isHome
+    if (key === 'ingredients') return isIngredients
+    if (key === 'veckoplan')   return isVeckoplan
     return false
   }
 
@@ -33,7 +24,7 @@ export function MobileTabBar() {
     <nav
       aria-label="Huvudnavigation"
       style={{
-        position: 'fixed', left: 12, right: 12, bottom: 18, zIndex: 40,
+        position: 'fixed', left: 12, right: 12, bottom: 18, zIndex: 50,
         borderRadius: 28, padding: '8px 6px',
         background: 'rgba(255,255,255,0.78)',
         backdropFilter: 'blur(20px) saturate(180%)',
@@ -44,8 +35,7 @@ export function MobileTabBar() {
       }}
     >
       {TABS.map(tab => {
-        const active = isActive(tab)
-        const Icon = tab.icon
+        const active = isActive(tab.key)
         return (
           <button
             key={tab.key}
@@ -55,15 +45,11 @@ export function MobileTabBar() {
               flex: 1, padding: '6px 0',
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
               border: 'none', background: 'transparent', cursor: 'pointer',
-              fontFamily: 'var(--font-sans)', fontSize: 10.5, fontWeight: 500,
               color: active ? 'var(--2eat-accent-deep)' : 'var(--ink-50)',
+              fontFamily: 'var(--font-sans)', fontSize: 10.5, fontWeight: 500,
             }}
           >
-            <Icon
-              size={20}
-              strokeWidth={1.5}
-              color={active ? 'var(--2eat-accent-deep)' : 'var(--ink-50)'}
-            />
+            <span style={{ fontSize: 20 }}>{tab.icon}</span>
             <span>{tab.label}</span>
           </button>
         )

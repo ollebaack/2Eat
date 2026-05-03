@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useMemo } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
@@ -32,9 +32,11 @@ export function RecipeFormPage() {
   const { data: existing } = useQuery({ queryKey: ['recipes', Number(id)], queryFn: () => getRecipeById(Number(id)), enabled: isEdit })
   const { data: allRecipes } = useQuery({ queryKey: ['recipes'], queryFn: getRecipes })
 
-  const categories = [...new Map(
-    (allRecipes ?? []).filter(r => r.category).map(r => [r.category.id, r.category])
-  ).values()]
+  const categories = useMemo(() =>
+    [...new Map(
+      (allRecipes ?? []).filter(r => r.category).map(r => [r.category.id, r.category])
+    ).values()],
+  [allRecipes])
 
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
@@ -102,6 +104,8 @@ export function RecipeFormPage() {
     } catch { toast.error('Uppladdning misslyckades') }
     finally { setUploading(false) }
   }
+
+  const saveDisabled = saveMutation.isPending || !name.trim()
 
   return (
     <div style={{ maxWidth: 980, margin: '0 auto', padding: '36px 40px 80px', width: '100%' }}>
@@ -193,9 +197,6 @@ export function RecipeFormPage() {
           <label style={labelStyle}>Betyg (1–5)</label>
           <input type="number" min={1} max={5} value={rating} onChange={e => setRating(Number(e.target.value))} style={inputStyle} />
         </div>
-
-        {/* Portioner placeholder — keep grid aligned */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, gridColumn: 'span 2' }} />
 
         {/* Image upload */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6, gridColumn: 'span 4' }}>
@@ -346,11 +347,11 @@ export function RecipeFormPage() {
           </button>
           <button
             onClick={() => saveMutation.mutate()}
-            disabled={saveMutation.isPending || !name.trim()}
+            disabled={saveDisabled}
             style={{
               padding: '10px 18px', borderRadius: 999, border: 'none',
-              background: saveMutation.isPending || !name.trim() ? 'var(--ink-50)' : 'var(--2eat-accent)',
-              color: 'var(--paper)', cursor: saveMutation.isPending || !name.trim() ? 'default' : 'pointer',
+              background: saveDisabled ? 'var(--ink-50)' : 'var(--2eat-accent)',
+              color: 'var(--paper)', cursor: saveDisabled ? 'default' : 'pointer',
               fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 500,
             }}
           >
