@@ -7,7 +7,8 @@
       "Bash(Select-Object -First 30)",
       "Bash(Format-Table FullName)",
       "Bash(grep -E \"\\\\.\\(json|cs\\)$\")",
-      "Bash(Remove-Item *)"
+      "Bash(Remove-Item *)",
+      "Bash(git worktree *)"
     ]
   }
 }

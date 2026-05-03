@@ -29,55 +29,84 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  /* ── Editorial design tokens ────────────────────────────── */
+  --ink:       oklch(0.18 0.01 60);
+  --ink-90:    oklch(0.25 0.012 60);
+  --ink-70:    oklch(0.42 0.012 60);
+  --ink-60:    oklch(0.5  0.012 60);
+  --ink-50:    oklch(0.58 0.01  60);
+  --ink-40:    oklch(0.68 0.008 60);
+  --ink-30:    oklch(0.78 0.006 60);
+  --line:      oklch(0.9  0.008 70);
+  --paper:     oklch(0.985 0.008 80);
+  --surface-1: oklch(0.965 0.01  75);
+  --surface-2: oklch(0.94  0.012 70);
+  --2eat-accent:      oklch(0.62 0.15 38);
+  --2eat-accent-deep: oklch(0.5  0.15 35);
+  --font-serif: "Instrument Serif", "Times New Roman", serif;
+  --font-sans:  "Geist", system-ui, sans-serif;
+  --font-mono:  "JetBrains Mono", ui-monospace, monospace;
+
+  /* ── shadcn tokens (mapped to the editorial palette) ────── */
+  --background: var(--surface-1);
+  --foreground:  var(--ink);
+  --card:        var(--paper);
+  --card-foreground: var(--ink);
+  --popover:     var(--paper);
+  --popover-foreground: var(--ink);
+  --primary:     var(--ink);
+  --primary-foreground: var(--paper);
+  --secondary:   var(--surface-2);
+  --secondary-foreground: var(--ink);
+  --muted:       var(--surface-1);
+  --muted-foreground: var(--ink-50);
+  --accent:      var(--surface-2);
+  --accent-foreground: var(--ink);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --radius: 0.625rem;
-}
-
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.637 0.237 25.331);
-  --border: oklch(0.269 0 0);
-  --input: oklch(0.269 0 0);
-  --ring: oklch(0.439 0 0);
+  --border:      var(--line);
+  --input:       var(--line);
+  --ring:        var(--ink-30);
+  --radius:      0.625rem;
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    box-sizing: border-box;
+  }
+  html, body {
+    margin: 0;
+    padding: 0;
   }
   body {
-    @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+    background: var(--surface-1);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  ::selection {
+    background: color-mix(in oklch, var(--2eat-accent) 28%, transparent);
+    color: var(--ink);
+  }
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--ink-40);
+  }
+  input:focus,
+  textarea:focus,
+  select:focus {
+    border-color: var(--ink) !important;
+    outline: none;
   }
 }
+
+@keyframes fadeIn  { from { opacity: 0; }                          to { opacity: 1; } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--ink-30); border-radius: 8px; border: 2px solid var(--surface-1); }
+::-webkit-scrollbar-thumb:hover { background: var(--ink-50); }

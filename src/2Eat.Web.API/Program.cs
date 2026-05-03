@@ -29,10 +29,10 @@ var app = builder.Build();
 
 app.Services.ApplyMigrations();
 
-if (app.Environment.IsDevelopment())
-{
+// if (app.Environment.IsDevelopment())
+// {
     app.MapOpenApi();
-}
+// }
 
 app.UseCors("AllowSpecificOrigin");
 
