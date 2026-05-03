@@ -19,7 +19,7 @@ namespace _2Eat.Web.API
             //endpoints.MapDelete("/api/files/{id}", DeleteFile);
         }
 
-        private static async Task<IResult> DownloadFileByFileName(string fileName, IFileService _service, IWebHostEnvironment _env, HttpClient Http)
+        private static async Task<IResult> DownloadFileByFileName(string fileName, IFileService _service, IWebHostEnvironment _env)
         {
             var uploadResult = await _service.GetFileByFileNameAsync(fileName);
 

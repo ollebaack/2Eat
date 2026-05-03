@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
@@ -17,7 +18,7 @@ namespace _2Eat.Infrastructure.Migrations
                 name: "Allergens",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -28,9 +29,9 @@ namespace _2Eat.Infrastructure.Migrations
                 name: "Categories",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", maxLength: 64, nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -41,13 +42,13 @@ namespace _2Eat.Infrastructure.Migrations
                 name: "Files",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    FileName = table.Column<string>(type: "TEXT", nullable: false),
-                    StoredFileName = table.Column<string>(type: "TEXT", nullable: false),
-                    ContentType = table.Column<string>(type: "TEXT", nullable: false),
-                    FileSize = table.Column<long>(type: "INTEGER", nullable: false),
-                    IsSuccess = table.Column<bool>(type: "INTEGER", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    FileName = table.Column<string>(type: "text", nullable: false),
+                    StoredFileName = table.Column<string>(type: "text", nullable: false),
+                    ContentType = table.Column<string>(type: "text", nullable: false),
+                    FileSize = table.Column<long>(type: "bigint", nullable: false),
+                    IsSuccess = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -58,10 +59,10 @@ namespace _2Eat.Infrastructure.Migrations
                 name: "IngredientMeasurements",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Quantity = table.Column<double>(type: "REAL", nullable: false),
-                    Unit = table.Column<int>(type: "INTEGER", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Quantity = table.Column<double>(type: "double precision", nullable: false),
+                    Unit = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -72,10 +73,10 @@ namespace _2Eat.Infrastructure.Migrations
                 name: "ShoppingLists",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    UserId = table.Column<int>(type: "INTEGER", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    UserId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -86,10 +87,10 @@ namespace _2Eat.Infrastructure.Migrations
                 name: "Ingredients",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", maxLength: 64, nullable: false),
-                    CategoryId = table.Column<int>(type: "INTEGER", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
+                    CategoryId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -106,19 +107,19 @@ namespace _2Eat.Infrastructure.Migrations
                 name: "Recipes",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", maxLength: 64, nullable: false),
-                    Description = table.Column<string>(type: "TEXT", nullable: false),
-                    Instructions = table.Column<string>(type: "TEXT", nullable: false),
-                    ImageUrl = table.Column<string>(type: "TEXT", nullable: true),
-                    Servings = table.Column<int>(type: "INTEGER", nullable: false),
-                    Rating = table.Column<int>(type: "INTEGER", nullable: false),
-                    CookTime = table.Column<int>(type: "INTEGER", nullable: false),
-                    PrepTime = table.Column<int>(type: "INTEGER", nullable: false),
-                    LastModified = table.Column<DateTimeOffset>(type: "TEXT", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "TEXT", nullable: false),
-                    CategoryId = table.Column<int>(type: "INTEGER", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: false),
+                    Instructions = table.Column<string>(type: "text", nullable: false),
+                    ImageUrl = table.Column<string>(type: "text", nullable: true),
+                    Servings = table.Column<int>(type: "integer", nullable: false),
+                    Rating = table.Column<int>(type: "integer", nullable: false),
+                    CookTime = table.Column<int>(type: "integer", nullable: false),
+                    PrepTime = table.Column<int>(type: "integer", nullable: false),
+                    LastModified = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    CategoryId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -135,11 +136,11 @@ namespace _2Eat.Infrastructure.Migrations
                 name: "ShoppingListItems",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    IsChecked = table.Column<bool>(type: "INTEGER", nullable: false),
-                    ShoppingListId = table.Column<int>(type: "INTEGER", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    IsChecked = table.Column<bool>(type: "boolean", nullable: false),
+                    ShoppingListId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -156,10 +157,10 @@ namespace _2Eat.Infrastructure.Migrations
                 name: "Users",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Email = table.Column<string>(type: "TEXT", nullable: false),
-                    ShoppingListId = table.Column<int>(type: "INTEGER", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Email = table.Column<string>(type: "text", nullable: false),
+                    ShoppingListId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -176,8 +177,8 @@ namespace _2Eat.Infrastructure.Migrations
                 name: "AllergenIngredient",
                 columns: table => new
                 {
-                    AllergensId = table.Column<int>(type: "INTEGER", nullable: false),
-                    IngredientsId = table.Column<int>(type: "INTEGER", nullable: false)
+                    AllergensId = table.Column<int>(type: "integer", nullable: false),
+                    IngredientsId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -200,17 +201,17 @@ namespace _2Eat.Infrastructure.Migrations
                 name: "RecipeIngredients",
                 columns: table => new
                 {
-                    RecipeId = table.Column<int>(type: "INTEGER", nullable: false),
-                    IngredientId = table.Column<int>(type: "INTEGER", nullable: false),
-                    Id = table.Column<int>(type: "INTEGER", nullable: false),
-                    Order = table.Column<int>(type: "INTEGER", nullable: false),
-                    IngredientMeasurementId = table.Column<int>(type: "INTEGER", nullable: false)
+                    RecipeId = table.Column<int>(type: "integer", nullable: false),
+                    IngredientId = table.Column<int>(type: "integer", nullable: false),
+                    Id = table.Column<int>(type: "integer", nullable: false),
+                    Order = table.Column<int>(type: "integer", nullable: false),
+                    IngredientMeasurementId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_RecipeIngredients", x => new { x.RecipeId, x.IngredientId });
                     table.ForeignKey(
-                        name: "FK_RecipeIngredients_IngredientMeasurements_IngredientMeasurementId",
+                        name: "FK_RecipeIngredients_IngredientMeasurements_IngredientMeasurem~",
                         column: x => x.IngredientMeasurementId,
                         principalTable: "IngredientMeasurements",
                         principalColumn: "Id",
@@ -233,10 +234,10 @@ namespace _2Eat.Infrastructure.Migrations
                 name: "MealPlans",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    UserId = table.Column<int>(type: "INTEGER", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    UserId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -259,6 +260,18 @@ namespace _2Eat.Infrastructure.Migrations
                     2,
                     3,
                     4
+                });
+
+            migrationBuilder.InsertData(
+                table: "Categories",
+                columns: new[] { "Id", "Name" },
+                values: new object[,]
+                {
+                    { 1, "Bakverk" },
+                    { 2, "Smörgåsar" },
+                    { 3, "Kött" },
+                    { 4, "Fisk" },
+                    { 5, "Övrigt" }
                 });
 
             migrationBuilder.InsertData(
@@ -287,25 +300,25 @@ namespace _2Eat.Infrastructure.Migrations
                 columns: new[] { "Id", "CategoryId", "Name" },
                 values: new object[,]
                 {
-                    { 1, 0, "Vetemjöl" },
-                    { 2, 0, "Strösocker" },
-                    { 3, 0, "Ägg" },
-                    { 4, 0, "Smör" },
-                    { 5, 0, "Mjölk" },
-                    { 6, 0, "Grädde" },
-                    { 7, 0, "Potatis" },
-                    { 8, 0, "Lax" },
-                    { 9, 0, "Dill" },
-                    { 11, 0, "Rödbetor" },
-                    { 12, 0, "Räkor" },
-                    { 13, 0, "Kavring" },
-                    { 14, 0, "Västerbottensost" },
-                    { 15, 0, "Renkött" },
-                    { 16, 0, "Lingon" },
-                    { 17, 0, "Kanel" },
-                    { 18, 0, "Kardemumma" },
-                    { 19, 0, "Älgkött" },
-                    { 20, 0, "Surströmming" }
+                    { 1, 1, "Vetemjöl" },
+                    { 2, 5, "Strösocker" },
+                    { 3, 5, "Ägg" },
+                    { 4, 5, "Smör" },
+                    { 5, 5, "Mjölk" },
+                    { 6, 5, "Grädde" },
+                    { 7, 5, "Potatis" },
+                    { 8, 4, "Lax" },
+                    { 9, 5, "Dill" },
+                    { 11, 5, "Rödbetor" },
+                    { 12, 4, "Räkor" },
+                    { 13, 5, "Kavring" },
+                    { 14, 5, "Västerbottensost" },
+                    { 15, 3, "Renkött" },
+                    { 16, 5, "Lingon" },
+                    { 17, 1, "Kanel" },
+                    { 18, 1, "Kardemumma" },
+                    { 19, 3, "Älgkött" },
+                    { 20, 4, "Surströmming" }
                 });
 
             migrationBuilder.InsertData(
@@ -313,10 +326,10 @@ namespace _2Eat.Infrastructure.Migrations
                 columns: new[] { "Id", "CategoryId", "CookTime", "CreatedAt", "Description", "ImageUrl", "Instructions", "LastModified", "Name", "PrepTime", "Rating", "Servings" },
                 values: new object[,]
                 {
-                    { 1, 1, 15, new DateTimeOffset(new DateTime(2024, 7, 24, 22, 53, 44, 272, DateTimeKind.Unspecified).AddTicks(3913), new TimeSpan(0, 2, 0, 0, 0)), "Traditionella svenska kanelbullar", null, "Blanda ingredienser och baka i 180°C i 15 minuter.", new DateTimeOffset(new DateTime(2024, 7, 24, 22, 53, 44, 272, DateTimeKind.Unspecified).AddTicks(3854), new TimeSpan(0, 2, 0, 0, 0)), "Kanelbullar", 45, 5, 4 },
-                    { 2, 2, 0, new DateTimeOffset(new DateTime(2024, 7, 24, 22, 53, 44, 272, DateTimeKind.Unspecified).AddTicks(3920), new TimeSpan(0, 2, 0, 0, 0)), "En klassisk svensk räkmacka", null, "Montera mackan med bröd, räkor, majonnäs och dill.", new DateTimeOffset(new DateTime(2024, 7, 24, 22, 53, 44, 272, DateTimeKind.Unspecified).AddTicks(3919), new TimeSpan(0, 2, 0, 0, 0)), "Räkmacka", 10, 4, 2 },
-                    { 3, 3, 120, new DateTimeOffset(new DateTime(2024, 7, 24, 22, 53, 44, 272, DateTimeKind.Unspecified).AddTicks(3924), new TimeSpan(0, 2, 0, 0, 0)), "Älgstek med enbär", null, "Rosta älgköttet med enbär och servera med potatis och lingon.", new DateTimeOffset(new DateTime(2024, 7, 24, 22, 53, 44, 272, DateTimeKind.Unspecified).AddTicks(3923), new TimeSpan(0, 2, 0, 0, 0)), "Älgstek", 30, 5, 6 },
-                    { 4, 4, 30, new DateTimeOffset(new DateTime(2024, 7, 24, 22, 53, 44, 272, DateTimeKind.Unspecified).AddTicks(3927), new TimeSpan(0, 2, 0, 0, 0)), "Lax i en krämig sås", null, "Laga laxen i en gräddig sås med dill och servera med kokt potatis.", new DateTimeOffset(new DateTime(2024, 7, 24, 22, 53, 44, 272, DateTimeKind.Unspecified).AddTicks(3926), new TimeSpan(0, 2, 0, 0, 0)), "Lax med grädde", 20, 4, 4 }
+                    { 1, 1, 15, new DateTimeOffset(new DateTime(2026, 5, 3, 15, 1, 48, 78, DateTimeKind.Unspecified).AddTicks(2833), new TimeSpan(0, 2, 0, 0, 0)), "Traditionella svenska kanelbullar", null, "Blanda ingredienser och baka i 180°C i 15 minuter.", new DateTimeOffset(new DateTime(2021, 10, 10, 10, 30, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Kanelbullar", 45, 5, 4 },
+                    { 2, 2, 0, new DateTimeOffset(new DateTime(2026, 5, 3, 15, 1, 48, 78, DateTimeKind.Unspecified).AddTicks(4192), new TimeSpan(0, 2, 0, 0, 0)), "En klassisk svensk räkmacka", null, "Montera mackan med bröd, räkor, majonnäs och dill.", new DateTimeOffset(new DateTime(2021, 10, 10, 12, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Räkmacka", 10, 4, 2 },
+                    { 3, 3, 120, new DateTimeOffset(new DateTime(2026, 5, 3, 15, 1, 48, 78, DateTimeKind.Unspecified).AddTicks(4197), new TimeSpan(0, 2, 0, 0, 0)), "Älgstek med enbär", null, "Rosta älgköttet med enbär och servera med potatis och lingon.", new DateTimeOffset(new DateTime(2023, 10, 10, 15, 45, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Älgstek", 30, 5, 6 },
+                    { 4, 4, 30, new DateTimeOffset(new DateTime(2026, 5, 3, 15, 1, 48, 78, DateTimeKind.Unspecified).AddTicks(4201), new TimeSpan(0, 2, 0, 0, 0)), "Lax i en krämig sås", null, "Laga laxen i en gräddig sås med dill och servera med kokt potatis.", new DateTimeOffset(new DateTime(2024, 10, 10, 9, 15, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Lax med grädde", 20, 4, 4 }
                 });
 
             migrationBuilder.InsertData(

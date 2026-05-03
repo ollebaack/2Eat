@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using _2Eat.Infrastructure;
 
 #nullable disable
@@ -15,15 +16,19 @@ namespace _2Eat.Infrastructure.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "8.0.7");
+            modelBuilder
+                .HasAnnotation("ProductVersion", "9.0.4")
+                .HasAnnotation("Relational:MaxIdentifierLength", 63);
+
+            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("AllergenIngredient", b =>
                 {
                     b.Property<int>("AllergensId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.Property<int>("IngredientsId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.HasKey("AllergensId", "IngredientsId");
 
@@ -42,7 +47,7 @@ namespace _2Eat.Infrastructure.Migrations
             modelBuilder.Entity("_2Eat.Domain.Allergen", b =>
                 {
                     b.Property<int>("Id")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -75,41 +80,72 @@ namespace _2Eat.Infrastructure.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(64)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("character varying(64)");
 
                     b.HasKey("Id");
 
                     b.ToTable("Categories");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Bakverk"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Smörgåsar"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Kött"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Name = "Fisk"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Name = "Övrigt"
+                        });
                 });
 
             modelBuilder.Entity("_2Eat.Domain.Files.FileUpload", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ContentType")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.Property<string>("FileName")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.Property<long>("FileSize")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("bigint");
 
                     b.Property<bool>("IsSuccess")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("boolean");
 
                     b.Property<string>("StoredFileName")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -120,15 +156,17 @@ namespace _2Eat.Infrastructure.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("CategoryId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(64)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("character varying(64)");
 
                     b.HasKey("Id");
 
@@ -143,115 +181,115 @@ namespace _2Eat.Infrastructure.Migrations
                         new
                         {
                             Id = 1,
-                            CategoryId = 0,
+                            CategoryId = 1,
                             Name = "Vetemjöl"
                         },
                         new
                         {
                             Id = 2,
-                            CategoryId = 0,
+                            CategoryId = 5,
                             Name = "Strösocker"
                         },
                         new
                         {
                             Id = 3,
-                            CategoryId = 0,
+                            CategoryId = 5,
                             Name = "Ägg"
                         },
                         new
                         {
                             Id = 4,
-                            CategoryId = 0,
+                            CategoryId = 5,
                             Name = "Smör"
                         },
                         new
                         {
                             Id = 5,
-                            CategoryId = 0,
+                            CategoryId = 5,
                             Name = "Mjölk"
                         },
                         new
                         {
                             Id = 6,
-                            CategoryId = 0,
+                            CategoryId = 5,
                             Name = "Grädde"
                         },
                         new
                         {
                             Id = 7,
-                            CategoryId = 0,
+                            CategoryId = 5,
                             Name = "Potatis"
                         },
                         new
                         {
                             Id = 8,
-                            CategoryId = 0,
+                            CategoryId = 4,
                             Name = "Lax"
                         },
                         new
                         {
                             Id = 9,
-                            CategoryId = 0,
+                            CategoryId = 5,
                             Name = "Dill"
                         },
                         new
                         {
                             Id = 11,
-                            CategoryId = 0,
+                            CategoryId = 5,
                             Name = "Rödbetor"
                         },
                         new
                         {
                             Id = 12,
-                            CategoryId = 0,
+                            CategoryId = 4,
                             Name = "Räkor"
                         },
                         new
                         {
                             Id = 13,
-                            CategoryId = 0,
+                            CategoryId = 5,
                             Name = "Kavring"
                         },
                         new
                         {
                             Id = 14,
-                            CategoryId = 0,
+                            CategoryId = 5,
                             Name = "Västerbottensost"
                         },
                         new
                         {
                             Id = 15,
-                            CategoryId = 0,
+                            CategoryId = 3,
                             Name = "Renkött"
                         },
                         new
                         {
                             Id = 16,
-                            CategoryId = 0,
+                            CategoryId = 5,
                             Name = "Lingon"
                         },
                         new
                         {
                             Id = 17,
-                            CategoryId = 0,
+                            CategoryId = 1,
                             Name = "Kanel"
                         },
                         new
                         {
                             Id = 18,
-                            CategoryId = 0,
+                            CategoryId = 1,
                             Name = "Kardemumma"
                         },
                         new
                         {
                             Id = 19,
-                            CategoryId = 0,
+                            CategoryId = 3,
                             Name = "Älgkött"
                         },
                         new
                         {
                             Id = 20,
-                            CategoryId = 0,
+                            CategoryId = 4,
                             Name = "Surströmming"
                         });
                 });
@@ -260,13 +298,15 @@ namespace _2Eat.Infrastructure.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<double>("Quantity")
-                        .HasColumnType("REAL");
+                        .HasColumnType("double precision");
 
                     b.Property<int>("Unit")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -363,14 +403,16 @@ namespace _2Eat.Infrastructure.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.Property<int>("UserId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -383,44 +425,46 @@ namespace _2Eat.Infrastructure.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("CategoryId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.Property<int>("CookTime")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.Property<string>("ImageUrl")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.Property<string>("Instructions")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.Property<DateTimeOffset>("LastModified")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(64)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("character varying(64)");
 
                     b.Property<int>("PrepTime")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.Property<int>("Rating")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.Property<int>("Servings")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -437,10 +481,10 @@ namespace _2Eat.Infrastructure.Migrations
                             Id = 1,
                             CategoryId = 1,
                             CookTime = 15,
-                            CreatedAt = new DateTimeOffset(new DateTime(2024, 7, 24, 22, 53, 44, 272, DateTimeKind.Unspecified).AddTicks(3913), new TimeSpan(0, 2, 0, 0, 0)),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 5, 3, 15, 1, 48, 78, DateTimeKind.Unspecified).AddTicks(2833), new TimeSpan(0, 2, 0, 0, 0)),
                             Description = "Traditionella svenska kanelbullar",
                             Instructions = "Blanda ingredienser och baka i 180°C i 15 minuter.",
-                            LastModified = new DateTimeOffset(new DateTime(2024, 7, 24, 22, 53, 44, 272, DateTimeKind.Unspecified).AddTicks(3854), new TimeSpan(0, 2, 0, 0, 0)),
+                            LastModified = new DateTimeOffset(new DateTime(2021, 10, 10, 10, 30, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             Name = "Kanelbullar",
                             PrepTime = 45,
                             Rating = 5,
@@ -451,10 +495,10 @@ namespace _2Eat.Infrastructure.Migrations
                             Id = 2,
                             CategoryId = 2,
                             CookTime = 0,
-                            CreatedAt = new DateTimeOffset(new DateTime(2024, 7, 24, 22, 53, 44, 272, DateTimeKind.Unspecified).AddTicks(3920), new TimeSpan(0, 2, 0, 0, 0)),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 5, 3, 15, 1, 48, 78, DateTimeKind.Unspecified).AddTicks(4192), new TimeSpan(0, 2, 0, 0, 0)),
                             Description = "En klassisk svensk räkmacka",
                             Instructions = "Montera mackan med bröd, räkor, majonnäs och dill.",
-                            LastModified = new DateTimeOffset(new DateTime(2024, 7, 24, 22, 53, 44, 272, DateTimeKind.Unspecified).AddTicks(3919), new TimeSpan(0, 2, 0, 0, 0)),
+                            LastModified = new DateTimeOffset(new DateTime(2021, 10, 10, 12, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             Name = "Räkmacka",
                             PrepTime = 10,
                             Rating = 4,
@@ -465,10 +509,10 @@ namespace _2Eat.Infrastructure.Migrations
                             Id = 3,
                             CategoryId = 3,
                             CookTime = 120,
-                            CreatedAt = new DateTimeOffset(new DateTime(2024, 7, 24, 22, 53, 44, 272, DateTimeKind.Unspecified).AddTicks(3924), new TimeSpan(0, 2, 0, 0, 0)),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 5, 3, 15, 1, 48, 78, DateTimeKind.Unspecified).AddTicks(4197), new TimeSpan(0, 2, 0, 0, 0)),
                             Description = "Älgstek med enbär",
                             Instructions = "Rosta älgköttet med enbär och servera med potatis och lingon.",
-                            LastModified = new DateTimeOffset(new DateTime(2024, 7, 24, 22, 53, 44, 272, DateTimeKind.Unspecified).AddTicks(3923), new TimeSpan(0, 2, 0, 0, 0)),
+                            LastModified = new DateTimeOffset(new DateTime(2023, 10, 10, 15, 45, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             Name = "Älgstek",
                             PrepTime = 30,
                             Rating = 5,
@@ -479,10 +523,10 @@ namespace _2Eat.Infrastructure.Migrations
                             Id = 4,
                             CategoryId = 4,
                             CookTime = 30,
-                            CreatedAt = new DateTimeOffset(new DateTime(2024, 7, 24, 22, 53, 44, 272, DateTimeKind.Unspecified).AddTicks(3927), new TimeSpan(0, 2, 0, 0, 0)),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 5, 3, 15, 1, 48, 78, DateTimeKind.Unspecified).AddTicks(4201), new TimeSpan(0, 2, 0, 0, 0)),
                             Description = "Lax i en krämig sås",
                             Instructions = "Laga laxen i en gräddig sås med dill och servera med kokt potatis.",
-                            LastModified = new DateTimeOffset(new DateTime(2024, 7, 24, 22, 53, 44, 272, DateTimeKind.Unspecified).AddTicks(3926), new TimeSpan(0, 2, 0, 0, 0)),
+                            LastModified = new DateTimeOffset(new DateTime(2024, 10, 10, 9, 15, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             Name = "Lax med grädde",
                             PrepTime = 20,
                             Rating = 4,
@@ -493,19 +537,19 @@ namespace _2Eat.Infrastructure.Migrations
             modelBuilder.Entity("_2Eat.Domain.RecipeIngredient", b =>
                 {
                     b.Property<int>("RecipeId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.Property<int>("IngredientId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.Property<int>("Id")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.Property<int>("IngredientMeasurementId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.Property<int>("Order")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.HasKey("RecipeId", "IngredientId");
 
@@ -635,14 +679,16 @@ namespace _2Eat.Infrastructure.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.Property<int>("UserId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -653,17 +699,19 @@ namespace _2Eat.Infrastructure.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<bool>("IsChecked")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.Property<int>("ShoppingListId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -676,14 +724,16 @@ namespace _2Eat.Infrastructure.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.Property<int>("ShoppingListId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
