@@ -28,7 +28,6 @@ function recipeSwatch(id: number) { return SWATCHES[id % SWATCHES.length] }
 function PhotoSlot({ imageUrl, swatch, label = '', aspect = '4/5', height }: {
   imageUrl?: string; swatch?: string; label?: string; aspect?: string; height?: string
 }) {
-  const uid = `sw${Math.random().toString(36).slice(2, 8)}`
   const containerStyle: React.CSSProperties = {
     position: 'relative', width: '100%',
     height: height ?? 'auto',
@@ -38,6 +37,7 @@ function PhotoSlot({ imageUrl, swatch, label = '', aspect = '4/5', height }: {
   if (imageUrl) {
     return <div style={containerStyle}><img src={getFileUrl(imageUrl)} alt={label} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /></div>
   }
+  const uid = `sw${Math.random().toString(36).slice(2, 8)}`
   const fill = swatch ?? 'oklch(0.65 0.08 60)'
   return (
     <div style={{ ...containerStyle, background: fill }}>
@@ -87,7 +87,7 @@ function Pill({ children, tone = 'default', size = 'md' }: { children: React.Rea
 }
 
 // ── Servings scaler ───────────────────────────────────────────────────────
-function ScalerControl({ servings, setServings }: { servings: number; setServings: (n: number) => void; base: number }) {
+function ScalerControl({ servings, setServings }: { servings: number; setServings: (n: number) => void }) {
   return (
     <div style={{ display: 'inline-flex', alignItems: 'center', border: '1px solid var(--line)', borderRadius: 999, overflow: 'hidden', background: 'var(--paper)' }}>
       <Button variant="ghost" size="icon" className="h-[34px] w-[34px] rounded-none text-lg" style={{ color: 'var(--ink-60)' }} onClick={() => setServings(Math.max(1, servings - 1))}>−</Button>
@@ -309,7 +309,7 @@ export function RecipeDetailPage() {
         <aside style={{ position: 'sticky', top: 24, alignSelf: 'flex-start' }}>
           <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 18 }}>
             <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 28, letterSpacing: '-0.025em', color: 'var(--ink)', margin: 0, fontWeight: 400 }}>Ingredienser</h2>
-            <ScalerControl servings={currentServings} setServings={v => setServings(v)} base={recipe.servings} />
+            <ScalerControl servings={currentServings} setServings={v => setServings(v)} />
           </div>
           <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column' }}>
             {sortedIngredients.map((ri, i) => {
