@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend (build & test)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            nuget-${{ runner.os }}-
+
+      - name: Restore
+        run: dotnet restore 2Eat.sln
+
+      - name: Build
+        run: dotnet build 2Eat.sln --no-restore --configuration Release
+
+      - name: Test
+        run: dotnet test 2Eat.sln --no-build --configuration Release --verbosity normal
+
+  frontend:
+    name: Frontend (lint & build)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-${{ runner.os }}-${{ hashFiles('src/2Eat.WebApp/package-lock.json') }}
+          restore-keys: |
+            npm-${{ runner.os }}-
+
+      - name: Install dependencies
+        working-directory: src/2Eat.WebApp
+        run: npm ci
+
+      - name: Lint
+        working-directory: src/2Eat.WebApp
+        run: npm run lint
+
+      - name: Build
+        working-directory: src/2Eat.WebApp
+        run: npm run build
