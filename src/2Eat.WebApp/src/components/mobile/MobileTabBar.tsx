@@ -1,5 +1,5 @@
 import { useNavigate, useMatch } from 'react-router-dom'
-import { BookOpen, Search, UtensilsCrossed, Users } from 'lucide-react'
+import { BookOpen, Carrot, Calendar, Users } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 interface Tab {
@@ -7,27 +7,25 @@ interface Tab {
   label: string
   icon: LucideIcon
   to: string
-  matchPath: string
-  end?: boolean
 }
 
 const TABS: Tab[] = [
-  { key: 'home',        label: 'Recept',      icon: BookOpen,        to: '/',             matchPath: '/',             end: true  },
-  { key: 'ingredients', label: 'Ingredienser', icon: Search,          to: '/ingredients',  matchPath: '/ingredients',  end: false },
-  { key: 'new',         label: 'Nytt',         icon: UtensilsCrossed, to: '/recipes/new',  matchPath: '/recipes/new',  end: false },
-  { key: 'me',          label: 'Mig',          icon: Users,           to: '',              matchPath: '/__never__',    end: false },
+  { key: 'home',        label: 'Recept',       icon: BookOpen, to: '/'            },
+  { key: 'ingredients', label: 'Ingredienser', icon: Carrot,   to: '/ingredients' },
+  { key: 'veckoplan',   label: 'Veckoplan',    icon: Calendar, to: '/veckoplan'   },
+  { key: 'me',          label: 'Mig',          icon: Users,    to: ''             },
 ]
 
 export function MobileTabBar() {
   const navigate = useNavigate()
   const isHome        = !!useMatch({ path: '/', end: true })
   const isIngredients = !!useMatch('/ingredients')
-  const isNew         = !!useMatch('/recipes/new')
+  const isVeckoplan   = !!useMatch('/veckoplan')
 
   function isActive(tab: Tab) {
     if (tab.key === 'home')        return isHome
     if (tab.key === 'ingredients') return isIngredients
-    if (tab.key === 'new')         return isNew
+    if (tab.key === 'veckoplan')   return isVeckoplan
     return false
   }
 

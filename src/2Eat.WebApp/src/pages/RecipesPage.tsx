@@ -1,10 +1,10 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Plus, Shuffle, Clock, Users, Trash2, Bookmark, Search, X, LayoutGrid, List, Star } from 'lucide-react'
 import { toast } from 'sonner'
-import { getRecipes, getRandomRecipes, deleteRecipe, getFileUrl } from '@/lib/api'
-import type { Recipe } from '@/types'
+import { getRecipes, getRandomRecipes, deleteRecipe, getFileUrl, ALLERGEN_OPTIONS } from '@/lib/api'
+import type { Recipe, AllergenId } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -354,6 +354,8 @@ export function RecipesPage() {
   const [query, setQuery] = useState('')
   const [filterCat, setFilterCat] = useState('Alla')
   const [view, setView] = useState<'grid' | 'list'>('grid')
+  const [activeAllergens, setActiveAllergens] = useState<AllergenId[]>([])
+  const toggleAllergen = useCallback((a: AllergenId) => setActiveAllergens(prev => prev.includes(a) ? prev.filter(x => x !== a) : [...prev, a]), [])
 
   const { data: allRecipes, isLoading } = useQuery({ queryKey: ['recipes'], queryFn: getRecipes, enabled: !showRandom })
   const { data: randomRecipes, isLoading: randomLoading, refetch: refetchRandom } = useQuery({ queryKey: ['recipes', 'random', 6], queryFn: () => getRandomRecipes(6), enabled: showRandom })
@@ -378,11 +380,17 @@ export function RecipesPage() {
       if (filterCat !== 'Alla' && r.category?.name !== filterCat) return false
       if (query) {
         const q = query.toLowerCase()
-        return r.name.toLowerCase().includes(q) || (r.description ?? '').toLowerCase().includes(q)
+        if (!r.name.toLowerCase().includes(q) && !(r.description ?? '').toLowerCase().includes(q)) return false
+      }
+      if (activeAllergens.length > 0) {
+        const recipeAllergens = new Set(
+          r.ingredients.flatMap(ri => ri.ingredient?.allergens?.map(a => a.id) ?? [])
+        )
+        if (!activeAllergens.every(a => recipeAllergens.has(a))) return false
       }
       return true
     })
-  }, [recipes, filterCat, query])
+  }, [recipes, filterCat, query, activeAllergens])
 
   const featured = filtered[0]
   const now = new Date()
@@ -494,6 +502,26 @@ export function RecipesPage() {
                   fontFamily: 'var(--font-sans)', fontSize: 12.5,
                 }}
               >{c}</Button>
+            )
+          })}
+        </div>
+        {/* Allergen chips */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+          {ALLERGEN_OPTIONS.map(a => {
+            const active = activeAllergens.includes(a)
+            return (
+              <button
+                key={a}
+                onClick={() => toggleAllergen(a)}
+                style={{
+                  padding: '6px 12px', borderRadius: 999,
+                  border: '1px dashed ' + (active ? 'var(--2eat-accent)' : 'var(--ink-30)'),
+                  background: active ? 'color-mix(in oklch, var(--2eat-accent) 12%, transparent)' : 'transparent',
+                  color: active ? 'var(--2eat-accent-deep)' : 'var(--ink-50)',
+                  fontFamily: 'var(--font-mono)', fontSize: 10.5, letterSpacing: '0.06em', textTransform: 'uppercase',
+                  cursor: 'pointer', transition: 'all 0.15s',
+                }}
+              >{a}</button>
             )
           })}
         </div>

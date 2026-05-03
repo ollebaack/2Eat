@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Pencil, Trash2, Bookmark, Star, Check, Sparkles, Plus } from 'lucide-react'
+import { ArrowLeft, Pencil, Trash2, Bookmark, Star, Check, Plus } from 'lucide-react'
 import { toast } from 'sonner'
 import { getRecipeById, deleteRecipe, getRecipes, getFileUrl } from '@/lib/api'
 import type { Recipe } from '@/types'
@@ -87,14 +87,13 @@ function Pill({ children, tone = 'default', size = 'md' }: { children: React.Rea
 }
 
 // ── Servings scaler ───────────────────────────────────────────────────────
-function ScalerControl({ servings, setServings, base }: { servings: number; setServings: (n: number) => void; base: number }) {
-  const factor = servings / base
+function ScalerControl({ servings, setServings }: { servings: number; setServings: (n: number) => void; base: number }) {
   return (
     <div style={{ display: 'inline-flex', alignItems: 'center', border: '1px solid var(--line)', borderRadius: 999, overflow: 'hidden', background: 'var(--paper)' }}>
       <Button variant="ghost" size="icon" className="h-[34px] w-[34px] rounded-none text-lg" style={{ color: 'var(--ink-60)' }} onClick={() => setServings(Math.max(1, servings - 1))}>−</Button>
       <div style={{ padding: '0 10px', display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 72, lineHeight: 1 }}>
         <span style={{ fontFamily: 'var(--font-serif)', fontSize: 18, color: 'var(--ink)' }}>{servings}</span>
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--ink-50)', letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: 2 }}>×{factor.toFixed(1)}</span>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--ink-50)', letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: 2 }}>portioner</span>
       </div>
       <Button variant="ghost" size="icon" className="h-[34px] w-[34px] rounded-none text-lg" style={{ color: 'var(--ink-60)' }} onClick={() => setServings(servings + 1)}>+</Button>
     </div>
@@ -267,7 +266,7 @@ export function RecipeDetailPage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 'auto' }}>
             <Stars value={recipe.rating} size={14} />
             <span style={{ width: 1, height: 16, background: 'var(--line)', display: 'inline-block' }} />
-            <span style={{ fontFamily: 'var(--font-sans)', fontSize: 13, color: 'var(--ink-60)' }}>Sparat · {lastModified}</span>
+            <span style={{ fontFamily: 'var(--font-sans)', fontSize: 13, color: 'var(--ink-60)' }}>Senast ändrad {lastModified}</span>
           </div>
         </div>
         <div style={{ borderRadius: 24, overflow: 'hidden' }}>
@@ -281,8 +280,8 @@ export function RecipeDetailPage() {
           { k: 'Förberedelse', v: recipe.prepTime,   u: 'min' },
           { k: 'Tillagning',   v: recipe.cookTime,   u: 'min' },
           { k: 'Total tid',    v: recipe.totalTime,  u: 'min' },
-          { k: 'Portioner',    v: currentServings,   u: 'st'  },
-          { k: 'Betyg',        v: `${recipe.rating}`, u: '/ 5'},
+          { k: 'Portioner',    v: currentServings,         u: 'st'  },
+          { k: 'Svårighet',    v: recipe.difficulty || 'Medel', u: '' },
         ].map((s, i) => (
           <div key={s.k} style={{ display: 'flex', flexDirection: 'column', gap: 6, paddingLeft: i === 0 ? 0 : 28, borderLeft: i === 0 ? 'none' : '1px solid var(--line)' }}>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--ink-50)' }}>{s.k}</span>
@@ -404,7 +403,7 @@ export function RecipeDetailPage() {
           {/* Chef tip */}
           <div style={{ marginTop: 32, padding: '24px 28px', background: 'var(--surface-1)', borderRadius: 18, border: '1px solid var(--line)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-              <Sparkles size={14} strokeWidth={1.5} style={{ color: 'var(--2eat-accent-deep)' }} />
+              <span style={{ color: 'var(--2eat-accent-deep)' }}>✦</span>
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.14em', color: 'var(--2eat-accent-deep)', textTransform: 'uppercase' }}>
                 Kockens tips
               </span>

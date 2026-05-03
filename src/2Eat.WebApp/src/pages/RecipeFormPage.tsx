@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, Plus, Trash2, Upload, Check } from 'lucide-react'
 import { toast } from 'sonner'
-import { getRecipeById, createRecipe, updateRecipe, uploadFile } from '@/lib/api'
+import { getRecipeById, createRecipe, updateRecipe, uploadFile, ALLERGEN_OPTIONS } from '@/lib/api'
 import type { RecipeIngredient, UnitOfMeasurement } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -13,7 +13,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator'
 
 const UNITS: UnitOfMeasurement[] = ['g', 'ml', 'kg', 'krm', 'tsk', 'msk', 'dl', 'l', 'kaffemått', 'st']
-const ALLERGEN_OPTIONS = ['Gluten', 'Vegetariskt', 'Veganskt', 'Laktos', 'Nötter']
 
 type IngredientRow = { key: string; name: string; quantity: number; unit: UnitOfMeasurement; order: number }
 function newRow(order: number): IngredientRow { return { key: crypto.randomUUID(), name: '', quantity: 0, unit: 'g', order } }

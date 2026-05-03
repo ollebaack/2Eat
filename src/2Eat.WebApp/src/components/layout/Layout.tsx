@@ -1,13 +1,16 @@
+import { useState, useEffect } from 'react'
 import { NavLink, Outlet, Link, useNavigate, useMatch } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { Plus, BookOpen, Carrot } from 'lucide-react'
+import { Plus, BookOpen, Carrot, Calendar, ShoppingBasket, Moon, Sun } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import { MobileTabBar } from '@/components/mobile/MobileTabBar'
 
 const navItems = [
-  { to: '/',            label: 'Recept',       icon: BookOpen, end: true  },
-  { to: '/ingredients', label: 'Ingredienser', icon: Carrot,   end: false },
+  { to: '/',            label: 'Recept',       icon: BookOpen,       end: true  },
+  { to: '/ingredients', label: 'Ingredienser', icon: Carrot,         end: false },
+  { to: '/veckoplan',   label: 'Veckoplan',    icon: Calendar,       end: false },
+  { to: '/skafferi',    label: 'Skafferi',     icon: ShoppingBasket, end: false },
 ]
 
 function NavItem({ to, label, icon: Icon, end }: { to: string; label: string; icon: LucideIcon; end: boolean }) {
@@ -48,6 +51,21 @@ const collections = [
 export function Layout() {
   const navigate = useNavigate()
   const isMobile = useIsMobile()
+
+  const [isDark, setIsDark] = useState(() => {
+    const stored = localStorage.getItem('theme')
+    return stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)
+  })
+
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add('dark')
+      localStorage.setItem('theme', 'dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+      localStorage.setItem('theme', 'light')
+    }
+  }, [isDark])
 
   if (isMobile) {
     return (
@@ -141,6 +159,23 @@ export function Layout() {
             <span style={{ fontSize: 13, color: 'var(--ink)', fontWeight: 500 }}>Elsa Lindqvist</span>
             <span style={{ fontSize: 11, color: 'var(--ink-50)' }}>Hemkokboken</span>
           </div>
+          <button
+            onClick={() => setIsDark(d => !d)}
+            title={isDark ? 'Byt till ljust läge' : 'Byt till mörkt läge'}
+            style={{
+              marginLeft: 'auto',
+              width: 32, height: 32,
+              borderRadius: '50%',
+              border: '1px solid var(--line)',
+              background: 'transparent',
+              cursor: 'pointer',
+              display: 'grid', placeItems: 'center',
+              color: 'var(--ink-60)',
+              flexShrink: 0,
+            }}
+          >
+            {isDark ? <Sun size={15} /> : <Moon size={15} />}
+          </button>
         </div>
       </aside>
 
