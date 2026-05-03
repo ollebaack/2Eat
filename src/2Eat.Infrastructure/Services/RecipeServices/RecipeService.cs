@@ -1,5 +1,4 @@
 ﻿using _2Eat.Domain;
-using _2Eat.Application.Extensions.MarkupExtension;
 using Microsoft.EntityFrameworkCore;
 
 namespace _2Eat.Infrastructure.Services.RecipeServices
@@ -93,11 +92,6 @@ namespace _2Eat.Infrastructure.Services.RecipeServices
                     recipeEntity.Ingredients.Add(newRecipeIngredient);
                 }
             }
-
-            // Remove ingredients that are not in the updated recipe
-            //recipeEntity.Ingredients = recipeEntity.Ingredients
-            //    .Where(ri => recipe.Ingredients.Any(i => i.Ingredient.Name == ri?.Ingredient?.Name))
-            //    .ToList();
 
             await _context.SaveChangesAsync();
 

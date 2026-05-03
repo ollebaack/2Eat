@@ -1,7 +1,6 @@
 ﻿using _2Eat.Domain;
 using _2Eat.Domain.Files;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Http;
 
 namespace _2Eat.Infrastructure.Services.FileServices
 {

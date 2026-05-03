@@ -1,5 +1,4 @@
 using _2Eat.Web.API;
-using _2Eat.Application;
 using _2Eat.Infrastructure;
 using System.Text.Json.Serialization;
 
@@ -28,7 +27,6 @@ builder.Services.AddCors(options =>
         });
 });
 
-builder.Services.AddApplicationExtensions();
 builder.Services.AddInfrastructureExtensions(builder.Configuration);
 
 var app = builder.Build();
