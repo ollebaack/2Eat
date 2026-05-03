@@ -18,6 +18,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import { useIsMobile } from '@/hooks/useIsMobile'
+import { MobileDetailScreen } from '@/components/mobile/MobileDetailScreen'
 
 // ── Photo placeholder ─────────────────────────────────────────────────────
 const SWATCHES = ['oklch(0.65 0.12 50)','oklch(0.6 0.1 145)','oklch(0.62 0.12 30)','oklch(0.6 0.08 210)','oklch(0.58 0.1 330)','oklch(0.65 0.1 90)']
@@ -163,6 +165,7 @@ export function RecipeDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const isMobile = useIsMobile()
 
   const { data: recipe, isLoading } = useQuery({
     queryKey: ['recipes', Number(id)],
@@ -191,6 +194,8 @@ export function RecipeDetailPage() {
       </div>
     )
   }
+
+  if (isMobile) return <MobileDetailScreen recipe={recipe} />
 
   const sortedIngredients = [...(recipe.ingredients ?? [])].sort((a, b) => a.order - b.order)
   const currentServings = servings ?? recipe.servings

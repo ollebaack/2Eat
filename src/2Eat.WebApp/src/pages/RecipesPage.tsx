@@ -17,6 +17,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { useIsMobile } from '@/hooks/useIsMobile'
+import { MobileListScreen } from '@/components/mobile/MobileListScreen'
 
 // ── Photo placeholder (striped swatch, falls back to real image) ──────────
 const SWATCHES = [
@@ -345,6 +347,7 @@ function ShuffleModal({ open, recipes, onClose, onPick }: {
 export function RecipesPage() {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
+  const isMobile = useIsMobile()
   const [showRandom, setShowRandom] = useState(false)
   const [shuffleOpen, setShuffleOpen] = useState(false)
   const [toDelete, setToDelete] = useState<Recipe | null>(null)
@@ -384,6 +387,10 @@ export function RecipesPage() {
   const featured = filtered[0]
   const now = new Date()
   const monthName = now.toLocaleDateString('sv-SE', { month: 'long', year: 'numeric' })
+
+  if (isMobile) {
+    return <MobileListScreen recipes={allRecipes ?? []} />
+  }
 
   return (
     <div style={{ maxWidth: 1320, margin: '0 auto', padding: '36px 40px 60px', width: '100%' }}>
