@@ -39,6 +39,17 @@ npm run build
 docker compose up --build
 ```
 
+### GitHub Actions
+
+Two workflow files live in `.github/workflows/`:
+
+| File | Trigger | What it does |
+|---|---|---|
+| `ci.yml` | push / PR → `main` | Builds and tests the .NET solution; lints and builds the frontend |
+| `docker.yml` | push / PR → `main` | Builds Docker images for API and WebApp; pushes to `ghcr.io` only on merge to `main` |
+
+Images are tagged with short commit SHA (`type=sha`) and branch name (`type=ref,event=branch`). No secrets beyond `GITHUB_TOKEN` are required. NuGet packages are cached by `**/*.csproj` hash; npm packages by `package-lock.json` hash; Docker layers via `type=gha`.
+
 There are no test projects currently.
 
 ## Architecture
