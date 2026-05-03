@@ -2,6 +2,8 @@ import { NavLink, Outlet, Link, useNavigate, useMatch } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Plus, BookOpen, Carrot } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
+import { useIsMobile } from '@/hooks/useIsMobile'
+import { MobileTabBar } from '@/components/mobile/MobileTabBar'
 
 const navItems = [
   { to: '/',            label: 'Recept',       icon: BookOpen, end: true  },
@@ -45,6 +47,18 @@ const collections = [
 
 export function Layout() {
   const navigate = useNavigate()
+  const isMobile = useIsMobile()
+
+  if (isMobile) {
+    return (
+      <div style={{ background: 'var(--paper)', minHeight: '100vh' }}>
+        <main>
+          <Outlet />
+        </main>
+        <MobileTabBar />
+      </div>
+    )
+  }
 
   return (
     <div className="flex min-h-screen" style={{ background: 'var(--surface-1)' }}>
