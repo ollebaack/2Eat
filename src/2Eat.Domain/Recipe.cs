@@ -18,6 +18,8 @@ namespace _2Eat.Domain
         public ICollection<RecipeIngredient> Ingredients { get; set; } = new List<RecipeIngredient>();
         public int Servings { get; set; }
         public int Rating { get; set; }
+        [MaxLength(16)]
+        public string Difficulty { get; set; } = "Medel";
         public int CookTime { get; set; }
         public int PrepTime { get; set; }
         public int TotalTime => CookTime + PrepTime;
