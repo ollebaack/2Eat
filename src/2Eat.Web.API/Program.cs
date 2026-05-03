@@ -4,13 +4,12 @@ using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddEndpointsApiExplorer()
-    .ConfigureHttpJsonOptions(options =>
-    {
-        options.SerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-        options.SerializerOptions.PropertyNameCaseInsensitive = true;
-    });
-builder.Services.AddSwaggerGen();
+builder.Services.AddOpenApi();
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    options.SerializerOptions.PropertyNameCaseInsensitive = true;
+});
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddCors(options =>
@@ -32,8 +31,7 @@ app.Services.ApplyMigrations();
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.MapOpenApi();
 }
 
 app.UseCors("AllowSpecificOrigin");
