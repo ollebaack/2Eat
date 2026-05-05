@@ -65,7 +65,12 @@ namespace _2Eat.Infrastructure
             modelBuilder.Entity<User>()
                 .HasOne(x => x.ShoppingList)
                 .WithOne(x => x.User)
-                .HasForeignKey<User>(x => x.ShoppingListId);
+                .HasForeignKey<User>(x => x.ShoppingListId)
+                .IsRequired(false);
+
+            modelBuilder.Entity<User>()
+                .HasIndex(u => u.Email)
+                .IsUnique();
 
             modelBuilder.Entity<MealPlan>()
                 .HasMany(x => x.Days)

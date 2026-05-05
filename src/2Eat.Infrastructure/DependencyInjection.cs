@@ -3,6 +3,7 @@ using _2Eat.Infrastructure.Services.IngredientServices;
 using _2Eat.Infrastructure.Services.MealPlanServices;
 using _2Eat.Infrastructure.Services.PantryServices;
 using _2Eat.Infrastructure.Services.RecipeServices;
+using _2Eat.Infrastructure.Services.UserServices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
@@ -28,6 +29,7 @@ namespace _2Eat.Infrastructure
             services.AddScoped<IFileService, FileService>();
             services.AddScoped<IMealPlanService, MealPlanService>();
             services.AddScoped<IPantryItemService, PantryItemService>();
+            services.AddScoped<IUserService, UserService>();
 
             return services;
         }
