@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace _2Eat.Domain
 {
@@ -8,7 +8,8 @@ namespace _2Eat.Domain
         public int Id { get; set; }
         public int MealPlanId { get; set; }
         public MealPlan MealPlan { get; set; } = null!;
-        public int Day { get; set; }
-        public ICollection<MealPlanDayMeal> Meals { get; set; } = new List<MealPlanDayMeal>();
+        public int DayOfWeek { get; set; }  // 1=Monday ... 7=Sunday
+        public int? RecipeId { get; set; }
+        public string Note { get; set; } = string.Empty;
     }
 }

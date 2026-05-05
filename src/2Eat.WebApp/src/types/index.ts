@@ -61,3 +61,27 @@ export interface FileUpload {
   fileSize: number
   isSuccess: boolean
 }
+
+export interface WeekPlanDay {
+  id: number
+  dayOfWeek: number  // 1=Monday ... 7=Sunday
+  recipeId: number | null
+  note: string
+}
+
+export interface WeekPlan {
+  id: number
+  weekStartDate: string  // "YYYY-MM-DD"
+  days: WeekPlanDay[]
+}
+
+export interface PantryItem {
+  id: number
+  name: string
+  category: string
+  quantity: number
+  unit: string
+  expiresAt: string | null  // "YYYY-MM-DD" or null
+  isOpened: boolean
+  isLow: boolean
+}

@@ -41,5 +41,7 @@ app.UseCors("AllowSpecificOrigin");
 app.MapRecipeEndpoints();
 app.MapIngredientEndpoints();
 app.MapFileEndpoints();
+app.MapMealPlanEndpoints();
+app.MapPantryEndpoints();
 
 app.Run();
