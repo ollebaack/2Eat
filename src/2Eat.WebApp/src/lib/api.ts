@@ -1,4 +1,4 @@
-import type { FileUpload, Ingredient, Recipe, AllergenId } from '@/types'
+import type { FileUpload, Ingredient, PantryItem, Recipe, AllergenId, WeekPlan, WeekPlanDay } from '@/types'
 
 export const ALLERGEN_OPTIONS: AllergenId[] = [
   'Gluten',
@@ -16,6 +16,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     ...init,
   })
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
+  if (res.status === 204 || res.headers.get('content-length') === '0') return undefined as T
   return res.json() as Promise<T>
 }
 
@@ -43,3 +44,23 @@ export function uploadFile(file: File): Promise<FileUpload> {
 }
 
 export const getFileUrl = (storedFileName: string) => `${BASE}/files/${storedFileName}`
+
+export const getWeekPlan = (weekStartDate: string) =>
+  request<WeekPlan>(`/mealplan/week/${weekStartDate}`)
+
+export const setDaySlot = (weekStartDate: string, dayOfWeek: number, data: { recipeId: number | null; note: string }) =>
+  request<WeekPlanDay>(`/mealplan/week/${weekStartDate}/day/${dayOfWeek}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  })
+
+export const clearDaySlot = (weekStartDate: string, dayOfWeek: number) =>
+  request<void>(`/mealplan/week/${weekStartDate}/day/${dayOfWeek}`, { method: 'DELETE' })
+
+export const getPantryItems = () => request<PantryItem[]>('/pantry')
+export const createPantryItem = (item: Omit<PantryItem, 'id'>) =>
+  request<PantryItem>('/pantry', { method: 'POST', body: JSON.stringify(item) })
+export const updatePantryItem = (id: number, item: Omit<PantryItem, 'id'>) =>
+  request<PantryItem>(`/pantry/${id}`, { method: 'PUT', body: JSON.stringify(item) })
+export const deletePantryItem = (id: number) =>
+  request<void>(`/pantry/${id}`, { method: 'DELETE' })

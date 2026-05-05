@@ -16,7 +16,6 @@ namespace _2Eat.Domain
         [EmailAddress]
         public string Email { get; set; } = null!;
         public ShoppingList ShoppingList { get; set; } = null!;
-        public ICollection<MealPlan> MealPlans { get; set; } = new List<MealPlan>();
         // Additional properties like Password, Name, Preferences, etc.
         public int ShoppingListId { get; set; }
     }

@@ -18,7 +18,8 @@ namespace _2Eat.Infrastructure
         public DbSet<Allergen> Allergens { get; set; } = default!;
         public DbSet<Category> Categories { get; set; } = default!;
         public DbSet<MealPlan> MealPlans { get; set; } = default!;
-        //public DbSet<MealPlanDay> MealPlanDays { get; set; } = default!;
+        public DbSet<MealPlanDay> MealPlanDays { get; set; } = default!;
+        public DbSet<PantryItem> PantryItems { get; set; } = default!;
         public DbSet<ShoppingList> ShoppingLists { get; set; } = default!;
         public DbSet<ShoppingListItem> ShoppingListItems { get; set; } = default!;
         public DbSet<User> Users { get; set; } = default!;
@@ -66,12 +67,12 @@ namespace _2Eat.Infrastructure
                 .WithOne(x => x.User)
                 .HasForeignKey<User>(x => x.ShoppingListId);
 
-            modelBuilder.Entity<User>()
-                .HasMany(x => x.MealPlans)
-                .WithOne(x => x.User);
+            modelBuilder.Entity<MealPlan>()
+                .HasMany(x => x.Days)
+                .WithOne(x => x.MealPlan)
+                .HasForeignKey(x => x.MealPlanId);
 
-
-            SeedData(modelBuilder); // Call the seed method
+            SeedData(modelBuilder);
         }
 
         public static void SeedData(ModelBuilder modelBuilder)
