@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
 import { NavLink, Outlet, Link, useNavigate, useMatch } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { Plus, BookOpen, Carrot, Calendar, ShoppingBasket, Moon, Sun } from 'lucide-react'
+import { Plus, BookOpen, Carrot, Calendar, ShoppingBasket, Moon, Sun, LogOut } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import { MobileTabBar } from '@/components/mobile/MobileTabBar'
+import { useAuth } from '@/context/AuthContext'
+import { getFileUrl } from '@/lib/api'
 
 const navItems = [
   { to: '/',            label: 'Recept',       icon: BookOpen,       end: true  },
@@ -41,6 +43,13 @@ function NavItem({ to, label, icon: Icon, end }: { to: string; label: string; ic
   )
 }
 
+const iconButtonStyle: React.CSSProperties = {
+  width: 32, height: 32, borderRadius: '50%',
+  border: '1px solid var(--line)', background: 'transparent',
+  cursor: 'pointer', display: 'grid', placeItems: 'center',
+  color: 'var(--ink-60)', flexShrink: 0,
+}
+
 const collections = [
   { key: 'favs', label: 'Favoriter',  count: 12 },
   { key: 'mid',  label: 'Vardagsmat', count: 38 },
@@ -51,6 +60,12 @@ const collections = [
 export function Layout() {
   const navigate = useNavigate()
   const isMobile = useIsMobile()
+  const { user, logout } = useAuth()
+
+  function handleLogout() {
+    logout()
+    navigate('/login')
+  }
 
   const [isDark, setIsDark] = useState(() => {
     const stored = localStorage.getItem('theme')
@@ -146,35 +161,49 @@ export function Layout() {
           </nav>
         </div>
 
-        <div className="mt-auto flex items-center gap-2.5" style={{ padding: '14px 18px 18px', borderTop: '1px solid var(--line)' }}>
+        <div className="mt-auto flex items-center gap-2 flex-wrap" style={{ padding: '14px 18px 18px', borderTop: '1px solid var(--line)' }}>
+          {user?.avatarUrl ? (
+            <img
+              src={getFileUrl(user.avatarUrl)}
+              alt={user.displayName}
+              className="shrink-0 rounded-full"
+              style={{ width: 32, height: 32, objectFit: 'cover' }}
+            />
+          ) : (
+            <div
+              className="shrink-0 grid place-items-center rounded-full"
+              style={{
+                width: 32, height: 32,
+                background: 'linear-gradient(135deg, var(--2eat-accent), var(--2eat-accent-deep))',
+                color: 'var(--paper)', fontFamily: 'var(--font-serif)', fontSize: 14,
+              }}
+            >
+              {user?.displayName?.slice(0, 2).toUpperCase() ?? '??'}
+            </div>
+          )}
           <div
-            className="shrink-0 grid place-items-center rounded-full"
-            style={{
-              width: 32, height: 32,
-              background: 'linear-gradient(135deg, var(--2eat-accent), var(--2eat-accent-deep))',
-              color: 'var(--paper)', fontFamily: 'var(--font-serif)', fontSize: 14,
-            }}
-          >EL</div>
-          <div className="flex flex-col" style={{ lineHeight: 1.2 }}>
-            <span style={{ fontSize: 13, color: 'var(--ink)', fontWeight: 500 }}>Elsa Lindqvist</span>
-            <span style={{ fontSize: 11, color: 'var(--ink-50)' }}>Hemkokboken</span>
+            className="flex flex-col min-w-0 flex-1 cursor-pointer"
+            style={{ lineHeight: 1.2 }}
+            onClick={() => navigate('/profile')}
+          >
+            <span className="truncate" style={{ fontSize: 13, color: 'var(--ink)', fontWeight: 500 }}>
+              {user?.displayName ?? ''}
+            </span>
+            <span style={{ fontSize: 11, color: 'var(--ink-50)' }}>Min profil</span>
           </div>
           <button
             onClick={() => setIsDark(d => !d)}
             title={isDark ? 'Byt till ljust läge' : 'Byt till mörkt läge'}
-            style={{
-              marginLeft: 'auto',
-              width: 32, height: 32,
-              borderRadius: '50%',
-              border: '1px solid var(--line)',
-              background: 'transparent',
-              cursor: 'pointer',
-              display: 'grid', placeItems: 'center',
-              color: 'var(--ink-60)',
-              flexShrink: 0,
-            }}
+            style={iconButtonStyle}
           >
             {isDark ? <Sun size={15} /> : <Moon size={15} />}
+          </button>
+          <button
+            onClick={handleLogout}
+            title="Logga ut"
+            style={iconButtonStyle}
+          >
+            <LogOut size={15} />
           </button>
         </div>
       </aside>

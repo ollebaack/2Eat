@@ -29,10 +29,6 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddInfrastructureExtensions(builder.Configuration);
 
-var jwtSecret   = builder.Configuration["Jwt:Secret"]!;
-var jwtIssuer   = builder.Configuration["Jwt:Issuer"]!;
-var jwtAudience = builder.Configuration["Jwt:Audience"]!;
-
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -42,9 +38,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience         = true,
             ValidateLifetime         = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer              = jwtIssuer,
-            ValidAudience            = jwtAudience,
-            IssuerSigningKey         = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
+            ValidIssuer              = builder.Configuration["Jwt:Issuer"]!,
+            ValidAudience            = builder.Configuration["Jwt:Audience"]!,
+            IssuerSigningKey         = new SymmetricSecurityKey(
+                                           Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"]!)),
         };
     });
 

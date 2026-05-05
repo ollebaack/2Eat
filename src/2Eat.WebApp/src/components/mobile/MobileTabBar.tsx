@@ -4,7 +4,7 @@ const TABS = [
   { key: 'home',        label: 'Recept',      icon: '📖', to: '/'            },
   { key: 'ingredients', label: 'Ingredienser', icon: '🥕', to: '/ingredients' },
   { key: 'veckoplan',   label: 'Plan',         icon: '📅', to: '/veckoplan'   },
-  { key: 'me',          label: 'Profil',       icon: '👤', to: ''             },
+  { key: 'me',          label: 'Profil',       icon: '👤', to: '/profile'     },
 ]
 
 export function MobileTabBar() {
@@ -12,11 +12,13 @@ export function MobileTabBar() {
   const isHome        = !!useMatch({ path: '/', end: true })
   const isIngredients = !!useMatch('/ingredients')
   const isVeckoplan   = !!useMatch('/veckoplan')
+  const isProfile     = !!useMatch('/profile')
 
   function isActive(key: string) {
     if (key === 'home')        return isHome
     if (key === 'ingredients') return isIngredients
     if (key === 'veckoplan')   return isVeckoplan
+    if (key === 'me')          return isProfile
     return false
   }
 
