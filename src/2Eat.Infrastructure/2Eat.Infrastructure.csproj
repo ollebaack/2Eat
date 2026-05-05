@@ -18,6 +18,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\2Eat.Application\2Eat.Application.csproj" />
   </ItemGroup>
 

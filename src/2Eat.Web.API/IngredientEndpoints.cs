@@ -9,13 +9,13 @@ namespace _2Eat.Web.API
     {
         public static void MapIngredientEndpoints(this IEndpointRouteBuilder endpoints)
         {
-            endpoints.MapGet("/api/ingredients", GetIngredients);
+            endpoints.MapGet("/api/ingredients", GetIngredients).RequireAuthorization();
 
-            endpoints.MapGet("/api/ingredients/{id}", GetIngredientById);
+            endpoints.MapGet("/api/ingredients/{id}", GetIngredientById).RequireAuthorization();
 
-            endpoints.MapPost("/api/ingredients", CreateIngredient);
+            endpoints.MapPost("/api/ingredients", CreateIngredient).RequireAuthorization();
 
-            endpoints.MapDelete("/api/ingredients/{id}", DeleteIngredient);
+            endpoints.MapDelete("/api/ingredients/{id}", DeleteIngredient).RequireAuthorization();
         }
 
         public static async Task<Results<Ok<List<Ingredient>>, NotFound>> GetIngredients(IIngredientService _service)

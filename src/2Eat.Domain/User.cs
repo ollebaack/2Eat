@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace _2Eat.Domain
 {
@@ -15,9 +10,20 @@ namespace _2Eat.Domain
         [Required]
         [EmailAddress]
         public string Email { get; set; } = null!;
-        public ShoppingList ShoppingList { get; set; } = null!;
-        // Additional properties like Password, Name, Preferences, etc.
-        public int ShoppingListId { get; set; }
-    }
 
+        [Required]
+        [MaxLength(64)]
+        public string DisplayName { get; set; } = null!;
+
+        [Required]
+        public string PasswordHash { get; set; } = null!;
+
+        [MaxLength(200)]
+        public string? AvatarUrl { get; set; }
+
+        public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
+
+        public int? ShoppingListId { get; set; }
+        public ShoppingList? ShoppingList { get; set; }
+    }
 }
