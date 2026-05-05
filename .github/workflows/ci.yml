@@ -67,3 +67,52 @@ jobs:
       - name: Build
         working-directory: src/2Eat.WebApp
         run: npm run build
+
+  e2e:
+    name: E2E smoke tests (desktop + mobile)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start stack
+        run: docker compose up --build -d
+
+      - name: Wait for webapp to be ready
+        run: |
+          for i in $(seq 1 30); do
+            curl -sf http://localhost/ && break
+            echo "Waiting… ($i)"
+            sleep 3
+          done
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-${{ runner.os }}-${{ hashFiles('src/2Eat.WebApp/package-lock.json') }}
+          restore-keys: |
+            npm-${{ runner.os }}-
+
+      - name: Install dependencies
+        working-directory: src/2Eat.WebApp
+        run: npm ci
+
+      - name: Install Playwright browsers
+        working-directory: src/2Eat.WebApp
+        run: npx playwright install chromium
+
+      - name: Run smoke tests
+        working-directory: src/2Eat.WebApp
+        run: npm run test
+
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results
+          path: src/2Eat.WebApp/test-results/
+          retention-days: 7
