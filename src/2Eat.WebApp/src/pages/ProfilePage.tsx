@@ -5,14 +5,7 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from '@/components/ui/dialog'
+import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog'
 import { updateMe, changePassword, deleteAccount, uploadFile, getFileUrl } from '@/lib/api'
 import { useAuth } from '@/context/AuthContext'
 
@@ -24,26 +17,27 @@ const cardStyle: React.CSSProperties = {
   marginBottom: 16,
 }
 
+const sectionHeadingStyle: React.CSSProperties = {
+  fontSize: 16,
+  fontWeight: 600,
+  marginBottom: 16,
+  color: 'var(--ink)',
+}
+
 export function ProfilePage() {
   const navigate = useNavigate()
   const { user, logout, setUser } = useAuth()
 
-  // Avatar
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Profile info
   const [displayName, setDisplayName] = useState(user?.displayName ?? '')
   const [email, setEmail] = useState(user?.email ?? '')
 
-  // Password
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
 
-  // Delete dialog
   const [deleteOpen, setDeleteOpen] = useState(false)
-
-  // ── Mutations ──────────────────────────────────────────────
 
   const avatarMutation = useMutation({
     mutationFn: async (file: File) => {
@@ -103,8 +97,6 @@ export function ProfilePage() {
     },
   })
 
-  // ── Handlers ───────────────────────────────────────────────
-
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (file) avatarMutation.mutate(file)
@@ -128,12 +120,6 @@ export function ProfilePage() {
     passwordMutation.mutate()
   }
 
-  function handleDeleteConfirm() {
-    deleteMutation.mutate()
-  }
-
-  // ── Avatar initials ────────────────────────────────────────
-
   const initials = (user?.displayName ?? '?')
     .split(' ')
     .map((w) => w[0])
@@ -141,35 +127,19 @@ export function ProfilePage() {
     .toUpperCase()
     .slice(0, 2)
 
-  if (!user) {
-    return null
-  }
+  if (!user) return null
 
   return (
-    <div
-      style={{
-        maxWidth: 560,
-        margin: '0 auto',
-        padding: '32px 16px',
-      }}
-      className="sm:px-8"
-    >
+    <div style={{ maxWidth: 560, margin: '0 auto', padding: '32px 16px' }} className="sm:px-8">
       <h1
-        style={{
-          fontFamily: 'var(--font-serif)',
-          fontSize: 28,
-          color: 'var(--ink)',
-          marginBottom: 24,
-        }}
+        style={{ fontFamily: 'var(--font-serif)', fontSize: 28, color: 'var(--ink)', marginBottom: 24 }}
       >
         Min profil
       </h1>
 
-      {/* ── Section 1: Avatar ── */}
+      {/* Avatar */}
       <div style={cardStyle}>
-        <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16, color: 'var(--ink)' }}>
-          Profilbild
-        </h2>
+        <h2 style={sectionHeadingStyle}>Profilbild</h2>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           {user.avatarUrl ? (
             <img
@@ -212,11 +182,9 @@ export function ProfilePage() {
         </div>
       </div>
 
-      {/* ── Section 2: Profile info ── */}
+      {/* Profile info */}
       <div style={cardStyle}>
-        <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16, color: 'var(--ink)' }}>
-          Kontoinformation
-        </h2>
+        <h2 style={sectionHeadingStyle}>Kontoinformation</h2>
         <form onSubmit={handleProfileSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="displayName">Visningsnamn</Label>
@@ -237,23 +205,20 @@ export function ProfilePage() {
               required
             />
           </div>
-          <div>
-            <Button
-              type="submit"
-              disabled={profileMutation.isPending}
-              style={{ background: 'var(--2eat-accent)', color: 'var(--paper)', border: 'none' }}
-            >
-              {profileMutation.isPending ? 'Sparar…' : 'Spara'}
-            </Button>
-          </div>
+          <Button
+            type="submit"
+            className="self-start"
+            disabled={profileMutation.isPending}
+            style={{ background: 'var(--2eat-accent)', color: 'var(--paper)', border: 'none' }}
+          >
+            {profileMutation.isPending ? 'Sparar…' : 'Spara'}
+          </Button>
         </form>
       </div>
 
-      {/* ── Section 3: Change password ── */}
+      {/* Change password */}
       <div style={cardStyle}>
-        <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16, color: 'var(--ink)' }}>
-          Ändra lösenord
-        </h2>
+        <h2 style={sectionHeadingStyle}>Ändra lösenord</h2>
         <form onSubmit={handlePasswordSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="currentPassword">Nuvarande lösenord</Label>
@@ -288,57 +253,37 @@ export function ProfilePage() {
               required
             />
           </div>
-          <div>
-            <Button
-              type="submit"
-              disabled={passwordMutation.isPending}
-              style={{ background: 'var(--2eat-accent)', color: 'var(--paper)', border: 'none' }}
-            >
-              {passwordMutation.isPending ? 'Ändrar…' : 'Ändra lösenord'}
-            </Button>
-          </div>
+          <Button
+            type="submit"
+            className="self-start"
+            disabled={passwordMutation.isPending}
+            style={{ background: 'var(--2eat-accent)', color: 'var(--paper)', border: 'none' }}
+          >
+            {passwordMutation.isPending ? 'Ändrar…' : 'Ändra lösenord'}
+          </Button>
         </form>
       </div>
 
-      {/* ── Section 4: Danger zone ── */}
+      {/* Danger zone */}
       <div style={{ ...cardStyle, border: '1px solid #ef444450' }}>
-        <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 8, color: '#ef4444' }}>
-          Farozon
-        </h2>
+        <h2 style={{ ...sectionHeadingStyle, marginBottom: 8, color: '#ef4444' }}>Farozon</h2>
         <p style={{ fontSize: 14, color: 'var(--ink-60)', marginBottom: 16 }}>
           Om du tar bort ditt konto raderas all din data permanent. Denna åtgärd kan inte ångras.
         </p>
-        <Button
-          variant="destructive"
-          onClick={() => setDeleteOpen(true)}
-        >
+        <Button variant="destructive" onClick={() => setDeleteOpen(true)}>
           Ta bort konto
         </Button>
       </div>
 
-      {/* ── Delete confirmation dialog ── */}
-      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Är du säker?</DialogTitle>
-            <DialogDescription>
-              Ditt konto och all data raderas permanent. Det går inte att ångra detta.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteOpen(false)}>
-              Avbryt
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDeleteConfirm}
-              disabled={deleteMutation.isPending}
-            >
-              {deleteMutation.isPending ? 'Tar bort…' : 'Ta bort'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <DeleteConfirmDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title="Är du säker?"
+        description="Ditt konto och all data raderas permanent. Det går inte att ångra detta."
+        onConfirm={() => deleteMutation.mutate()}
+        isPending={deleteMutation.isPending}
+        confirmLabel={deleteMutation.isPending ? 'Tar bort…' : 'Ta bort'}
+      />
     </div>
   )
 }
