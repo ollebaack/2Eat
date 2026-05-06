@@ -2,7 +2,7 @@ import { useState, useMemo, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
-import { Leaf, Sparkles, Clock, Search, Plus, Pencil, ArrowRight, Check } from 'lucide-react'
+import { Leaf, Sparkles, Clock, Search, Plus, Pencil, Trash2, ArrowRight, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -24,6 +24,7 @@ import { useIsMobile } from '@/hooks/useIsMobile'
 import {
   getPantryItems,
   createPantryItem,
+  updatePantryItem,
   deletePantryItem,
   getRecipes,
   scanReceipt,
@@ -50,14 +51,7 @@ function todayStr(): string {
   return d.toLocaleDateString('sv-SE', { day: 'numeric', month: 'long' })
 }
 
-// ── Add/Edit Modal ──────────────────────────────────────────────────────────
-
-interface AddItemModalProps {
-  open: boolean
-  onClose: () => void
-  onSave: (item: Omit<PantryItem, 'id'>) => void
-  isPending: boolean
-}
+// ── Add / Edit Modal ────────────────────────────────────────────────────────
 
 const EMPTY_FORM = {
   name: '',
@@ -69,30 +63,50 @@ const EMPTY_FORM = {
   isLow: false,
 }
 
-function AddItemModal({ open, onClose, onSave, isPending }: AddItemModalProps) {
-  const [form, setForm] = useState({ ...EMPTY_FORM })
+type FormState = typeof EMPTY_FORM
+
+function itemToForm(item: PantryItem): FormState {
+  return {
+    name: item.name,
+    category: item.category,
+    quantity: item.quantity,
+    unit: item.unit,
+    expiresAt: item.expiresAt ? item.expiresAt.split('T')[0] : '',
+    isOpened: item.isOpened,
+    isLow: item.isLow,
+  }
+}
+
+interface ItemFormModalProps {
+  open: boolean
+  editItem?: PantryItem | null
+  onClose: () => void
+  onSave: (form: FormState, id?: number) => void
+  isPending: boolean
+}
+
+// The `key` prop on this component (set to `editItem?.id ?? 'new'` at the
+// call-site) remounts it whenever a different item is selected, giving a clean
+// initial state without useEffect or render-phase mutations.
+function ItemFormModal({ open, editItem, onClose, onSave, isPending }: ItemFormModalProps) {
+  const [form, setForm] = useState<FormState>(() =>
+    editItem ? itemToForm(editItem) : { ...EMPTY_FORM },
+  )
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!form.name.trim()) return
-    onSave({
-      name: form.name.trim(),
-      category: form.category,
-      quantity: Number(form.quantity),
-      unit: form.unit.trim() || 'st',
-      expiresAt: form.expiresAt || null,
-      isOpened: form.isOpened,
-      isLow: form.isLow,
-    })
-    setForm({ ...EMPTY_FORM })
+    onSave(form, editItem?.id)
   }
+
+  const isEdit = editItem != null
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent style={{ maxWidth: 480 }}>
         <DialogHeader>
           <DialogTitle style={{ fontFamily: 'var(--font-serif)', fontSize: 24 }}>
-            Lägg till i skafferiet
+            {isEdit ? 'Redigera vara' : 'Lägg till i skafferiet'}
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -181,7 +195,7 @@ function AddItemModal({ open, onClose, onSave, isPending }: AddItemModalProps) {
               Avbryt
             </Button>
             <Button type="submit" disabled={isPending || !form.name.trim()}>
-              {isPending ? 'Sparar…' : 'Lägg till'}
+              {isPending ? 'Sparar…' : isEdit ? 'Spara' : 'Lägg till'}
             </Button>
           </DialogFooter>
         </form>
@@ -479,9 +493,10 @@ function StatCard({ label, value, subtitle, icon, active, tab, onClick, activeSt
 interface PantryItemCardProps {
   item: PantryItem
   onDelete: (id: number) => void
+  onEdit: (item: PantryItem) => void
 }
 
-function PantryItemCard({ item, onDelete }: PantryItemCardProps) {
+function PantryItemCard({ item, onDelete, onEdit }: PantryItemCardProps) {
   const days = daysUntil(item.expiresAt)
   const expSoon = days !== null && days <= 3
 
@@ -576,26 +591,35 @@ function PantryItemCard({ item, onDelete }: PantryItemCardProps) {
         </div>
       </div>
 
-      {/* Delete */}
-      <button
-        onClick={() => onDelete(item.id)}
-        style={{
-          width: 28,
-          height: 28,
-          borderRadius: '50%',
-          background: 'transparent',
-          border: 'none',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'var(--ink-50)',
-          flexShrink: 0,
-        }}
-        aria-label="Ta bort"
-      >
-        <Pencil size={13} />
-      </button>
+      {/* Actions */}
+      <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+        {(
+          [
+            { label: 'Redigera', icon: <Pencil size={13} />, onClick: () => onEdit(item) },
+            { label: 'Ta bort',  icon: <Trash2  size={13} />, onClick: () => onDelete(item.id) },
+          ] as const
+        ).map(({ label, icon, onClick }) => (
+          <button
+            key={label}
+            onClick={onClick}
+            style={{
+              width: 28,
+              height: 28,
+              borderRadius: '50%',
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'var(--ink-50)',
+            }}
+            aria-label={label}
+          >
+            {icon}
+          </button>
+        ))}
+      </div>
     </div>
   )
 }
@@ -896,6 +920,7 @@ export function SkafferiPage() {
   const [categoryFilter, setCategoryFilter] = useState('Alla')
   const [showAddModal, setShowAddModal] = useState(false)
   const [showScanModal, setShowScanModal] = useState(false)
+  const [editItem, setEditItem] = useState<PantryItem | null>(null)
 
   const { data: pantryItems = [] } = useQuery({
     queryKey: ['pantry'],
@@ -917,6 +942,23 @@ export function SkafferiPage() {
     onError: () => toast.error('Kunde inte lägga till'),
   })
 
+  function handleItemSave(form: FormState, id?: number) {
+    const payload: Omit<PantryItem, 'id'> = {
+      name: form.name.trim(),
+      category: form.category,
+      quantity: Number(form.quantity),
+      unit: form.unit.trim() || 'st',
+      expiresAt: form.expiresAt || null,
+      isOpened: form.isOpened,
+      isLow: form.isLow,
+    }
+    if (id != null) {
+      updateMutation.mutate({ id, item: payload })
+    } else {
+      createMutation.mutate(payload)
+    }
+  }
+
   const deleteMutation = useMutation({
     mutationFn: deletePantryItem,
     onSuccess: () => {
@@ -924,6 +966,17 @@ export function SkafferiPage() {
       toast.success('Borttagen')
     },
     onError: () => toast.error('Kunde inte ta bort'),
+  })
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, item }: { id: number; item: Omit<PantryItem, 'id'> }) =>
+      updatePantryItem(id, item),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pantry'] })
+      toast.success('Sparat')
+      setEditItem(null)
+    },
+    onError: () => toast.error('Kunde inte spara'),
   })
 
   // Precompute days-until for each item once per render (avoids N*logN repeated calls in sort)
@@ -1200,6 +1253,7 @@ export function SkafferiPage() {
                       key={item.id}
                       item={item}
                       onDelete={(id) => deleteMutation.mutate(id)}
+                      onEdit={(i) => setEditItem(i)}
                     />
                   ))}
                 </div>
@@ -1296,7 +1350,7 @@ export function SkafferiPage() {
                   key={item.id}
                   item={item}
                   recipes={recipes}
-                  onManage={() => toast.info(`Hantera ${item.name}`)}
+                  onManage={(i) => setEditItem(i)}
                   onNavigate={(id) => navigate(`/recipes/${id}`)}
                 />
               ))}
@@ -1306,11 +1360,22 @@ export function SkafferiPage() {
       )}
 
       {/* ── Add Modal ── */}
-      <AddItemModal
+      <ItemFormModal
+        key="add"
         open={showAddModal}
         onClose={() => setShowAddModal(false)}
-        onSave={(item) => createMutation.mutate(item)}
+        onSave={handleItemSave}
         isPending={createMutation.isPending}
+      />
+
+      {/* ── Edit Modal ── */}
+      <ItemFormModal
+        key={editItem?.id ?? 'edit'}
+        open={editItem !== null}
+        editItem={editItem}
+        onClose={() => setEditItem(null)}
+        onSave={handleItemSave}
+        isPending={updateMutation.isPending}
       />
 
       {/* ── Receipt Scan Modal ── */}
