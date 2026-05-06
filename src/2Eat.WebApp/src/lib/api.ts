@@ -1,4 +1,4 @@
-import type { FileUpload, Ingredient, PantryItem, Recipe, AllergenId, WeekPlan, WeekPlanDay } from '@/types'
+import type { FileUpload, Ingredient, PantryItem, Recipe, AllergenId, WeekPlan, WeekPlanDay, ScannedRecipe, ScanStatus } from '@/types'
 
 export const ALLERGEN_OPTIONS: AllergenId[] = [
   'Gluten',
@@ -68,6 +68,21 @@ export function uploadFile(file: File): Promise<FileUpload> {
 }
 
 export const getFileUrl = (storedFileName: string) => `${BASE}/files/${storedFileName}`
+
+export const getScanStatus = () => request<ScanStatus>('/recipes/scan/status')
+
+export function scanRecipeFromImage(file: File): Promise<ScannedRecipe> {
+  const form = new FormData()
+  form.append('file', file)
+  return fetch(`${BASE}/recipes/scan/image`, {
+    method: 'POST',
+    body: form,
+    headers: authHeaders(),
+  }).then((r) => handleResponse<ScannedRecipe>(r))
+}
+
+export const scanRecipeFromUrl = (url: string) =>
+  request<ScannedRecipe>('/recipes/scan/url', { method: 'POST', body: JSON.stringify({ url }) })
 
 export const getWeekPlan = (weekStartDate: string) =>
   request<WeekPlan>(`/mealplan/week/${weekStartDate}`)

@@ -3,6 +3,7 @@ using _2Eat.Infrastructure.Services.IngredientServices;
 using _2Eat.Infrastructure.Services.MealPlanServices;
 using _2Eat.Infrastructure.Services.PantryServices;
 using _2Eat.Infrastructure.Services.RecipeServices;
+using _2Eat.Infrastructure.Services.ScanServices;
 using _2Eat.Infrastructure.Services.UserServices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -30,6 +31,13 @@ namespace _2Eat.Infrastructure
             services.AddScoped<IMealPlanService, MealPlanService>();
             services.AddScoped<IPantryItemService, PantryItemService>();
             services.AddScoped<IUserService, UserService>();
+
+            services.AddHttpClient("RecipeScan", c =>
+            {
+                c.Timeout = TimeSpan.FromSeconds(20);
+                c.DefaultRequestHeaders.UserAgent.ParseAdd("2Eat-RecipeScanner/1.0");
+            });
+            services.AddScoped<IRecipeScanService, RecipeScanService>();
 
             return services;
         }
