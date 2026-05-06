@@ -1,5 +1,6 @@
 using _2Eat.Domain;
 using _2Eat.Infrastructure.Services.PantryServices;
+using _2Eat.Infrastructure.Services.ReceiptScanServices;
 
 namespace _2Eat.Web.API
 {
@@ -11,6 +12,9 @@ namespace _2Eat.Web.API
             endpoints.MapPost("/api/pantry", Create);
             endpoints.MapPut("/api/pantry/{id}", Update);
             endpoints.MapDelete("/api/pantry/{id}", Delete);
+            endpoints.MapPost("/api/pantry/scan-receipt", ScanReceipt)
+                     .DisableAntiforgery()
+                     .RequireAuthorization();
         }
 
         static async Task<IResult> GetAll(IPantryItemService service) =>
@@ -35,6 +39,18 @@ namespace _2Eat.Web.API
         {
             await service.DeleteAsync(id);
             return Results.NoContent();
+        }
+
+        static async Task<IResult> ScanReceipt(IFormFile file, IReceiptScanService scanService)
+        {
+            string[] allowed = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+            if (!allowed.Contains(file.ContentType, StringComparer.OrdinalIgnoreCase))
+                return Results.BadRequest(new { detail = "Unsupported image type. Use JPEG, PNG, GIF or WEBP." });
+
+            using var ms = new MemoryStream();
+            await file.CopyToAsync(ms);
+            var items = await scanService.ScanReceiptAsync(ms.ToArray(), file.ContentType);
+            return Results.Ok(items);
         }
     }
 }

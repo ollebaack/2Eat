@@ -29,6 +29,28 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddInfrastructureExtensions(builder.Configuration);
 
+// Validate JWT config up-front so a missing section fails at startup with a
+// clear message rather than an ArgumentNullException on the first request.
+var jwtSecret   = builder.Configuration["Jwt:Secret"];
+var jwtIssuer   = builder.Configuration["Jwt:Issuer"];
+var jwtAudience = builder.Configuration["Jwt:Audience"];
+var jwtExpiry   = builder.Configuration["Jwt:ExpiresInMinutes"];
+
+if (string.IsNullOrWhiteSpace(jwtSecret)   ||
+    string.IsNullOrWhiteSpace(jwtIssuer)   ||
+    string.IsNullOrWhiteSpace(jwtAudience) ||
+    string.IsNullOrWhiteSpace(jwtExpiry))
+{
+    throw new InvalidOperationException(
+        "JWT configuration is incomplete. Make sure the following keys are set:\n" +
+        "  Jwt:Secret           (min 32 chars)\n" +
+        "  Jwt:Issuer\n" +
+        "  Jwt:Audience\n" +
+        "  Jwt:ExpiresInMinutes\n\n" +
+        "For local dev add them to appsettings.Development.json.\n" +
+        "For Docker add them as environment variables in docker-compose.yml.");
+}
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -38,10 +60,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience         = true,
             ValidateLifetime         = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer              = builder.Configuration["Jwt:Issuer"]!,
-            ValidAudience            = builder.Configuration["Jwt:Audience"]!,
-            IssuerSigningKey         = new SymmetricSecurityKey(
-                                           Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"]!)),
+            ValidIssuer              = jwtIssuer,
+            ValidAudience            = jwtAudience,
+            IssuerSigningKey         = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
         };
     });
 

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -26,6 +26,8 @@ import {
   createPantryItem,
   deletePantryItem,
   getRecipes,
+  scanReceipt,
+  type ScannedItem,
 } from '@/lib/api'
 import { recipeSwatch } from '@/lib/recipeUtils'
 import type { PantryItem, Recipe, RecipeIngredient } from '@/types'
@@ -183,6 +185,215 @@ function AddItemModal({ open, onClose, onSave, isPending }: AddItemModalProps) {
             </Button>
           </DialogFooter>
         </form>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+// ── Receipt Scan Modal ─────────────────────────────────────────────────────
+
+interface ReceiptScanModalProps {
+  open: boolean
+  onClose: () => void
+  onItemsAdded: () => void
+}
+
+type ScanStep = 'upload' | 'review'
+
+function ReceiptScanModal({ open, onClose, onItemsAdded }: ReceiptScanModalProps) {
+  const [step, setStep] = useState<ScanStep>('upload')
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [scannedItems, setScannedItems] = useState<ScannedItem[]>([])
+  const [checkedIds, setCheckedIds] = useState<Set<number>>(new Set())
+  const [isScanning, setIsScanning] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const fileRef = useRef<HTMLInputElement>(null)
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setSelectedFile(file)
+    setPreviewUrl(URL.createObjectURL(file))
+  }
+
+  async function handleScan() {
+    if (!selectedFile) return
+    setIsScanning(true)
+    try {
+      const items = await scanReceipt(selectedFile)
+      setScannedItems(items)
+      setCheckedIds(new Set(items.map((_, i) => i)))
+      setStep('review')
+    } catch {
+      toast.error('Kunde inte läsa kvittot')
+    } finally {
+      setIsScanning(false)
+    }
+  }
+
+  async function handleConfirm() {
+    setIsSaving(true)
+    try {
+      const selected = scannedItems.filter((_, i) => checkedIds.has(i))
+      await Promise.all(
+        selected.map((item) =>
+          createPantryItem({
+            name: item.name,
+            category: item.category,
+            quantity: item.quantity,
+            unit: item.unit,
+            expiresAt: null,
+            isOpened: false,
+            isLow: false,
+          })
+        )
+      )
+      toast.success(`${selected.length} varor tillagda`)
+      onItemsAdded()
+      handleClose()
+    } catch {
+      toast.error('Kunde inte lägga till varor')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  function handleClose() {
+    setStep('upload')
+    setSelectedFile(null)
+    setPreviewUrl(null)
+    setScannedItems([])
+    setCheckedIds(new Set())
+    setIsScanning(false)
+    setIsSaving(false)
+    onClose()
+  }
+
+  function toggleItem(i: number) {
+    setCheckedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(i)) next.delete(i)
+      else next.add(i)
+      return next
+    })
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
+      <DialogContent style={{ maxWidth: 480 }}>
+        <DialogHeader>
+          <DialogTitle>Skanna kvitto</DialogTitle>
+        </DialogHeader>
+
+        {step === 'upload' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              style={{ display: 'none' }}
+              onChange={handleFileChange}
+            />
+            {previewUrl ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'center' }}>
+                <img
+                  src={previewUrl}
+                  alt="Kvitto"
+                  style={{ maxHeight: 220, maxWidth: '100%', borderRadius: 8, objectFit: 'contain' }}
+                />
+                <button
+                  type="button"
+                  onClick={() => fileRef.current?.click()}
+                  style={{ fontSize: 13, color: 'var(--ink-60)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+                >
+                  Välj annan bild
+                </button>
+              </div>
+            ) : (
+              <div
+                onClick={() => fileRef.current?.click()}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                  padding: '32px 16px',
+                  border: '2px dashed var(--line)',
+                  borderRadius: 12,
+                  cursor: 'pointer',
+                  color: 'var(--ink-60)',
+                  fontSize: 14,
+                }}
+              >
+                <span style={{ fontSize: 28 }}>📷</span>
+                <span>Ta foto eller välj bild</span>
+              </div>
+            )}
+            <DialogFooter>
+              <Button variant="outline" onClick={handleClose}>Avbryt</Button>
+              <Button onClick={handleScan} disabled={!selectedFile || isScanning}>
+                {isScanning ? 'Analyserar…' : 'Analysera kvitto'}
+              </Button>
+            </DialogFooter>
+          </div>
+        )}
+
+        {step === 'review' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {scannedItems.length === 0 ? (
+              <p style={{ fontSize: 14, color: 'var(--ink-60)', textAlign: 'center', padding: '16px 0' }}>
+                Inga varor hittades på kvittot.
+              </p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 320, overflowY: 'auto' }}>
+                {scannedItems.map((item, i) => (
+                  <label
+                    key={i}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 10,
+                      padding: '8px 10px',
+                      borderRadius: 8,
+                      border: '1px solid var(--line)',
+                      cursor: 'pointer',
+                      fontSize: 14,
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checkedIds.has(i)}
+                      onChange={() => toggleItem(i)}
+                    />
+                    <span style={{ flex: 1 }}>{item.name}</span>
+                    <span style={{ fontSize: 12, color: 'var(--ink-60)', whiteSpace: 'nowrap' }}>
+                      {item.quantity} {item.unit}
+                    </span>
+                    <span style={{
+                      fontSize: 11,
+                      background: 'var(--ink)',
+                      color: 'var(--paper)',
+                      padding: '2px 7px',
+                      borderRadius: 99,
+                      whiteSpace: 'nowrap',
+                    }}>
+                      {item.category}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            )}
+            <DialogFooter>
+              <Button variant="outline" onClick={handleClose}>Avbryt</Button>
+              <Button onClick={handleConfirm} disabled={checkedIds.size === 0 || isSaving}>
+                {isSaving ? 'Sparar…' : `Lägg till ${checkedIds.size} varor`}
+              </Button>
+            </DialogFooter>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   )
@@ -684,6 +895,7 @@ export function SkafferiPage() {
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('Alla')
   const [showAddModal, setShowAddModal] = useState(false)
+  const [showScanModal, setShowScanModal] = useState(false)
 
   const { data: pantryItems = [] } = useQuery({
     queryKey: ['pantry'],
@@ -822,16 +1034,19 @@ export function SkafferiPage() {
         </div>
 
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-          <button style={{
-            padding: '9px 18px',
-            borderRadius: 999,
-            background: 'var(--paper)',
-            border: '1px solid var(--line)',
-            fontFamily: 'var(--font-sans)',
-            fontSize: 13.5,
-            color: 'var(--ink)',
-            cursor: 'pointer',
-          }}>
+          <button
+            onClick={() => setShowScanModal(true)}
+            style={{
+              padding: '9px 18px',
+              borderRadius: 999,
+              background: 'var(--paper)',
+              border: '1px solid var(--line)',
+              fontFamily: 'var(--font-sans)',
+              fontSize: 13.5,
+              color: 'var(--ink)',
+              cursor: 'pointer',
+            }}
+          >
             Skanna kvitto
           </button>
           <button
@@ -1096,6 +1311,13 @@ export function SkafferiPage() {
         onClose={() => setShowAddModal(false)}
         onSave={(item) => createMutation.mutate(item)}
         isPending={createMutation.isPending}
+      />
+
+      {/* ── Receipt Scan Modal ── */}
+      <ReceiptScanModal
+        open={showScanModal}
+        onClose={() => setShowScanModal(false)}
+        onItemsAdded={() => queryClient.invalidateQueries({ queryKey: ['pantry'] })}
       />
     </div>
   )

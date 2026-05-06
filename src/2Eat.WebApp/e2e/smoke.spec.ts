@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { loginViaApi, uniqueEmail } from './helpers'
 
 // Fail immediately on any unhandled JS exception
 test.beforeEach(async ({ page }) => {
@@ -7,9 +8,13 @@ test.beforeEach(async ({ page }) => {
   })
 })
 
+// Authenticate once per worker so all page-load tests run as a logged-in user
+test.beforeEach(async ({ page }) => {
+  await loginViaApi(page, uniqueEmail('smoke'))
+})
+
 test('recipes page loads', async ({ page }) => {
   await page.goto('/')
-  // Either recipes or empty state must appear — proves React rendered without crashing
   await expect(page.locator('h1, h2, h3').first()).toBeVisible({ timeout: 10_000 })
 })
 

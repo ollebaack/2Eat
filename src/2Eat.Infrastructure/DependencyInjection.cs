@@ -2,6 +2,7 @@ using _2Eat.Infrastructure.Services.FileServices;
 using _2Eat.Infrastructure.Services.IngredientServices;
 using _2Eat.Infrastructure.Services.MealPlanServices;
 using _2Eat.Infrastructure.Services.PantryServices;
+using _2Eat.Infrastructure.Services.ReceiptScanServices;
 using _2Eat.Infrastructure.Services.RecipeServices;
 using _2Eat.Infrastructure.Services.ScanServices;
 using _2Eat.Infrastructure.Services.UserServices;
@@ -31,6 +32,7 @@ namespace _2Eat.Infrastructure
             services.AddScoped<IMealPlanService, MealPlanService>();
             services.AddScoped<IPantryItemService, PantryItemService>();
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IReceiptScanService, ReceiptScanService>();
 
             services.AddHttpClient("RecipeScan", c =>
             {
