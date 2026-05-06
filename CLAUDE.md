@@ -72,6 +72,7 @@ Domain entities never reference Application or Infrastructure. Application defin
 - **Minimal APIs only** — no MVC controllers. Endpoints are grouped via extension methods (e.g., `app.MapRecipeEndpoints()`).
 - **Services** injected as `IRecipeService`, `IIngredientService`, `IFileService` — implement in Infrastructure, register in `Program.cs`.
 - **Auth**: JWT Bearer tokens. Config required in `appsettings.Development.json` (see file — `Jwt:Secret`, `Jwt:Issuer`, `Jwt:Audience`, `Jwt:ExpiresInMinutes`). Docker env vars are set in `docker-compose.yml`. The `/api/auth/login` and `/api/auth/register` endpoints use `noAuthRedirect: true` in the API client so a 401 throws an error (shows a toast) rather than redirecting the user away from the auth pages.
+- **Secrets**: `appsettings.json` and `appsettings.Development.json` are committed with placeholder/dev values only — never put real keys in them. Real secrets (e.g. `Anthropic:ApiKey`) go in `appsettings.local.json` (gitignored, loaded automatically by `Program.cs`). For Docker/production use environment variables.
 - **Database**: PostgreSQL via Npgsql EF Core 10. `ApplicationDbContext` is in Infrastructure. Migrations auto-apply on startup via `app.Services.ApplyMigrations()`.
 - **File uploads**: stored in `/uploads` folder with randomized filenames; original name and content type tracked in `FileUpload` entity.
 - **OpenAPI**: Scalar UI available at `/scalar/v1` in development.

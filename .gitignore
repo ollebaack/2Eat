@@ -403,3 +403,7 @@ FodyWeavers.xsd
 
 # User-uploaded files
 uploads/
+
+# Local secrets — never commit real keys
+appsettings.local.json
+appsettings.*.local.json
