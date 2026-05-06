@@ -12,7 +12,7 @@ namespace _2Eat.Infrastructure.Services.IngredientServices
         Task<List<Ingredient>> GetIngredientsAsync();
         Task<Ingredient?> GetIngredientByIdAsync(int id);
         Task<Ingredient> AddIngredientAsync(Ingredient ingredient);
-        //Task<Recipe> UpdateRecipeAsync(int Id, Recipe recipe);
+        Task<Ingredient?> UpdateIngredientAsync(int id, string name, int categoryId);
         Task<Ingredient> DeleteIngredientAsync(int id);
     }
 }

@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Plus, Search } from 'lucide-react'
 import { toast } from 'sonner'
-import { getIngredients, createIngredient, deleteIngredient } from '@/lib/api'
+import { getIngredients, createIngredient, updateIngredient, deleteIngredient } from '@/lib/api'
 import type { Ingredient } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -26,6 +26,8 @@ export function IngredientsPage() {
   const [toDelete, setToDelete] = useState<Ingredient | null>(null)
   const [showAdd, setShowAdd] = useState(false)
   const [newName, setNewName] = useState('')
+  const [toEdit, setToEdit] = useState<Ingredient | null>(null)
+  const [editName, setEditName] = useState('')
   const [query, setQuery] = useState('')
   const [activeCat, setActiveCat] = useState('Alla')
 
@@ -53,6 +55,17 @@ export function IngredientsPage() {
       setShowAdd(false)
     },
     onError: () => toast.error('Kunde inte lägga till ingrediens'),
+  })
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, name, categoryId }: { id: number; name: string; categoryId: number }) =>
+      updateIngredient(id, { name, categoryId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ingredients'] })
+      toast.success('Ingrediens uppdaterad')
+      setToEdit(null)
+    },
+    onError: () => toast.error('Kunde inte uppdatera ingrediensen'),
   })
 
   const categories = useMemo(() => {
@@ -172,7 +185,12 @@ export function IngredientsPage() {
               {/* Ingredient cards */}
               <div className="grid gap-2" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))' }}>
                 {items.map(ing => (
-                  <IngredientCard key={ing.id} ingredient={ing} onDelete={() => setToDelete(ing)} />
+                  <IngredientCard
+                    key={ing.id}
+                    ingredient={ing}
+                    onEdit={() => { setToEdit(ing); setEditName(ing.name) }}
+                    onDelete={() => setToDelete(ing)}
+                  />
                 ))}
               </div>
             </section>
@@ -216,6 +234,48 @@ export function IngredientsPage() {
               onClick={() => createMutation.mutate()}
             >
               Lägg till
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Edit dialog ────────────────────────────────────────── */}
+      <Dialog open={!!toEdit} onOpenChange={o => !o && setToEdit(null)}>
+        <DialogContent style={{ background: 'var(--paper)', border: '1px solid var(--line)', borderRadius: 20 }}>
+          <DialogHeader>
+            <DialogTitle
+              style={{ fontFamily: 'var(--font-serif)', fontSize: 26, letterSpacing: '-0.02em', fontWeight: 400 }}
+            >
+              Redigera ingrediens
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-2">
+            <Label
+              className="uppercase text-ink-50"
+              style={{ fontFamily: 'var(--font-mono)', fontSize: 10.5, letterSpacing: '0.12em' }}
+            >
+              Namn
+            </Label>
+            <Input
+              value={editName}
+              onChange={e => setEditName(e.target.value)}
+              placeholder="t.ex. Lax"
+              style={{ fontFamily: 'var(--font-sans)', fontSize: 14 }}
+              onKeyDown={e => e.key === 'Enter' && editName.trim() && toEdit &&
+                updateMutation.mutate({ id: toEdit.id, name: editName, categoryId: toEdit.categoryId })}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" className="rounded-full" onClick={() => setToEdit(null)}>
+              Avbryt
+            </Button>
+            <Button
+              className="rounded-full"
+              style={{ background: 'var(--2eat-accent)', color: 'var(--paper)', border: 'none' }}
+              disabled={!editName.trim() || updateMutation.isPending}
+              onClick={() => toEdit && updateMutation.mutate({ id: toEdit.id, name: editName, categoryId: toEdit.categoryId })}
+            >
+              Spara
             </Button>
           </DialogFooter>
         </DialogContent>

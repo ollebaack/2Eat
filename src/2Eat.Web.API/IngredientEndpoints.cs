@@ -15,6 +15,8 @@ namespace _2Eat.Web.API
 
             endpoints.MapPost("/api/ingredients", CreateIngredient).RequireAuthorization();
 
+            endpoints.MapPut("/api/ingredients/{id}", UpdateIngredient).RequireAuthorization();
+
             endpoints.MapDelete("/api/ingredients/{id}", DeleteIngredient).RequireAuthorization();
         }
 
@@ -60,6 +62,19 @@ namespace _2Eat.Web.API
             }
         }
 
+        public static async Task<Results<Ok<Ingredient>, NotFound, BadRequest>> UpdateIngredient(int id, IIngredientService _service, HttpContext context)
+        {
+            var body = await context.Request.ReadFromJsonAsync<UpdateIngredientRequest>();
+            if (body == null || string.IsNullOrWhiteSpace(body.Name))
+                return TypedResults.BadRequest();
+
+            var updated = await _service.UpdateIngredientAsync(id, body.Name, body.CategoryId);
+            if (updated == null)
+                return TypedResults.NotFound();
+
+            return TypedResults.Ok(updated);
+        }
+
         public static async Task<Results<Ok<Ingredient>, NotFound, ProblemHttpResult>> DeleteIngredient(int id, IIngredientService _service)
         {
             var Ingredient = await _service.GetIngredientByIdAsync(id);
@@ -78,4 +93,6 @@ namespace _2Eat.Web.API
             }
         }
     }
+
+    public record UpdateIngredientRequest(string Name, int CategoryId);
 }
