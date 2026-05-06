@@ -17,27 +17,36 @@ function authHeaders(): Record<string, string> {
   return token ? { Authorization: `Bearer ${token}` } : {}
 }
 
-async function handleResponse<T>(res: Response): Promise<T> {
+interface RequestOptions extends RequestInit {
+  /** When true, a 401 response throws rather than redirecting to /login.
+   *  Use for auth endpoints (login/register) where 401 means bad credentials. */
+  noAuthRedirect?: boolean
+}
+
+async function handleResponse<T>(res: Response, noAuthRedirect = false): Promise<T> {
   if (res.status === 401) {
-    localStorage.removeItem(TOKEN_KEY)
-    localStorage.removeItem(USER_KEY)
-    window.location.href = '/login'
+    if (!noAuthRedirect) {
+      localStorage.removeItem(TOKEN_KEY)
+      localStorage.removeItem(USER_KEY)
+      window.location.href = '/login'
+    }
     throw new Error('401 Unauthorized')
   }
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
   return res.json() as Promise<T>
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
+async function request<T>(path: string, init?: RequestOptions): Promise<T> {
+  const { noAuthRedirect, ...fetchInit } = init ?? {}
   const res = await fetch(`${BASE}${path}`, {
     headers: {
       'Content-Type': 'application/json',
       ...authHeaders(),
-      ...init?.headers,
+      ...fetchInit.headers,
     },
-    ...init,
+    ...fetchInit,
   })
-  return handleResponse<T>(res)
+  return handleResponse<T>(res, noAuthRedirect)
 }
 
 export const getRecipes = () => request<Recipe[]>('/recipes')
@@ -94,10 +103,10 @@ export interface AuthUser { id: number; email: string; displayName: string; avat
 export interface AuthResult { token: string; user: AuthUser }
 
 export const authRegister = (data: { email: string; password: string; displayName: string }) =>
-  request<AuthResult>('/auth/register', { method: 'POST', body: JSON.stringify(data) })
+  request<AuthResult>('/auth/register', { method: 'POST', body: JSON.stringify(data), noAuthRedirect: true })
 
 export const authLogin = (data: { email: string; password: string }) =>
-  request<AuthResult>('/auth/login', { method: 'POST', body: JSON.stringify(data) })
+  request<AuthResult>('/auth/login', { method: 'POST', body: JSON.stringify(data), noAuthRedirect: true })
 
 export const getMe = () => request<AuthUser>('/auth/me')
 
