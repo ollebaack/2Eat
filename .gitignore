@@ -398,7 +398,7 @@ FodyWeavers.xsd
 *.sln.iml
 
 # Claude Code
-.claude/worktree/*
+.claude/worktrees/*
 .claude/settings.local.json
 
 # User-uploaded files
