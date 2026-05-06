@@ -1,6 +1,7 @@
 using _2Eat.Domain;
 using _2Eat.Infrastructure.Services.PantryServices;
 using _2Eat.Infrastructure.Services.ReceiptScanServices;
+using System.Security.Claims;
 
 namespace _2Eat.Web.API
 {
@@ -8,36 +9,46 @@ namespace _2Eat.Web.API
     {
         public static void MapPantryEndpoints(this IEndpointRouteBuilder endpoints)
         {
-            endpoints.MapGet("/api/pantry", GetAll);
-            endpoints.MapPost("/api/pantry", Create);
-            endpoints.MapPut("/api/pantry/{id}", Update);
-            endpoints.MapDelete("/api/pantry/{id}", Delete);
+            endpoints.MapGet("/api/pantry", GetAll).RequireAuthorization();
+            endpoints.MapPost("/api/pantry", Create).RequireAuthorization();
+            endpoints.MapPut("/api/pantry/{id}", Update).RequireAuthorization();
+            endpoints.MapDelete("/api/pantry/{id}", Delete).RequireAuthorization();
             endpoints.MapPost("/api/pantry/scan-receipt", ScanReceipt)
                      .DisableAntiforgery()
                      .RequireAuthorization();
         }
 
-        static async Task<IResult> GetAll(IPantryItemService service) =>
-            Results.Ok(await service.GetAllAsync());
-
-        static async Task<IResult> Create(IPantryItemService service, HttpContext context)
+        static async Task<IResult> GetAll(IPantryItemService service, ClaimsPrincipal principal)
         {
-            var item = await context.Request.ReadFromJsonAsync<PantryItem>();
-            if (item == null) return Results.BadRequest();
-            return Results.Ok(await service.CreateAsync(item));
+            var userId = principal.GetUserId();
+            if (userId is null) return Results.Unauthorized();
+            return Results.Ok(await service.GetAllAsync(userId.Value));
         }
 
-        static async Task<IResult> Update(int id, IPantryItemService service, HttpContext context)
+        static async Task<IResult> Create(IPantryItemService service, HttpContext context, ClaimsPrincipal principal)
         {
+            var userId = principal.GetUserId();
+            if (userId is null) return Results.Unauthorized();
             var item = await context.Request.ReadFromJsonAsync<PantryItem>();
             if (item == null) return Results.BadRequest();
-            try { return Results.Ok(await service.UpdateAsync(id, item)); }
+            return Results.Ok(await service.CreateAsync(userId.Value, item));
+        }
+
+        static async Task<IResult> Update(int id, IPantryItemService service, HttpContext context, ClaimsPrincipal principal)
+        {
+            var userId = principal.GetUserId();
+            if (userId is null) return Results.Unauthorized();
+            var item = await context.Request.ReadFromJsonAsync<PantryItem>();
+            if (item == null) return Results.BadRequest();
+            try { return Results.Ok(await service.UpdateAsync(userId.Value, id, item)); }
             catch (KeyNotFoundException) { return Results.NotFound(); }
         }
 
-        static async Task<IResult> Delete(int id, IPantryItemService service)
+        static async Task<IResult> Delete(int id, IPantryItemService service, ClaimsPrincipal principal)
         {
-            await service.DeleteAsync(id);
+            var userId = principal.GetUserId();
+            if (userId is null) return Results.Unauthorized();
+            await service.DeleteAsync(userId.Value, id);
             return Results.NoContent();
         }
 
@@ -52,5 +63,6 @@ namespace _2Eat.Web.API
             var items = await scanService.ScanReceiptAsync(ms.ToArray(), file.ContentType);
             return Results.Ok(items);
         }
+
     }
 }

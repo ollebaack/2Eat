@@ -4,8 +4,8 @@ namespace _2Eat.Infrastructure.Services.MealPlanServices
 {
     public interface IMealPlanService
     {
-        Task<MealPlan> GetWeekPlanAsync(DateOnly weekStart);
-        Task<MealPlanDay> SetDaySlotAsync(DateOnly weekStart, int dayOfWeek, int? recipeId, string note);
-        Task ClearDaySlotAsync(DateOnly weekStart, int dayOfWeek);
+        Task<MealPlan> GetWeekPlanAsync(int userId, DateOnly weekStart);
+        Task<MealPlanDay> SetDaySlotAsync(int userId, DateOnly weekStart, int dayOfWeek, int? recipeId, string note);
+        Task ClearDaySlotAsync(int userId, DateOnly weekStart, int dayOfWeek);
     }
 }

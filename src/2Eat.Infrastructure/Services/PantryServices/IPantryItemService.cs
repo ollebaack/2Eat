@@ -4,9 +4,9 @@ namespace _2Eat.Infrastructure.Services.PantryServices
 {
     public interface IPantryItemService
     {
-        Task<List<PantryItem>> GetAllAsync();
-        Task<PantryItem> CreateAsync(PantryItem item);
-        Task<PantryItem> UpdateAsync(int id, PantryItem item);
-        Task DeleteAsync(int id);
+        Task<List<PantryItem>> GetAllAsync(int userId);
+        Task<PantryItem> CreateAsync(int userId, PantryItem item);
+        Task<PantryItem> UpdateAsync(int userId, int id, PantryItem item);
+        Task DeleteAsync(int userId, int id);
     }
 }

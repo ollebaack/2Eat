@@ -6,6 +6,7 @@ namespace _2Eat.Domain
     {
         [Key]
         public int Id { get; set; }
+        public int UserId { get; set; }
         public DateOnly WeekStartDate { get; set; }
         public ICollection<MealPlanDay> Days { get; set; } = new List<MealPlanDay>();
     }
