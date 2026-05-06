@@ -76,7 +76,10 @@ public class ReceiptScanService(IConfiguration config, ILogger<ReceiptScanServic
         {
             var response = await client.Messages.GetClaudeMessageAsync(parameters);
             var text = response.Message.ToString() ?? "[]";
-            return JsonSerializer.Deserialize<List<ScannedItem>>(text, JsonOptions) ?? [];
+            var start = text.IndexOf('[');
+            var end = text.LastIndexOf(']');
+            var json = start >= 0 && end > start ? text[start..(end + 1)] : "[]";
+            return JsonSerializer.Deserialize<List<ScannedItem>>(json, JsonOptions) ?? [];
         }
         catch (Exception ex)
         {
