@@ -48,6 +48,10 @@ namespace _2Eat.Infrastructure.Services.RecipeServices
                 throw new ArgumentException("Recipe name is required", nameof(recipe));
             }
 
+            foreach (var ri in recipe.Ingredients)
+                if (ri.Ingredient?.CategoryId == 0)
+                    ri.Ingredient.CategoryId = 5;
+
             var addedRecipe = await _context.Recipes.AddAsync(recipe);
             await _context.SaveChangesAsync();
             return addedRecipe.Entity;
