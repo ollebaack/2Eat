@@ -273,7 +273,8 @@ function ReceiptScanModal({ open, onClose, onItemsAdded }: ReceiptScanModalProps
   function toggleItem(i: number) {
     setCheckedIds((prev) => {
       const next = new Set(prev)
-      next.has(i) ? next.delete(i) : next.add(i)
+      if (next.has(i)) next.delete(i)
+      else next.add(i)
       return next
     })
   }
