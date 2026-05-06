@@ -89,8 +89,9 @@ jobs:
       - name: Wait for API to be ready
         run: |
           for i in $(seq 1 30); do
-            curl -sf http://localhost/api/recipes && break
-            echo "Waiting for API… ($i)"
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost/api/recipes)
+            [ "$STATUS" = "401" ] && break
+            echo "Waiting for API… ($i) status=$STATUS"
             sleep 3
           done
 
