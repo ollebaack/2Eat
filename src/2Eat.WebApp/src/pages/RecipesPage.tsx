@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useCallback, useId } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Plus, Shuffle, Clock, Users, Trash2, Bookmark, Search, X, LayoutGrid, List, Star } from 'lucide-react'
 import { toast } from 'sonner'
@@ -347,15 +347,26 @@ function ShuffleModal({ open, recipes, onClose, onPick }: {
 export function RecipesPage() {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const isMobile = useIsMobile()
   const [showRandom, setShowRandom] = useState(false)
   const [shuffleOpen, setShuffleOpen] = useState(false)
   const [toDelete, setToDelete] = useState<Recipe | null>(null)
   const [query, setQuery] = useState('')
-  const [filterCat, setFilterCat] = useState('Alla')
   const [view, setView] = useState<'grid' | 'list'>('grid')
   const [activeAllergens, setActiveAllergens] = useState<AllergenId[]>([])
   const toggleAllergen = useCallback((a: AllergenId) => setActiveAllergens(prev => prev.includes(a) ? prev.filter(x => x !== a) : [...prev, a]), [])
+
+  const urlCategory = searchParams.get('category') ?? ''
+  const urlFilter = searchParams.get('filter') ?? ''
+  const [localCat, setLocalCat] = useState(() => urlCategory || 'Alla')
+  // URL param takes priority; local chip selection applies when no URL param is present
+  const filterCat = urlCategory || localCat
+
+  // Reset local category chip when navigating back to unfiltered URL
+  useEffect(() => {
+    if (!urlCategory && !urlFilter) setLocalCat('Alla')
+  }, [urlCategory, urlFilter])
 
   const { data: allRecipes, isLoading } = useQuery({ queryKey: ['recipes'], queryFn: getRecipes, enabled: !showRandom })
   const { data: randomRecipes, isLoading: randomLoading, refetch: refetchRandom } = useQuery({ queryKey: ['recipes', 'random', 6], queryFn: () => getRandomRecipes(6), enabled: showRandom })
@@ -377,6 +388,7 @@ export function RecipesPage() {
   const filtered = useMemo(() => {
     if (!recipes) return []
     return recipes.filter(r => {
+      if (urlFilter === 'favorites' && !r.isFavorite) return false
       if (filterCat !== 'Alla' && r.category?.name !== filterCat) return false
       if (query) {
         const q = query.toLowerCase()
@@ -390,7 +402,7 @@ export function RecipesPage() {
       }
       return true
     })
-  }, [recipes, filterCat, query, activeAllergens])
+  }, [recipes, filterCat, urlFilter, query, activeAllergens])
 
   const featured = filtered[0]
   const now = new Date()
@@ -494,7 +506,7 @@ export function RecipesPage() {
                 variant={active ? 'default' : 'outline'}
                 size="sm"
                 className="rounded-full"
-                onClick={() => setFilterCat(c)}
+                onClick={() => setLocalCat(c)}
                 style={{
                   background: active ? 'var(--ink)' : 'transparent',
                   color: active ? 'var(--paper)' : 'var(--ink-70)',
