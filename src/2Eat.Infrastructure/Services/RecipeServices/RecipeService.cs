@@ -78,6 +78,8 @@ namespace _2Eat.Infrastructure.Services.RecipeServices
                 }
                 else
                 {
+                    if (recipeIngredient.Ingredient.CategoryId == 0)
+                        recipeIngredient.Ingredient.CategoryId = 5;
                     var addedIngredientTemp = await _context.Ingredients.AddAsync(recipeIngredient.Ingredient);
                     addedIngredient = addedIngredientTemp.Entity;
                 }
