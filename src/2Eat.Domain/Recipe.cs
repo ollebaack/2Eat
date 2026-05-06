@@ -26,6 +26,7 @@ namespace _2Eat.Domain
         public DateTimeOffset LastModified { get; set; } = DateTimeOffset.Now;
         public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.Now;
         public int CategoryId { get; set; }
+        public bool IsFavorite { get; set; }
         public string GetLastModifiedTimeAgo()
         {
             TimeSpan timeSinceModified = DateTimeOffset.Now - LastModified;

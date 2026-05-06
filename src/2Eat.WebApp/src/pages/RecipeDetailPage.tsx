@@ -1,9 +1,9 @@
 import { useState, useId } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Pencil, Trash2, Bookmark, Star, Check, Plus } from 'lucide-react'
+import { ArrowLeft, Pencil, Trash2, Bookmark, BookmarkCheck, Star, Check, Plus } from 'lucide-react'
 import { toast } from 'sonner'
-import { getRecipeById, deleteRecipe, getRecipes, getFileUrl, addRecipeToShoppingList } from '@/lib/api'
+import { getRecipeById, deleteRecipe, getRecipes, getFileUrl, addRecipeToShoppingList, toggleFavorite } from '@/lib/api'
 import type { Recipe } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -190,6 +190,15 @@ export function RecipeDetailPage() {
     onError: () => toast.error('Kunde inte lägga till i handlistan'),
   })
 
+  const favoriteMutation = useMutation({
+    mutationFn: () => toggleFavorite(Number(id)),
+    onSuccess: (updated) => {
+      queryClient.invalidateQueries({ queryKey: ['recipes'] })
+      toast.success(updated.isFavorite ? 'Receptet sparades som favorit' : 'Receptet togs bort från favoriter')
+    },
+    onError: () => toast.error('Kunde inte uppdatera favorit'),
+  })
+
   if (isLoading) return <DetailSkeleton />
   if (!recipe) {
     return (
@@ -230,7 +239,17 @@ export function RecipeDetailPage() {
           <ArrowLeft size={14} strokeWidth={1.5} /> Tillbaka till alla recept
         </Button>
         <div style={{ display: 'flex', gap: 6 }}>
-          <Button variant="outline" size="icon" className="h-9 w-9 rounded-full" title="Spara"><Bookmark size={15} strokeWidth={1.5} /></Button>
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-9 w-9 rounded-full"
+            title={recipe.isFavorite ? 'Ta bort från favoriter' : 'Spara som favorit'}
+            style={recipe.isFavorite ? { color: 'var(--2eat-accent-deep)', borderColor: 'var(--2eat-accent)' } : undefined}
+            disabled={favoriteMutation.isPending}
+            onClick={() => favoriteMutation.mutate()}
+          >
+            {recipe.isFavorite ? <BookmarkCheck size={15} strokeWidth={1.5} /> : <Bookmark size={15} strokeWidth={1.5} />}
+          </Button>
           <Button variant="outline" size="icon" className="h-9 w-9 rounded-full" title="Redigera" asChild>
             <Link to={`/recipes/${recipe.id}/edit`}><Pencil size={15} strokeWidth={1.5} /></Link>
           </Button>

@@ -1,4 +1,5 @@
-﻿using _2Eat.Domain;
+﻿using _2Eat.Application.Errors;
+using _2Eat.Domain;
 using Microsoft.EntityFrameworkCore;
 
 namespace _2Eat.Infrastructure.Services.RecipeServices
@@ -138,6 +139,14 @@ namespace _2Eat.Infrastructure.Services.RecipeServices
 
             await _context.SaveChangesAsync();
 
+            return recipe;
+        }
+
+        public async Task<Recipe> ToggleFavoriteAsync(int id)
+        {
+            var recipe = await _context.Recipes.FindAsync(id) ?? throw new RecipeNotFoundException(id);
+            recipe.IsFavorite = !recipe.IsFavorite;
+            await _context.SaveChangesAsync();
             return recipe;
         }
     }

@@ -15,5 +15,6 @@ namespace _2Eat.Infrastructure.Services.RecipeServices
         Task<Recipe> AddRecipeAsync(Recipe recipe);
         Task<Recipe> UpdateRecipeAsync(int Id, Recipe recipe);
         Task<Recipe> DeleteRecipeAsync(int id);
+        Task<Recipe> ToggleFavoriteAsync(int id);
     }
 }

@@ -1,9 +1,9 @@
 import { useState, useMemo, useEffect, useCallback, useId } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Shuffle, Clock, Users, Trash2, Bookmark, Search, X, LayoutGrid, List, Star } from 'lucide-react'
+import { Plus, Shuffle, Clock, Users, Trash2, Bookmark, BookmarkCheck, Search, X, LayoutGrid, List, Star } from 'lucide-react'
 import { toast } from 'sonner'
-import { getRecipes, getRandomRecipes, deleteRecipe, getFileUrl, ALLERGEN_OPTIONS } from '@/lib/api'
+import { getRecipes, getRandomRecipes, deleteRecipe, toggleFavorite, getFileUrl, ALLERGEN_OPTIONS } from '@/lib/api'
 import type { Recipe, AllergenId } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -156,7 +156,7 @@ function HeroFeature({ recipe }: { recipe: Recipe; onOpen?: (id: number) => void
 }
 
 // ── Recipe card (grid view) ───────────────────────────────────────────────
-function RecipeCard({ recipe, onDelete }: { recipe: Recipe; onDelete: (r: Recipe) => void }) {
+function RecipeCard({ recipe, onDelete, onToggleFavorite }: { recipe: Recipe; onDelete: (r: Recipe) => void; onToggleFavorite: (r: Recipe) => void }) {
   const [hovered, setHovered] = useState(false)
   return (
     <article
@@ -178,9 +178,10 @@ function RecipeCard({ recipe, onDelete }: { recipe: Recipe; onDelete: (r: Recipe
           <Pill tone="ink" size="sm">{recipe.totalTime} MIN</Pill>
         </div>
         <button
-          style={{ position: 'absolute', top: 12, right: 12, width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(6px)', border: 'none', cursor: 'pointer', display: 'grid', placeItems: 'center', color: 'var(--ink)' }}
-          onClick={e => { e.preventDefault(); e.stopPropagation() }}
-        ><Bookmark size={14} strokeWidth={1.5} /></button>
+          style={{ position: 'absolute', top: 12, right: 12, width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(6px)', border: 'none', cursor: 'pointer', display: 'grid', placeItems: 'center', color: recipe.isFavorite ? 'var(--2eat-accent-deep)' : 'var(--ink)' }}
+          onClick={e => { e.preventDefault(); e.stopPropagation(); onToggleFavorite(recipe) }}
+          title={recipe.isFavorite ? 'Ta bort från favoriter' : 'Spara som favorit'}
+        >{recipe.isFavorite ? <BookmarkCheck size={14} strokeWidth={1.5} /> : <Bookmark size={14} strokeWidth={1.5} />}</button>
       </Link>
       <div style={{ padding: 18, display: 'flex', flexDirection: 'column', gap: 12, flex: 1 }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
@@ -372,6 +373,15 @@ export function RecipesPage() {
     onError: () => toast.error('Kunde inte ta bort receptet'),
   })
 
+  const favoriteMutation = useMutation({
+    mutationFn: (id: number) => toggleFavorite(id),
+    onSuccess: (updated) => {
+      queryClient.invalidateQueries({ queryKey: ['recipes'] })
+      toast.success(updated.isFavorite ? 'Receptet sparades som favorit' : 'Receptet togs bort från favoriter')
+    },
+    onError: () => toast.error('Kunde inte uppdatera favorit'),
+  })
+
   const recipes = showRandom ? randomRecipes : allRecipes
   const loading = showRandom ? randomLoading : isLoading
 
@@ -548,7 +558,7 @@ export function RecipesPage() {
         </div>
       ) : view === 'grid' ? (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 18 }}>
-          {filtered.map(r => <RecipeCard key={r.id} recipe={r} onDelete={setToDelete} />)}
+          {filtered.map(r => <RecipeCard key={r.id} recipe={r} onDelete={setToDelete} onToggleFavorite={r => favoriteMutation.mutate(r.id)} />)}
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>

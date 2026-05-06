@@ -1,4 +1,5 @@
-﻿using _2Eat.Domain;
+﻿using _2Eat.Application.Errors;
+using _2Eat.Domain;
 using _2Eat.Infrastructure.Services.RecipeServices;
 using Microsoft.AspNetCore.Http.HttpResults;
 
@@ -19,6 +20,8 @@ namespace _2Eat.Web.API
             endpoints.MapPut("/api/recipes/{id}", UpdateRecipe).RequireAuthorization();
 
             endpoints.MapDelete("/api/recipes/{id}", DeleteRecipe).RequireAuthorization();
+
+            endpoints.MapPost("/api/recipes/{id}/favorite", ToggleFavorite).RequireAuthorization();
         }
 
         public static async Task<Results<Ok<List<Recipe>>, NotFound>> GetRecipes(IRecipeService _service)
@@ -105,6 +108,23 @@ namespace _2Eat.Web.API
             {
                 var deletedRecipe = await _service.DeleteRecipeAsync(id);
                 return TypedResults.Ok(deletedRecipe);
+            }
+            catch (Exception ex)
+            {
+                return TypedResults.Problem(detail: ex.Message, statusCode: 400);
+            }
+        }
+
+        public static async Task<Results<Ok<Recipe>, NotFound, ProblemHttpResult>> ToggleFavorite(int id, IRecipeService _service)
+        {
+            try
+            {
+                var recipe = await _service.ToggleFavoriteAsync(id);
+                return TypedResults.Ok(recipe);
+            }
+            catch (RecipeNotFoundException)
+            {
+                return TypedResults.NotFound();
             }
             catch (Exception ex)
             {

@@ -52,6 +52,7 @@ export interface Recipe {
   totalTime: number
   lastModified: string
   createdAt: string
+  isFavorite: boolean
 }
 
 export interface FileUpload {

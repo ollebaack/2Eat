@@ -59,6 +59,8 @@ export const updateRecipe = (id: number, data: unknown) =>
   request<Recipe>(`/recipes/${id}`, { method: 'PUT', body: JSON.stringify(data) })
 export const deleteRecipe = (id: number) =>
   request<Recipe>(`/recipes/${id}`, { method: 'DELETE' })
+export const toggleFavorite = (id: number) =>
+  request<Recipe>(`/recipes/${id}/favorite`, { method: 'POST' })
 
 export const getIngredients = () => request<Ingredient[]>('/ingredients')
 export const getIngredientById = (id: number) => request<Ingredient>(`/ingredients/${id}`)
