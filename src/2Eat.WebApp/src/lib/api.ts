@@ -90,6 +90,23 @@ export const setDaySlot = (weekStartDate: string, dayOfWeek: number, data: { rec
 export const clearDaySlot = (weekStartDate: string, dayOfWeek: number) =>
   request<void>(`/mealplan/week/${weekStartDate}/day/${dayOfWeek}`, { method: 'DELETE' })
 
+export interface ScannedItem {
+  name: string
+  category: string
+  quantity: number
+  unit: string
+}
+
+export function scanReceipt(file: File): Promise<ScannedItem[]> {
+  const form = new FormData()
+  form.append('file', file)
+  return fetch(`${BASE}/pantry/scan-receipt`, {
+    method: 'POST',
+    body: form,
+    headers: authHeaders(),
+  }).then((r) => handleResponse<ScannedItem[]>(r))
+}
+
 export const getPantryItems = () => request<PantryItem[]>('/pantry')
 export const createPantryItem = (item: Omit<PantryItem, 'id'>) =>
   request<PantryItem>('/pantry', { method: 'POST', body: JSON.stringify(item) })
