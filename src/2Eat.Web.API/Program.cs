@@ -88,6 +88,7 @@ app.MapAuthEndpoints();
 app.MapRecipeEndpoints();
 app.MapIngredientEndpoints();
 app.MapFileEndpoints();
+app.MapRecipeScanEndpoints();
 app.MapMealPlanEndpoints();
 app.MapPantryEndpoints();
 

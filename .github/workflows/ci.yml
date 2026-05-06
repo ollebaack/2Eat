@@ -76,15 +76,11 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Start stack
-        run: docker compose up --build -d
+        run: docker compose up --build --wait --timeout 600
 
-      - name: Wait for webapp to be ready
-        run: |
-          for i in $(seq 1 30); do
-            curl -sf http://localhost/ && break
-            echo "Waiting… ($i)"
-            sleep 3
-          done
+      - name: Show API startup logs
+        if: always()
+        run: docker compose logs api --tail=80
 
       - uses: actions/setup-node@v4
         with:

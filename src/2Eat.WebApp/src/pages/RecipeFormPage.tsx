@@ -3,7 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { getRecipeById, createRecipe, updateRecipe, uploadFile, getRecipes, ALLERGEN_OPTIONS } from '@/lib/api'
-import type { RecipeIngredient, UnitOfMeasurement } from '@/types'
+import type { RecipeIngredient, ScannedRecipe, UnitOfMeasurement } from '@/types'
+import { ScanRecipeDialog } from '@/components/ScanRecipeDialog'
 
 const UNITS: UnitOfMeasurement[] = ['g', 'ml', 'kg', 'krm', 'tsk', 'msk', 'dl', 'l', 'kaffemått', 'st']
 
@@ -53,6 +54,7 @@ export function RecipeFormPage() {
   const [allergens, setAllergens] = useState<string[]>([])
   const [initialized, setInitialized] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [scanOpen, setScanOpen] = useState(false)
 
   if (isEdit && existing && !initialized) {
     setName(existing.name)
@@ -105,6 +107,32 @@ export function RecipeFormPage() {
     finally { setUploading(false) }
   }
 
+  function applyScannedRecipe(data: ScannedRecipe) {
+    const UNIT_MAP: Record<string, UnitOfMeasurement> = {
+      g: 'g', ml: 'ml', kg: 'kg', krm: 'krm', tsk: 'tsk',
+      msk: 'msk', dl: 'dl', l: 'l', kaffemått: 'kaffemått', st: 'st',
+      cup: 'dl', tbsp: 'msk', tsp: 'tsk', piece: 'st', pcs: 'st',
+    }
+    if (data.name)        setName(data.name)
+    if (data.description) setDescription(data.description)
+    if (data.servings)    setServings(data.servings)
+    if (data.prepTime)    setPrepTime(data.prepTime)
+    if (data.cookTime)    setCookTime(data.cookTime)
+    if (data.difficulty && ['Lätt', 'Medel', 'Svår'].includes(data.difficulty))
+      setDifficulty(data.difficulty)
+    if (data.steps?.length) setSteps(data.steps)
+    if (data.ingredients?.length) {
+      setRows(data.ingredients.map((ing, i) => ({
+        key: crypto.randomUUID(),
+        name: ing.name,
+        quantity: ing.quantity ?? 0,
+        unit: (UNIT_MAP[ing.unit?.toLowerCase() ?? ''] ?? 'st') as UnitOfMeasurement,
+        order: i + 1,
+      })))
+    }
+    toast.success('Recept skannat — granska och spara')
+  }
+
   const saveDisabled = saveMutation.isPending || !name.trim()
 
   return (
@@ -119,14 +147,31 @@ export function RecipeFormPage() {
       </button>
 
       {/* Page header */}
-      <header style={{ marginBottom: 36 }}>
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.16em', color: 'var(--2eat-accent-deep)', textTransform: 'uppercase' }}>
-          {isEdit ? 'Redigera recept' : 'Skapa nytt · Steg 1 av 3'}
-        </span>
-        <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(38px, 5vw, 56px)', letterSpacing: '-0.035em', lineHeight: 0.95, margin: '8px 0 0', fontWeight: 400, color: 'var(--ink)' }}>
-          {isEdit ? existing?.name ?? 'Redigera recept' : 'Lägg till recept'}
-        </h1>
+      <header style={{ marginBottom: 36, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+        <div>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.16em', color: 'var(--2eat-accent-deep)', textTransform: 'uppercase' }}>
+            {isEdit ? 'Redigera recept' : 'Skapa nytt · Steg 1 av 3'}
+          </span>
+          <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(38px, 5vw, 56px)', letterSpacing: '-0.035em', lineHeight: 0.95, margin: '8px 0 0', fontWeight: 400, color: 'var(--ink)' }}>
+            {isEdit ? existing?.name ?? 'Redigera recept' : 'Lägg till recept'}
+          </h1>
+        </div>
+        <button
+          type="button"
+          onClick={() => setScanOpen(true)}
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 7,
+            padding: '10px 18px', borderRadius: 999,
+            border: '1px solid var(--line)', background: 'transparent',
+            cursor: 'pointer', fontFamily: 'var(--font-sans)', fontSize: 13,
+            color: 'var(--ink)', marginTop: 8, flexShrink: 0,
+          }}
+        >
+          ⌁ Skanna recept
+        </button>
       </header>
+
+      <ScanRecipeDialog open={scanOpen} onOpenChange={setScanOpen} onApply={applyScannedRecipe} />
 
       {/* Metadata grid */}
       <section style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 18, marginBottom: 36 }}>

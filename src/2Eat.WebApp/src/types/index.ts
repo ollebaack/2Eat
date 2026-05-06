@@ -75,6 +75,27 @@ export interface WeekPlan {
   days: WeekPlanDay[]
 }
 
+export interface ScannedIngredient {
+  name: string
+  quantity: number
+  unit: string
+}
+
+export interface ScannedRecipe {
+  name?: string | null
+  description?: string | null
+  steps?: string[] | null
+  servings?: number | null
+  prepTime?: number | null
+  cookTime?: number | null
+  difficulty?: string | null
+  ingredients?: ScannedIngredient[] | null
+}
+
+export interface ScanStatus {
+  enabled: boolean
+}
+
 export interface PantryItem {
   id: number
   name: string
