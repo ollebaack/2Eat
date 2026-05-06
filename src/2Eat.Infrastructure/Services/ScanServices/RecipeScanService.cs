@@ -1,6 +1,8 @@
 using Anthropic.SDK;
+using Anthropic.SDK.Constants;
 using Anthropic.SDK.Messaging;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
@@ -10,12 +12,14 @@ namespace _2Eat.Infrastructure.Services.ScanServices
     {
         private readonly AnthropicClient? _client;
         private readonly IHttpClientFactory _httpFactory;
+        private readonly ILogger<RecipeScanService> _logger;
 
         public bool IsConfigured => _client is not null;
 
-        public RecipeScanService(IConfiguration config, IHttpClientFactory httpFactory)
+        public RecipeScanService(IConfiguration config, IHttpClientFactory httpFactory, ILogger<RecipeScanService> logger)
         {
             _httpFactory = httpFactory;
+            _logger = logger;
             var apiKey = config["Anthropic:ApiKey"];
             if (!string.IsNullOrWhiteSpace(apiKey))
                 _client = new AnthropicClient(apiKey);
@@ -73,7 +77,7 @@ namespace _2Eat.Infrastructure.Services.ScanServices
         {
             var parameters = new MessageParameters
             {
-                Model = "claude-haiku-4-5-20251001",
+                Model = AnthropicModels.Claude45Haiku,
                 MaxTokens = 2048,
                 Messages = messages,
                 System = new List<SystemMessage>
@@ -82,9 +86,17 @@ namespace _2Eat.Infrastructure.Services.ScanServices
                 }
             };
 
-            var response = await _client!.Messages.GetClaudeMessageAsync(parameters, ct);
-            var json = response.Message.ToString();
-            return ParseResponse(json);
+            try
+            {
+                var response = await _client!.Messages.GetClaudeMessageAsync(parameters, ct);
+                var json = response.Message.ToString();
+                return ParseResponse(json);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Recipe scan failed");
+                throw;
+            }
         }
 
         private static string ExtractionPrompt() => """
