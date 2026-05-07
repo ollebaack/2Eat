@@ -72,9 +72,13 @@ test.describe('Skafferi (Pantry)', () => {
     await page.getByRole('button', { name: 'Lägg till' }).click()
     await expect(page.getByText(itemName)).toBeVisible({ timeout: 10_000 })
 
-    // Use aria-label to target the item-level delete (avoids strict-mode violation if
-    // hidden tab copies also render the same button in the DOM)
-    await page.locator('[aria-label="Ta bort"]').first().click()
+    // Pantry is not user-scoped yet, so parallel workers may have added other items.
+    // Scope delete to the card that contains our unique item name to avoid ambiguity.
+    const ourCard = page.locator('div')
+      .filter({ hasText: itemName })
+      .filter({ has: page.locator('[aria-label="Ta bort"]') })
+      .first()
+    await ourCard.locator('[aria-label="Ta bort"]').click()
 
     // No confirmation dialog — deletion is immediate
     await expect(page.getByText('Borttagen')).toBeVisible({ timeout: 5_000 })
