@@ -126,7 +126,8 @@ test.describe('Edit Recipe', () => {
     const recipeId = await createRecipeViaApi(page, uniqueRecipeName('Avbryt Recept'))
 
     await page.goto(`/recipes/${recipeId}/edit`)
-    await page.getByRole('button', { name: 'Avbryt' }).click()
+    // exact: true avoids matching the "← Avbryt" back button on the same page
+    await page.getByRole('button', { name: 'Avbryt', exact: true }).click()
 
     await expect(page).toHaveURL(`/recipes/${recipeId}`, { timeout: 10_000 })
   })
@@ -171,7 +172,8 @@ test.describe('Delete Recipe', () => {
 
     await expect(page.getByRole('heading', { name: 'Ta bort recept?' })).toBeVisible({ timeout: 8_000 })
 
-    await page.getByRole('button', { name: 'Avbryt' }).click()
+    // Scope to the dialog so the "← Avbryt" back button behind it isn't matched
+    await page.getByRole('dialog').getByRole('button', { name: 'Avbryt' }).click()
 
     await expect(page).toHaveURL(`/recipes/${recipeId}`, { timeout: 8_000 })
     await expect(page.getByRole('heading', { name: recipeName })).toBeVisible({ timeout: 8_000 })
