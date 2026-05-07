@@ -72,13 +72,11 @@ test.describe('Skafferi (Pantry)', () => {
     await page.getByRole('button', { name: 'Lägg till' }).click()
     await expect(page.getByText(itemName)).toBeVisible({ timeout: 10_000 })
 
-    // Pantry is not user-scoped yet, so parallel workers may have added other items.
-    // Scope delete to the card that contains our unique item name to avoid ambiguity.
-    const ourCard = page.locator('div')
-      .filter({ hasText: itemName })
-      .filter({ has: page.locator('[aria-label="Ta bort"]') })
-      .first()
-    await ourCard.locator('[aria-label="Ta bort"]').click()
+    // Pantry is not user-scoped yet so parallel workers may add items too.
+    // XPath: find the Ta bort button whose closest ancestor-div also contains our item name.
+    await page.locator(
+      `xpath=//button[@aria-label='Ta bort'][ancestor::div[descendant::*[normalize-space(text())='${itemName}']]][1]`
+    ).click()
 
     // No confirmation dialog — deletion is immediate
     await expect(page.getByText('Borttagen')).toBeVisible({ timeout: 5_000 })
