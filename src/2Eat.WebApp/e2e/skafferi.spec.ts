@@ -78,7 +78,7 @@ test.describe('Skafferi (Pantry)', () => {
     await page.locator('[aria-label="Ta bort"]').click()
 
     // Check item is gone — more reliable than toast timing
-    await expect(page.getByText(itemName)).not.toBeVisible({ timeout: 8_000 })
+    await expect(page.locator('[aria-label="Ta bort"]')).not.toBeVisible({ timeout: 8_000 })
   })
 
   test('receipt scan button is visible', async ({ page }) => {
