@@ -40,6 +40,7 @@ export interface Recipe {
   description: string
   instructions: string
   imageUrl?: string
+  isFavorite?: boolean
   category: Category
   categoryId: number
   ingredients: RecipeIngredient[]

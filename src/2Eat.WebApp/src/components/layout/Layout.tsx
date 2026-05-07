@@ -51,10 +51,10 @@ const iconButtonStyle: React.CSSProperties = {
 }
 
 const collections = [
-  { key: 'favs', label: 'Favoriter',  count: 12 },
-  { key: 'mid',  label: 'Vardagsmat', count: 38 },
-  { key: 'fika', label: 'Fika og bak', count: 9  },
-  { key: 'hi',   label: 'Helgmiddag', count: 7  },
+  { key: 'favs', label: 'Favoriter',    to: '/?filter=favorites'       },
+  { key: 'mid',  label: 'Vardagsmat',   to: '/?category=Vardagsmat'    },
+  { key: 'fika', label: 'Fika och bak', to: '/?category=Fika+och+bak'  },
+  { key: 'hi',   label: 'Helgmiddag',   to: '/?category=Helgmiddag'    },
 ]
 
 export function Layout() {
@@ -145,18 +145,21 @@ export function Layout() {
           </p>
           <nav className="flex flex-col gap-0.5">
             {collections.map(c => (
-              <Button
+              <NavLink
                 key={c.key}
-                variant="ghost"
-                className="w-full justify-between rounded-lg px-2.5 h-auto py-[7px]"
-                style={{ color: 'var(--ink-60)', fontFamily: 'var(--font-sans)', fontSize: 13 }}
+                to={c.to}
+                className="flex items-center gap-2.5 rounded-lg no-underline transition-colors"
+                style={({ isActive }) => ({
+                  padding: '7px 10px',
+                  background: isActive ? 'var(--surface-2)' : 'transparent',
+                  color: isActive ? 'var(--ink)' : 'var(--ink-60)',
+                  fontFamily: 'var(--font-sans)', fontSize: 13,
+                  fontWeight: isActive ? 500 : 400,
+                })}
               >
-                <span className="flex items-center gap-2.5">
-                  <span className="inline-block rounded-sm" style={{ width: 6, height: 6, background: 'var(--ink-30)' }} />
-                  {c.label}
-                </span>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10.5, color: 'var(--ink-40)' }}>{c.count}</span>
-              </Button>
+                <span className="inline-block rounded-sm" style={{ width: 6, height: 6, background: 'var(--ink-30)', flexShrink: 0 }} />
+                {c.label}
+              </NavLink>
             ))}
           </nav>
         </div>
