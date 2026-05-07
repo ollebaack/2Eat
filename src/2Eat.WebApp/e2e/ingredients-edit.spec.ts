@@ -15,9 +15,13 @@ test.describe('Ingredient edit', () => {
     // Create via API — the add dialog omits categoryId which fails the FK constraint.
     // categoryId 1 (Bakverk) is always seeded.
     const token = await page.evaluate(() => localStorage.getItem('2eat_token'))
+    // Use a timestamp-unique name to avoid collisions with parallel tests sharing the ingredients table
+    const ingName = `Testvegeta-${Date.now()}`
+    const ingNameEdited = `${ingName}-v2`
+
     const res = await page.request.post('/api/ingredients', {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
-      data: { name: 'Testvegeta', categoryId: 1 },
+      data: { name: ingName, categoryId: 1 },
     })
     expect(res.ok()).toBeTruthy()
 
@@ -26,13 +30,13 @@ test.describe('Ingredient edit', () => {
     await expect(page.locator('h1, h2, h3').first()).toBeVisible({ timeout: 10_000 })
 
     // Search by exact placeholder to surface the ingredient in the 125+ item list
-    await page.getByPlaceholder('Sök ingrediens…').fill('Testvegeta')
-    await expect(page.getByText('Testvegeta').first()).toBeVisible({ timeout: 10_000 })
+    await page.getByPlaceholder('Sök ingrediens…').fill(ingName)
+    await expect(page.getByText(ingName).first()).toBeVisible({ timeout: 10_000 })
 
     // The edit button is conditionally rendered via React onMouseEnter state.
     // mouseenter doesn't bubble, so dispatchEvent on a child doesn't reach the card.
     // Instead, use page.mouse.move() to fire native events through the full DOM chain.
-    const nameEl = page.getByText('Testvegeta', { exact: true }).first()
+    const nameEl = page.getByText(ingName, { exact: true }).first()
     await nameEl.scrollIntoViewIfNeeded()
     const box = await nameEl.boundingBox()
     await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2)
@@ -44,16 +48,16 @@ test.describe('Ingredient edit', () => {
     // Edit dialog should open pre-filled with current name
     const editDialog = page.getByRole('dialog')
     const nameInput = editDialog.getByPlaceholder('t.ex. Lax')
-    await expect(nameInput).toHaveValue('Testvegeta', { timeout: 5_000 })
+    await expect(nameInput).toHaveValue(ingName, { timeout: 5_000 })
 
     // Change the name
     await nameInput.clear()
-    await nameInput.fill('Testvegeta Edited')
+    await nameInput.fill(ingNameEdited)
     await editDialog.getByRole('button', { name: 'Spara' }).click()
 
     // New name should appear in the list
-    await expect(page.getByText('Testvegeta Edited')).toBeVisible({ timeout: 10_000 })
-    // Old name should be gone
-    await expect(page.getByText('Testvegeta', { exact: true })).not.toBeVisible()
+    await expect(page.getByText(ingNameEdited)).toBeVisible({ timeout: 10_000 })
+    // Old name should be gone (exact match excludes the edited name)
+    await expect(page.getByText(ingName, { exact: true })).not.toBeVisible({ timeout: 3_000 })
   })
 })
