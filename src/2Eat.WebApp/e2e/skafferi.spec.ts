@@ -73,10 +73,10 @@ test.describe('Skafferi (Pantry)', () => {
     await expect(page.getByText(itemName)).toBeVisible({ timeout: 10_000 })
 
     // Pantry is not user-scoped yet so parallel workers may add items too.
-    // XPath: find the Ta bort button whose closest ancestor-div also contains our item name.
-    await page.locator(
-      `xpath=//button[@aria-label='Ta bort'][ancestor::div[descendant::*[normalize-space(text())='${itemName}']]][1]`
-    ).click()
+    // Search to filter down to only our item, then the single Ta bort button is unambiguous.
+    await page.getByPlaceholder('Sök i skafferiet…').fill(itemName)
+    await expect(page.getByText(itemName)).toBeVisible({ timeout: 5_000 })
+    await page.locator('[aria-label="Ta bort"]').click()
 
     // No confirmation dialog — deletion is immediate
     await expect(page.getByText('Borttagen')).toBeVisible({ timeout: 5_000 })
