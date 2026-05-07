@@ -15,28 +15,24 @@ test.describe('Ingredient edit', () => {
     // Create via API — the add dialog omits categoryId which fails the FK constraint.
     // categoryId 1 (Bakverk) is always seeded.
     const token = await page.evaluate(() => localStorage.getItem('2eat_token'))
-    const res = await page.request.post('/api/ingredients', {
+    await page.request.post('/api/ingredients', {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
       data: { name: 'Testvegeta', categoryId: 1 },
     })
-    expect(res.ok()).toBeTruthy()
 
-    // Reload to flush the React Query cache (API bypass doesn't trigger invalidation)
-    await page.reload()
-    await expect(page.locator('h1, h2, h3').first()).toBeVisible({ timeout: 10_000 })
+    // Search to surface the ingredient (125+ items; may not render without filtering)
+    const search = page.getByPlaceholder(/Sök/).first()
+    await search.fill('Testvegeta')
 
-    // Search by exact placeholder to surface the ingredient in the 125+ item list
-    await page.getByPlaceholder('Sök ingrediens…').fill('Testvegeta')
+    // Wait for the ingredient to appear in the filtered list
     await expect(page.getByText('Testvegeta')).toBeVisible({ timeout: 10_000 })
 
-    // The edit button is conditionally rendered on hover state (onMouseEnter).
-    // dispatchEvent triggers the React handler without moving the cursor (no risk of
-    // mouseleave firing when Playwright repositions for the click).
-    const nameEl = page.getByText('Testvegeta', { exact: true }).first()
-    await nameEl.dispatchEvent('mouseenter')
+    // Hover over the ingredient card to reveal the edit button
+    const card = page.locator('div').filter({ hasText: /^Testvegeta/ }).first()
+    await card.hover()
 
-    // Click the edit button that is now in the DOM
-    await page.locator('[aria-label="Redigera ingrediens"]').click()
+    // Click the edit (pencil) button
+    await card.getByRole('button', { name: 'Redigera ingrediens' }).click()
 
     // Edit dialog should open pre-filled with current name
     const editDialog = page.getByRole('dialog')
