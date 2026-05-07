@@ -1,4 +1,4 @@
-import type { FileUpload, Ingredient, PantryItem, Recipe, AllergenId, WeekPlan, WeekPlanDay, ScannedRecipe, ScanStatus } from '@/types'
+import type { FileUpload, Ingredient, PantryItem, Recipe, AllergenId, WeekPlan, WeekPlanDay, ScannedRecipe, ScanStatus, ShoppingListItem } from '@/types'
 
 export const ALLERGEN_OPTIONS: AllergenId[] = [
   'Gluten',
@@ -132,6 +132,17 @@ export const updatePantryItem = (id: number, item: Omit<PantryItem, 'id'>) =>
   request<PantryItem>(`/pantry/${id}`, { method: 'PUT', body: JSON.stringify(item) })
 export const deletePantryItem = (id: number) =>
   request<void>(`/pantry/${id}`, { method: 'DELETE' })
+
+// Shopping list API
+export const getShoppingList = () => request<ShoppingListItem[]>('/shopping-list/')
+export const addShoppingListItem = (name: string, quantity?: number, unit?: string) =>
+  request<ShoppingListItem>('/shopping-list/', { method: 'POST', body: JSON.stringify({ name, quantity, unit }) })
+export const updateShoppingListItem = (id: number, isChecked: boolean) =>
+  request<ShoppingListItem>(`/shopping-list/${id}`, { method: 'PUT', body: JSON.stringify({ isChecked }) })
+export const deleteShoppingListItem = (id: number) =>
+  request<void>(`/shopping-list/${id}`, { method: 'DELETE' })
+export const addRecipeToShoppingList = (recipeId: number) =>
+  request<void>(`/shopping-list/from-recipe/${recipeId}`, { method: 'POST' })
 
 // Auth API
 export interface AuthUser { id: number; email: string; displayName: string; avatarUrl: string | null }
