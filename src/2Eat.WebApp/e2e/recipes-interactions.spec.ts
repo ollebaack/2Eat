@@ -34,10 +34,11 @@ test.describe('Recipe Page Interactions', () => {
     await expect(page.getByText('Kanelbullar').first()).toBeVisible({ timeout: 5_000 })
   })
 
-  test('category filter chip filters recipes', async ({ page }) => {
-    const firstOtherChip = page.locator('button').filter({ hasNotText: /^Alla$/ }).first()
-    await firstOtherChip.click()
-    await expect(page.locator('article h3, p:has-text("Inga recept matchar.")').first()).toBeVisible({ timeout: 5_000 })
+  test('category filter chip filters recipes', async ({ page, isMobile }) => {
+    // Category chips are only visible on desktop (hidden behind a filter toggle on mobile)
+    if (isMobile) { test.skip(); return }
+    await page.getByRole('button', { name: 'Bakverk' }).click()
+    await expect(page.locator('article').first()).toBeVisible({ timeout: 5_000 })
   })
 
   test('view toggle switches between grid and list', async ({ page, isMobile }) => {
