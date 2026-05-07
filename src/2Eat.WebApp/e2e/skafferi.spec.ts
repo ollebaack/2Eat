@@ -29,7 +29,7 @@ test.describe('Skafferi (Pantry)', () => {
     await page.getByRole('button', { name: /Klart att laga/i }).click()
     // Search bar should be gone; suggestions content should appear
     await expect(page.getByPlaceholder('Sök i skafferiet…')).not.toBeVisible()
-    await expect(page.getByText(/Kan lagas/i)).toBeVisible({ timeout: 5_000 })
+    await expect(page.getByText(/Kan lagas/i).first()).toBeVisible({ timeout: 5_000 })
 
     // Switch to expiring tab
     await page.getByRole('button', { name: /Går ut snart/i }).click()
@@ -72,8 +72,9 @@ test.describe('Skafferi (Pantry)', () => {
     await page.getByRole('button', { name: 'Lägg till' }).click()
     await expect(page.getByText(itemName)).toBeVisible({ timeout: 10_000 })
 
-    // Only one item in a fresh user's pantry — the delete button is unambiguous
-    await page.getByRole('button', { name: 'Ta bort' }).click()
+    // Use aria-label to target the item-level delete (avoids strict-mode violation if
+    // hidden tab copies also render the same button in the DOM)
+    await page.locator('[aria-label="Ta bort"]').first().click()
 
     // No confirmation dialog — deletion is immediate
     await expect(page.getByText('Borttagen')).toBeVisible({ timeout: 5_000 })
