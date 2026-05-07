@@ -42,6 +42,17 @@ namespace _2Eat.Infrastructure.Services.IngredientServices
             }
         }
 
+        public async Task<Ingredient?> UpdateIngredientAsync(int id, string name, int categoryId)
+        {
+            var ingredient = await _context.Ingredients.FindAsync(id);
+            if (ingredient == null) return null;
+
+            ingredient.Name = name;
+            ingredient.CategoryId = categoryId;
+            await _context.SaveChangesAsync();
+            return ingredient;
+        }
+
         public async Task<Ingredient> DeleteIngredientAsync(int id)
         {
             var ingredient = await _context.Ingredients.FindAsync(id) ?? throw new Exception("Ingredient not found");

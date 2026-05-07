@@ -1,14 +1,15 @@
 import { useState } from 'react'
-import { Leaf, Trash2, Wheat } from 'lucide-react'
+import { Leaf, Pencil, Trash2, Wheat } from 'lucide-react'
 import type { Ingredient } from '@/types'
 import { Button } from '@/components/ui/button'
 
 interface IngredientCardProps {
   ingredient: Ingredient
+  onEdit: () => void
   onDelete: () => void
 }
 
-export function IngredientCard({ ingredient, onDelete }: IngredientCardProps) {
+export function IngredientCard({ ingredient, onEdit, onDelete }: IngredientCardProps) {
   const [hovered, setHovered] = useState(false)
   const isVegan = ingredient.allergens?.some(a => a.id === 'Veganskt')
   const hasGluten = ingredient.allergens?.some(a => a.id === 'Gluten')
@@ -61,16 +62,28 @@ export function IngredientCard({ ingredient, onDelete }: IngredientCardProps) {
         )}
       </div>
 
-      {/* Delete */}
+      {/* Edit / Delete */}
       {hovered && (
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7 shrink-0 text-destructive hover:text-destructive"
-          onClick={onDelete}
-        >
-          <Trash2 size={14} strokeWidth={1.5} />
-        </Button>
+        <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 shrink-0 text-ink-50 hover:text-ink"
+            aria-label="Redigera ingrediens"
+            onClick={onEdit}
+          >
+            <Pencil size={14} strokeWidth={1.5} />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 shrink-0 text-destructive hover:text-destructive"
+            aria-label="Ta bort ingrediens"
+            onClick={onDelete}
+          >
+            <Trash2 size={14} strokeWidth={1.5} />
+          </Button>
+        </div>
       )}
     </div>
   )
