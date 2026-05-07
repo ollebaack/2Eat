@@ -15,16 +15,18 @@ test.describe('Ingredient edit', () => {
     // Create via API — the add dialog omits categoryId which fails the FK constraint.
     // categoryId 1 (Bakverk) is always seeded.
     const token = await page.evaluate(() => localStorage.getItem('2eat_token'))
-    await page.request.post('/api/ingredients', {
+    const res = await page.request.post('/api/ingredients', {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
       data: { name: 'Testvegeta', categoryId: 1 },
     })
+    expect(res.ok()).toBeTruthy()
 
-    // Search to surface the ingredient (125+ items; may not render without filtering)
-    const search = page.getByPlaceholder(/Sök/).first()
-    await search.fill('Testvegeta')
+    // Reload to flush the React Query cache (API bypass doesn't trigger invalidation)
+    await page.reload()
+    await expect(page.locator('h1, h2, h3').first()).toBeVisible({ timeout: 10_000 })
 
-    // Wait for the ingredient to appear in the filtered list
+    // Search by exact placeholder to surface the ingredient in the 125+ item list
+    await page.getByPlaceholder('Sök ingrediens…').fill('Testvegeta')
     await expect(page.getByText('Testvegeta')).toBeVisible({ timeout: 10_000 })
 
     // Hover over the ingredient card to reveal the edit button
