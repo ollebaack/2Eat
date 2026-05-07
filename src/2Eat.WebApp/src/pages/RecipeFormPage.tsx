@@ -6,7 +6,10 @@ import { getRecipeById, createRecipe, updateRecipe, uploadFile, getRecipes, ALLE
 import type { RecipeIngredient, ScannedRecipe, UnitOfMeasurement } from '@/types'
 import { ScanRecipeDialog } from '@/components/ScanRecipeDialog'
 
-const UNITS: UnitOfMeasurement[] = ['g', 'ml', 'kg', 'krm', 'tsk', 'msk', 'dl', 'l', 'kaffemått', 'st']
+const UNITS: UnitOfMeasurement[] = [
+  'g', 'ml', 'kg', 'krm', 'tsk', 'msk', 'dl', 'l', 'kaffemått', 'st',
+  'cup', 'fl oz', 'oz', 'lbs', 'cl', 'pinch', 'tsp', 'tbsp',
+]
 
 type IngredientRow = { key: string; name: string; quantity: number; unit: UnitOfMeasurement; order: number }
 function newRow(order: number): IngredientRow { return { key: crypto.randomUUID(), name: '', quantity: 0, unit: 'g', order } }
@@ -109,9 +112,15 @@ export function RecipeFormPage() {
 
   function applyScannedRecipe(data: ScannedRecipe) {
     const UNIT_MAP: Record<string, UnitOfMeasurement> = {
+      // existing
       g: 'g', ml: 'ml', kg: 'kg', krm: 'krm', tsk: 'tsk',
       msk: 'msk', dl: 'dl', l: 'l', kaffemått: 'kaffemått', st: 'st',
-      cup: 'dl', tbsp: 'msk', tsp: 'tsk', piece: 'st', pcs: 'st',
+      // new direct mappings
+      cup: 'cup', floz: 'fl oz', 'fl oz': 'fl oz',
+      oz: 'oz', lbs: 'lbs', lb: 'lbs', cl: 'cl',
+      pinch: 'pinch', tsp: 'tsp', tbsp: 'tbsp',
+      // legacy aliases (still map old AI output)
+      piece: 'st', pcs: 'st', teaspoon: 'tsp', tablespoon: 'tbsp',
     }
     if (data.name)        setName(data.name)
     if (data.description) setDescription(data.description)

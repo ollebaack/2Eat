@@ -9,7 +9,9 @@ export interface Allergen {
   id: AllergenId
 }
 
-export type UnitOfMeasurement = 'g' | 'ml' | 'kg' | 'krm' | 'tsk' | 'msk' | 'dl' | 'l' | 'kaffemått' | 'st'
+export type UnitOfMeasurement =
+  | 'g' | 'ml' | 'kg' | 'krm' | 'tsk' | 'msk' | 'dl' | 'l' | 'kaffemått' | 'st'
+  | 'cup' | 'fl oz' | 'oz' | 'lbs' | 'cl' | 'pinch' | 'tsp' | 'tbsp'
 
 export interface IngredientMeasurement {
   id: number

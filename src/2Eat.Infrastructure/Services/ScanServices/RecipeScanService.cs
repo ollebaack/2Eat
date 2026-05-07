@@ -110,10 +110,10 @@ namespace _2Eat.Infrastructure.Services.ScanServices
               "cookTime": minutes as number or null,
               "difficulty": "Lätt" or "Medel" or "Svår" or null,
               "ingredients": [
-                { "name": "string", "quantity": number, "unit": "g|ml|kg|krm|tsk|msk|dl|l|kaffemått|st" }
+                { "name": "string", "quantity": number, "unit": "g|ml|kg|krm|tsk|msk|dl|l|kaffemått|st|cup|floz|oz|lbs|cl|pinch|tsp|tbsp" }
               ]
             }
-            Map all ingredient units to the closest Swedish cooking unit from the list above.
+            Use the exact unit from the list — do not convert; pick the closest match.
             If a field cannot be determined, use null. Do not include any text outside the JSON.
             """;
 
