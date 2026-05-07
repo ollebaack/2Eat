@@ -77,6 +77,18 @@ namespace _2Eat.Infrastructure
                 .WithOne(x => x.MealPlan)
                 .HasForeignKey(x => x.MealPlanId);
 
+            modelBuilder.Entity<MealPlan>()
+                .HasOne<User>()
+                .WithMany()
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<PantryItem>()
+                .HasOne<User>()
+                .WithMany()
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             SeedData(modelBuilder);
         }
 

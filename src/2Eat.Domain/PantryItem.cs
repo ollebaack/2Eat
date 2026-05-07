@@ -6,6 +6,7 @@ namespace _2Eat.Domain
     {
         [Key]
         public int Id { get; set; }
+        public int UserId { get; set; }
         public string Name { get; set; } = null!;
         public string Category { get; set; } = string.Empty;
         public double Quantity { get; set; }

@@ -5,15 +5,15 @@ namespace _2Eat.Infrastructure.Services.MealPlanServices
 {
     public class MealPlanService(ApplicationDbContext db) : IMealPlanService
     {
-        public async Task<MealPlan> GetWeekPlanAsync(DateOnly weekStart)
+        public async Task<MealPlan> GetWeekPlanAsync(int userId, DateOnly weekStart)
         {
             var plan = await db.MealPlans
                 .Include(p => p.Days)
-                .FirstOrDefaultAsync(p => p.WeekStartDate == weekStart);
+                .FirstOrDefaultAsync(p => p.UserId == userId && p.WeekStartDate == weekStart);
 
             if (plan == null)
             {
-                plan = new MealPlan { WeekStartDate = weekStart };
+                plan = new MealPlan { UserId = userId, WeekStartDate = weekStart };
                 db.MealPlans.Add(plan);
                 await db.SaveChangesAsync();
             }
@@ -21,9 +21,9 @@ namespace _2Eat.Infrastructure.Services.MealPlanServices
             return plan;
         }
 
-        public async Task<MealPlanDay> SetDaySlotAsync(DateOnly weekStart, int dayOfWeek, int? recipeId, string note)
+        public async Task<MealPlanDay> SetDaySlotAsync(int userId, DateOnly weekStart, int dayOfWeek, int? recipeId, string note)
         {
-            var plan = await GetWeekPlanAsync(weekStart);
+            var plan = await GetWeekPlanAsync(userId, weekStart);
 
             var day = plan.Days.FirstOrDefault(d => d.DayOfWeek == dayOfWeek);
             if (day == null)
@@ -38,11 +38,11 @@ namespace _2Eat.Infrastructure.Services.MealPlanServices
             return day;
         }
 
-        public async Task ClearDaySlotAsync(DateOnly weekStart, int dayOfWeek)
+        public async Task ClearDaySlotAsync(int userId, DateOnly weekStart, int dayOfWeek)
         {
             var plan = await db.MealPlans
                 .Include(p => p.Days)
-                .FirstOrDefaultAsync(p => p.WeekStartDate == weekStart);
+                .FirstOrDefaultAsync(p => p.UserId == userId && p.WeekStartDate == weekStart);
 
             if (plan == null) return;
 

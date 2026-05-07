@@ -51,7 +51,7 @@ namespace _2Eat.Web.API
 
         static async Task<IResult> GetMe(ClaimsPrincipal principal, IUserService svc)
         {
-            var userId = GetUserId(principal);
+            var userId = principal.GetUserId();
             if (userId is null) return Results.Unauthorized();
             var user = await svc.GetByIdAsync(userId.Value);
             return user is null ? Results.NotFound() : Results.Ok(ToDto(user));
@@ -59,7 +59,7 @@ namespace _2Eat.Web.API
 
         static async Task<IResult> UpdateMe(UpdateProfileRequest req, ClaimsPrincipal principal, IUserService svc)
         {
-            var userId = GetUserId(principal);
+            var userId = principal.GetUserId();
             if (userId is null) return Results.Unauthorized();
             var user = await svc.UpdateProfileAsync(userId.Value, req.DisplayName, req.Email, req.AvatarUrl);
             return user is null ? Results.NotFound() : Results.Ok(ToDto(user));
@@ -67,7 +67,7 @@ namespace _2Eat.Web.API
 
         static async Task<IResult> ChangePassword(ChangePasswordRequest req, ClaimsPrincipal principal, IUserService svc)
         {
-            var userId = GetUserId(principal);
+            var userId = principal.GetUserId();
             if (userId is null) return Results.Unauthorized();
             if (string.IsNullOrWhiteSpace(req.NewPassword) || req.NewPassword.Length < 8)
                 return Results.BadRequest(new { detail = "New password must be at least 8 characters." });
@@ -77,17 +77,10 @@ namespace _2Eat.Web.API
 
         static async Task<IResult> DeleteMe(ClaimsPrincipal principal, IUserService svc)
         {
-            var userId = GetUserId(principal);
+            var userId = principal.GetUserId();
             if (userId is null) return Results.Unauthorized();
             await svc.DeleteAccountAsync(userId.Value);
             return Results.NoContent();
-        }
-
-        static int? GetUserId(ClaimsPrincipal principal)
-        {
-            var sub = principal.FindFirstValue(ClaimTypes.NameIdentifier)
-                   ?? principal.FindFirstValue("sub");
-            return int.TryParse(sub, out var id) ? id : null;
         }
 
         static UserDto ToDto(User user) =>

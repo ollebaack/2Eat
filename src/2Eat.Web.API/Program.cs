@@ -85,6 +85,8 @@ app.UseCors("AllowSpecificOrigin");
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapGet("/health", () => Results.Ok()).AllowAnonymous();
+
 app.MapAuthEndpoints();
 app.MapRecipeEndpoints();
 app.MapIngredientEndpoints();
