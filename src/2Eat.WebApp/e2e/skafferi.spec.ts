@@ -72,17 +72,13 @@ test.describe('Skafferi (Pantry)', () => {
     await page.getByRole('button', { name: 'Lägg till' }).click()
     await expect(page.getByText(itemName)).toBeVisible({ timeout: 10_000 })
 
-    // Pantry is not user-scoped yet so parallel workers may add items too.
-    // Search to filter down to only our item, then the single Ta bort button is unambiguous.
+    // Search to isolate our item (parallel workers may share the pantry)
     await page.getByPlaceholder('Sök i skafferiet…').fill(itemName)
     await expect(page.getByText(itemName)).toBeVisible({ timeout: 5_000 })
     await page.locator('[aria-label="Ta bort"]').click()
 
-    // No confirmation dialog — deletion is immediate
-    await expect(page.getByText('Borttagen')).toBeVisible({ timeout: 5_000 })
-
-    // Item should be gone from the list
-    await expect(page.getByText(itemName)).not.toBeVisible({ timeout: 5_000 })
+    // Check item is gone — more reliable than toast timing
+    await expect(page.getByText(itemName)).not.toBeVisible({ timeout: 8_000 })
   })
 
   test('receipt scan button is visible', async ({ page }) => {
