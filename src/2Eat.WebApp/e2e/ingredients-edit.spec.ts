@@ -29,13 +29,16 @@ test.describe('Ingredient edit', () => {
     await page.getByPlaceholder('Sök ingrediens…').fill('Testvegeta')
     await expect(page.getByText('Testvegeta')).toBeVisible({ timeout: 10_000 })
 
-    // The edit button is conditionally rendered on hover state (onMouseEnter).
-    // dispatchEvent triggers the React handler without moving the cursor (no risk of
-    // mouseleave firing when Playwright repositions for the click).
+    // The edit button is conditionally rendered via React onMouseEnter state.
+    // mouseenter doesn't bubble, so dispatchEvent on a child doesn't reach the card.
+    // Instead, use page.mouse.move() to fire native events through the full DOM chain.
     const nameEl = page.getByText('Testvegeta', { exact: true }).first()
-    await nameEl.dispatchEvent('mouseenter')
+    await nameEl.scrollIntoViewIfNeeded()
+    const box = await nameEl.boundingBox()
+    await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2)
 
-    // Click the edit button that is now in the DOM
+    // Wait for the button to appear in the DOM, then click
+    await expect(page.locator('[aria-label="Redigera ingrediens"]')).toBeVisible({ timeout: 3_000 })
     await page.locator('[aria-label="Redigera ingrediens"]').click()
 
     // Edit dialog should open pre-filled with current name
