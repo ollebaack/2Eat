@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Text.Json.Serialization;
 
 namespace _2Eat.Domain.Enums
 {
@@ -20,6 +16,19 @@ namespace _2Eat.Domain.Enums
 
         kaffemått,
 
-        st
+        st,
+
+        // International units
+        cup,
+
+        [JsonStringEnumMemberName("fl oz")]
+        floz,
+
+        oz,
+        lbs,
+        cl,
+        pinch,
+        tsp,
+        tbsp
     }
 }
