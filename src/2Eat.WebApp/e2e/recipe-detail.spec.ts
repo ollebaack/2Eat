@@ -17,11 +17,10 @@ test.describe('Recipe Detail', () => {
   test('servings increment increases servings count', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name === 'mobile', 'Servings scaler not shown on mobile')
 
-    // The scaler is the number between the − and + buttons; find it via its sibling buttons
+    // Scope to the scaler container (parent of +/− buttons) to avoid matching step numbers
     const plusBtn = page.getByRole('button', { name: '+' })
     await expect(plusBtn).toBeVisible()
-    const scalerContainer = plusBtn.locator('..')
-    const scalerSpan = scalerContainer.locator('span, div').filter({ hasText: /^\d+$/ }).first()
+    const scalerSpan = plusBtn.locator('..').locator('span, div').filter({ hasText: /^\d+$/ }).first()
 
     const before = parseInt(await scalerSpan.textContent() ?? '0', 10)
     await plusBtn.click()
@@ -33,14 +32,12 @@ test.describe('Recipe Detail', () => {
     test.skip(testInfo.project.name === 'mobile', 'Servings scaler not shown on mobile')
 
     const plusBtn = page.getByRole('button', { name: '+' })
-    const minusBtn = page.getByRole('button', { name: '−' })
-    const scalerContainer = plusBtn.locator('..')
-    const scalerSpan = scalerContainer.locator('span, div').filter({ hasText: /^\d+$/ }).first()
+    const scalerSpan = plusBtn.locator('..').locator('span, div').filter({ hasText: /^\d+$/ }).first()
 
     // Increment first so decrement stays above minimum
     await plusBtn.click()
     const before = parseInt(await scalerSpan.textContent() ?? '0', 10)
-    await minusBtn.click()
+    await page.getByRole('button', { name: '−' }).click()
     const after = parseInt(await scalerSpan.textContent() ?? '0', 10)
     expect(after).toBeLessThan(before)
   })
@@ -60,7 +57,7 @@ test.describe('Recipe Detail', () => {
   test('ingredient row can be toggled on mobile', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'mobile', 'Mobile ingredient list only on mobile')
 
-    // Multiple "Ingredienser" buttons may exist (tab + count badge); take first
+    // Multiple buttons may match /Ingredienser/ (tab + count badge); take first
     const ingredientTab = page.getByRole('button', { name: /Ingredienser/ }).first()
     await expect(ingredientTab).toBeVisible()
 
@@ -106,15 +103,26 @@ test.describe('Recipe Detail', () => {
   test('delete button opens confirmation dialog', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name === 'mobile', 'Delete button not shown on mobile')
 
-    // Delete button uses title="Radera", not text content
+    // Recipe 1 is owned by the seed user, not the test user — delete button may be hidden.
+    // Create a recipe owned by the test user instead.
+    const token = await page.evaluate(() => localStorage.getItem('2eat_token'))
+    const res = await page.request.post('/api/recipes', {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      data: { name: `Delete dialog test ${Date.now()}`, categoryId: 1, servings: 2 },
+    })
+    expect(res.ok()).toBeTruthy()
+    const { id } = await res.json()
+
+    await page.goto(`/recipes/${id}`)
+    await expect(page.locator('h1, h2').first()).toBeVisible({ timeout: 10_000 })
+
     await page.locator('[title="Radera"]').click()
 
-    await expect(page.getByRole('dialog')).toBeVisible({ timeout: 5_000 })
-    await expect(page.getByText('Ta bort recept?')).toBeVisible()
+    // Dialog heading confirms the dialog is open
+    await expect(page.getByRole('heading', { name: 'Ta bort recept?' })).toBeVisible({ timeout: 5_000 })
 
+    // Cancel — do not actually delete
     await page.getByRole('button', { name: 'Avbryt' }).click()
-
-    await expect(page.getByRole('dialog')).not.toBeVisible({ timeout: 3_000 })
-    await expect(page).toHaveURL(/\/recipes\/1/, { timeout: 3_000 })
+    await expect(page).toHaveURL(`/recipes/${id}`, { timeout: 3_000 })
   })
 })

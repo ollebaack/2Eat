@@ -33,6 +33,7 @@ async function handleResponse<T>(res: Response, noAuthRedirect = false): Promise
     throw new Error('401 Unauthorized')
   }
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
+  if (res.status === 204) return undefined as T
   return res.json() as Promise<T>
 }
 
