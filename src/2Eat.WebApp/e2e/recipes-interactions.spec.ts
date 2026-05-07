@@ -37,7 +37,7 @@ test.describe('Recipe Page Interactions', () => {
   test('category filter chip filters recipes', async ({ page }) => {
     const firstOtherChip = page.locator('button').filter({ hasNotText: /^Alla$/ }).first()
     await firstOtherChip.click()
-    await expect(page.locator('article h3, p:has-text("Inga recept matchar.")')).toBeVisible({ timeout: 5_000 })
+    await expect(page.locator('article h3, p:has-text("Inga recept matchar.")').first()).toBeVisible({ timeout: 5_000 })
   })
 
   test('view toggle switches between grid and list', async ({ page, isMobile }) => {
