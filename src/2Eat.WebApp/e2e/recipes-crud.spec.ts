@@ -28,8 +28,12 @@ const nameInput = (page: Page) => page.locator('input[placeholder*="Mormors"]')
 
 /** Creates a minimal recipe via the API and returns its id. */
 async function createRecipeViaApi(page: Page, name: string): Promise<number> {
+  // page.request doesn't share browser localStorage — extract the JWT manually
+  const token = await page.evaluate(() => localStorage.getItem('2eat_token'))
   const res = await page.request.post('/api/recipes', {
-    data: { name, description: '', instructions: '', servings: 2, rating: 3, prepTime: 10, cookTime: 20 },
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    // categoryId 1 (Bakverk) is always seeded; omitting it yields a FK violation
+    data: { name, categoryId: 1, description: '', instructions: '', servings: 2, rating: 3, prepTime: 10, cookTime: 20 },
   })
   expect(res.ok()).toBeTruthy()
   const body = await res.json()
@@ -50,6 +54,9 @@ test.describe('Create Recipe', () => {
 
     await page.goto('/recipes/new')
     await nameInput(page).fill(recipeName)
+    // Category is required (FK constraint). The <select> has no htmlFor so we
+    // target it via its "Välj kategori…" placeholder option; "1" = Bakverk (seeded).
+    await page.locator('select:has(option[value=""])').selectOption('1')
     await page.getByRole('button', { name: /Spara recept/ }).click()
 
     // Should redirect to the new recipe's detail page
