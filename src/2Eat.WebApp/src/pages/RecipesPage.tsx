@@ -359,14 +359,9 @@ export function RecipesPage() {
 
   const urlCategory = searchParams.get('category') ?? ''
   const urlFilter = searchParams.get('filter') ?? ''
-  const [localCat, setLocalCat] = useState(() => urlCategory || 'Alla')
+  const [localCat, setLocalCat] = useState('Alla')
   // URL param takes priority; local chip selection applies when no URL param is present
   const filterCat = urlCategory || localCat
-
-  // Reset local category chip when navigating back to unfiltered URL
-  useEffect(() => {
-    if (!urlCategory && !urlFilter) setLocalCat('Alla')
-  }, [urlCategory, urlFilter])
 
   const { data: allRecipes, isLoading } = useQuery({ queryKey: ['recipes'], queryFn: getRecipes, enabled: !showRandom })
   const { data: randomRecipes, isLoading: randomLoading, refetch: refetchRandom } = useQuery({ queryKey: ['recipes', 'random', 6], queryFn: () => getRandomRecipes(6), enabled: showRandom })
