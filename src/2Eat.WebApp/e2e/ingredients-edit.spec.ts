@@ -12,13 +12,19 @@ test.describe('Ingredient edit', () => {
     await loginViaApi(page, uniqueEmail('ing-edit'))
     await page.goto('/ingredients')
 
-    // Create a test ingredient via the add dialog
-    await page.getByRole('button', { name: 'Ny ingrediens' }).click()
-    const dialog = page.getByRole('dialog')
-    await dialog.getByPlaceholder('t.ex. Lax').fill('Testvegeta')
-    await dialog.getByRole('button', { name: 'Lägg till' }).click()
+    // Create via API — the add dialog omits categoryId which fails the FK constraint.
+    // categoryId 1 (Bakverk) is always seeded.
+    const token = await page.evaluate(() => localStorage.getItem('2eat_token'))
+    await page.request.post('/api/ingredients', {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      data: { name: 'Testvegeta', categoryId: 1 },
+    })
 
-    // Wait for the new ingredient to appear in the list
+    // Search to surface the ingredient (125+ items; may not render without filtering)
+    const search = page.getByPlaceholder(/Sök/).first()
+    await search.fill('Testvegeta')
+
+    // Wait for the ingredient to appear in the filtered list
     await expect(page.getByText('Testvegeta')).toBeVisible({ timeout: 10_000 })
 
     // Hover over the ingredient card to reveal the edit button
