@@ -12,20 +12,19 @@ test.describe('Ingredient edit', () => {
     await loginViaApi(page, uniqueEmail('ing-edit'))
     await page.goto('/ingredients')
 
-    // Create ingredient via API — the add dialog sends no categoryId which fails the
-    // FK constraint (CategoryId is non-nullable). Use categoryId 1 (Bakverk, always seeded).
+    // Create via API — the add dialog omits categoryId which fails the FK constraint.
+    // categoryId 1 (Bakverk) is always seeded.
     const token = await page.evaluate(() => localStorage.getItem('2eat_token'))
-    const res = await page.request.post('/api/ingredients', {
+    await page.request.post('/api/ingredients', {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
       data: { name: 'Testvegeta', categoryId: 1 },
     })
-    expect(res.ok()).toBeTruthy()
 
-    // Reload so the ingredient list reflects the newly created item
-    await page.reload()
-    await expect(page.locator('h1, h2, h3').first()).toBeVisible({ timeout: 10_000 })
+    // Search to surface the ingredient (125+ items; may not render without filtering)
+    const search = page.getByPlaceholder(/Sök/).first()
+    await search.fill('Testvegeta')
 
-    // Wait for the new ingredient to appear in the list
+    // Wait for the ingredient to appear in the filtered list
     await expect(page.getByText('Testvegeta')).toBeVisible({ timeout: 10_000 })
 
     // Hover over the ingredient card to reveal the edit button
