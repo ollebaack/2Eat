@@ -92,5 +92,6 @@ app.MapFileEndpoints();
 app.MapRecipeScanEndpoints();
 app.MapMealPlanEndpoints();
 app.MapPantryEndpoints();
+app.MapShoppingListEndpoints();
 
 app.Run();

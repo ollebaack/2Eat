@@ -106,3 +106,10 @@ export interface PantryItem {
   isOpened: boolean
   isLow: boolean
 }
+
+export interface ShoppingListItem {
+  id: number
+  name: string
+  isChecked: boolean
+  shoppingListId: number
+}

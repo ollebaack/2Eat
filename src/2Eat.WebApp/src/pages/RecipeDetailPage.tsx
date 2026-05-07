@@ -3,7 +3,7 @@ import { useNavigate, useParams, Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, Pencil, Trash2, Bookmark, Star, Check, Plus } from 'lucide-react'
 import { toast } from 'sonner'
-import { getRecipeById, deleteRecipe, getRecipes, getFileUrl } from '@/lib/api'
+import { getRecipeById, deleteRecipe, getRecipes, getFileUrl, addRecipeToShoppingList } from '@/lib/api'
 import type { Recipe } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -184,6 +184,12 @@ export function RecipeDetailPage() {
     onError: () => toast.error('Kunde inte ta bort receptet'),
   })
 
+  const addToShoppingListMutation = useMutation({
+    mutationFn: () => addRecipeToShoppingList(Number(id)),
+    onSuccess: () => toast.success('Ingredienser tillagda i handlistan'),
+    onError: () => toast.error('Kunde inte lägga till i handlistan'),
+  })
+
   if (isLoading) return <DetailSkeleton />
   if (!recipe) {
     return (
@@ -350,7 +356,7 @@ export function RecipeDetailPage() {
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--ink-60)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
               {Object.values(checked).filter(Boolean).length} / {sortedIngredients.length} ikryssat
             </span>
-            <Button variant="outline" size="sm" className="rounded-full gap-1.5 text-xs">
+            <Button variant="outline" size="sm" className="rounded-full gap-1.5 text-xs" onClick={() => addToShoppingListMutation.mutate()} disabled={addToShoppingListMutation.isPending}>
               <Plus size={12} /> Till handlista
             </Button>
           </div>

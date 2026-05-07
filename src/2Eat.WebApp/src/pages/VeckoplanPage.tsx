@@ -1,13 +1,19 @@
 import { useState, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, X, ArrowLeft, ArrowRight, Search, Sparkles } from 'lucide-react'
+import { Plus, X, ArrowLeft, ArrowRight, Search, Sparkles, Copy, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { getWeekPlan, setDaySlot, clearDaySlot, getRecipes } from '@/lib/api'
-import type { Recipe, WeekPlan } from '@/types'
+import { getWeekPlan, setDaySlot, clearDaySlot, getRecipes, getShoppingList, updateShoppingListItem, deleteShoppingListItem } from '@/lib/api'
+import type { Recipe, WeekPlan, ShoppingListItem } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { PhotoSlot } from '@/components/PhotoSlot'
 import { useIsMobile } from '@/hooks/useIsMobile'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 
 // ── Week helpers ─────────────────────────────────────────────────────────────
 
@@ -378,9 +384,84 @@ function StatsStrip({ weekPlan, recipes }: { weekPlan: WeekPlan | undefined; rec
   )
 }
 
+// ── Shopping list edit dialog ────────────────────────────────────────────────
+
+function ShoppingListEditDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const queryClient = useQueryClient()
+
+  const { data: items = [], isLoading } = useQuery({
+    queryKey: ['shopping-list'],
+    queryFn: getShoppingList,
+    enabled: open,
+    staleTime: 0,
+  })
+
+  const toggleMutation = useMutation({
+    mutationFn: ({ id, isChecked }: { id: number; isChecked: boolean }) =>
+      updateShoppingListItem(id, isChecked),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['shopping-list'] }),
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => deleteShoppingListItem(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['shopping-list'] }),
+  })
+
+  return (
+    <Dialog open={open} onOpenChange={v => { if (!v) onClose() }}>
+      <DialogContent style={{ background: 'var(--paper)', border: '1px solid var(--line)', borderRadius: 20, maxWidth: 480 }}>
+        <DialogHeader>
+          <DialogTitle style={{ fontFamily: 'var(--font-serif)', fontSize: 24, letterSpacing: '-0.025em', fontWeight: 400 }}>
+            Handlista
+          </DialogTitle>
+        </DialogHeader>
+        <div style={{ maxHeight: 400, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 4 }}>
+          {isLoading && (
+            <p style={{ fontFamily: 'var(--font-sans)', fontSize: 13, color: 'var(--ink-50)', padding: '12px 0' }}>Laddar...</p>
+          )}
+          {!isLoading && items.length === 0 && (
+            <p style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontSize: 14, color: 'var(--ink-50)', padding: '12px 0' }}>
+              Handlistan är tom.
+            </p>
+          )}
+          {items.map((item) => (
+            <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0', borderBottom: '1px dotted var(--line)' }}>
+              <button
+                onClick={() => toggleMutation.mutate({ id: item.id, isChecked: !item.isChecked })}
+                style={{
+                  width: 18, height: 18, borderRadius: '50%', flexShrink: 0,
+                  border: `1.5px solid ${item.isChecked ? 'var(--2eat-accent)' : 'var(--ink-30)'}`,
+                  background: item.isChecked ? 'var(--2eat-accent)' : 'transparent',
+                  cursor: 'pointer', display: 'grid', placeItems: 'center',
+                }}
+              />
+              <span style={{
+                flex: 1, fontFamily: 'var(--font-sans)', fontSize: 14,
+                color: item.isChecked ? 'var(--ink-40)' : 'var(--ink)',
+                textDecoration: item.isChecked ? 'line-through' : 'none',
+              }}>
+                {item.name}
+              </span>
+              <button
+                onClick={() => deleteMutation.mutate(item.id)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink-40)', padding: 4, display: 'grid', placeItems: 'center' }}
+                aria-label="Ta bort"
+              >
+                <Trash2 size={14} />
+              </button>
+            </div>
+          ))}
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 // ── Shopping list ────────────────────────────────────────────────────────────
 
 function ShoppingList({ weekPlan, recipes }: { weekPlan: WeekPlan | undefined; recipes: Recipe[] | undefined }) {
+  const [editOpen, setEditOpen] = useState(false)
+
   const groups = useMemo(() => {
     if (!weekPlan || !recipes) return {}
     const map = new Map<string, { name: string; unit: string; qty: number; recipes: string[]; category: string }>()
@@ -417,84 +498,110 @@ function ShoppingList({ weekPlan, recipes }: { weekPlan: WeekPlan | undefined; r
 
   const isEmpty = Object.keys(groups).length === 0
 
+  function copyList() {
+    const lines: string[] = []
+    Object.entries(groups).forEach(([category, items]) => {
+      lines.push(category.toUpperCase())
+      items.forEach(item => {
+        lines.push(`${item.qty} ${item.unit} ${item.name}`.trim())
+      })
+      lines.push('')
+    })
+    navigator.clipboard.writeText(lines.join('\n').trim())
+      .then(() => toast.success('Handlista kopierad'))
+      .catch(() => toast.error('Kunde inte kopiera'))
+  }
+
   return (
-    <div style={{
-      background: 'var(--paper)', border: '1px solid var(--line)',
-      borderRadius: 18, overflow: 'hidden',
-      display: 'flex', flexDirection: 'column',
-    }}>
-      <div style={{ padding: '20px 22px 14px', borderBottom: '1px solid var(--line)' }}>
-        <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.14em', color: 'var(--accent-deep)', marginBottom: 2 }}>
-          Automatisk
+    <>
+      <ShoppingListEditDialog open={editOpen} onClose={() => setEditOpen(false)} />
+      <div style={{
+        background: 'var(--paper)', border: '1px solid var(--line)',
+        borderRadius: 18, overflow: 'hidden',
+        display: 'flex', flexDirection: 'column',
+      }}>
+        <div style={{ padding: '20px 22px 14px', borderBottom: '1px solid var(--line)' }}>
+          <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.14em', color: 'var(--accent-deep)', marginBottom: 2 }}>
+            Automatisk
+          </div>
+          <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 24, letterSpacing: '-0.025em', color: 'var(--ink)', margin: 0, fontWeight: 400 }}>
+            Inköpslista
+          </h2>
         </div>
-        <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 24, letterSpacing: '-0.025em', color: 'var(--ink)', margin: 0, fontWeight: 400 }}>
-          Inköpslista
-        </h2>
-      </div>
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: '0 0 8px' }}>
-        {isEmpty ? (
-          <p style={{
-            fontFamily: 'var(--font-serif)', fontStyle: 'italic',
-            fontSize: 14, color: 'var(--ink-50)',
-            padding: '24px 22px', margin: 0,
-          }}>
-            Inköpslistan fylls när du planerat någon middag.
-          </p>
-        ) : (
-          Object.entries(groups).map(([category, items]) => (
-            <div key={category}>
-              <div style={{
-                padding: '12px 22px 6px',
-                display: 'flex', alignItems: 'center', gap: 10,
-              }}>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--accent-deep)', whiteSpace: 'nowrap' }}>
-                  {category}
-                </span>
-                <div style={{ flex: 1, height: 1, background: 'var(--line)' }} />
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--ink-40)' }}>{items.length}</span>
-              </div>
-              {items.map((item, idx) => (
-                <div
-                  key={idx}
-                  style={{
-                    display: 'grid', gridTemplateColumns: '20px 1fr auto',
-                    gap: 10, alignItems: 'center',
-                    padding: '7px 22px',
-                  }}
-                >
-                  <div style={{
-                    width: 16, height: 16, borderRadius: 4,
-                    border: '1.5px solid var(--line)',
-                    flexShrink: 0,
-                  }} />
-                  <div>
-                    <div style={{ fontFamily: 'var(--font-sans)', fontSize: 13.5, color: 'var(--ink)', lineHeight: 1.2 }}>
-                      {item.name}
-                    </div>
-                    <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--ink-50)', marginTop: 1 }}>
-                      till: {item.recipes.join(', ')}
-                    </div>
-                  </div>
-                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--ink-70)', whiteSpace: 'nowrap' }}>
-                    {item.qty} {item.unit}
-                  </div>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '0 0 8px' }}>
+          {isEmpty ? (
+            <p style={{
+              fontFamily: 'var(--font-serif)', fontStyle: 'italic',
+              fontSize: 14, color: 'var(--ink-50)',
+              padding: '24px 22px', margin: 0,
+            }}>
+              Inköpslistan fylls när du planerat någon middag.
+            </p>
+          ) : (
+            Object.entries(groups).map(([category, items]) => (
+              <div key={category}>
+                <div style={{
+                  padding: '12px 22px 6px',
+                  display: 'flex', alignItems: 'center', gap: 10,
+                }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--accent-deep)', whiteSpace: 'nowrap' }}>
+                    {category}
+                  </span>
+                  <div style={{ flex: 1, height: 1, background: 'var(--line)' }} />
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--ink-40)' }}>{items.length}</span>
                 </div>
-              ))}
-            </div>
-          ))
-        )}
-      </div>
+                {items.map((item, idx) => (
+                  <div
+                    key={idx}
+                    style={{
+                      display: 'grid', gridTemplateColumns: '20px 1fr auto',
+                      gap: 10, alignItems: 'center',
+                      padding: '7px 22px',
+                    }}
+                  >
+                    <div style={{
+                      width: 16, height: 16, borderRadius: 4,
+                      border: '1.5px solid var(--line)',
+                      flexShrink: 0,
+                    }} />
+                    <div>
+                      <div style={{ fontFamily: 'var(--font-sans)', fontSize: 13.5, color: 'var(--ink)', lineHeight: 1.2 }}>
+                        {item.name}
+                      </div>
+                      <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--ink-50)', marginTop: 1 }}>
+                        till: {item.recipes.join(', ')}
+                      </div>
+                    </div>
+                    <div style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--ink-70)', whiteSpace: 'nowrap' }}>
+                      {item.qty} {item.unit}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ))
+          )}
+        </div>
 
-      <div style={{ padding: '14px 22px', borderTop: '1px solid var(--line)', display: 'flex', gap: 8 }}>
-        <Button className="flex-1 rounded-full" style={{ background: 'var(--ink)', color: 'var(--paper)', fontFamily: 'var(--font-sans)', fontSize: 13, border: 'none' }}>
-          Skicka till mobilen
-        </Button>
-        <Button variant="outline" className="rounded-full" style={{ fontFamily: 'var(--font-sans)', fontSize: 13 }}>
-          Redigera
-        </Button>
+        <div style={{ padding: '14px 22px', borderTop: '1px solid var(--line)', display: 'flex', gap: 8 }}>
+          <Button
+            className="flex-1 rounded-full gap-1.5"
+            style={{ background: 'var(--ink)', color: 'var(--paper)', fontFamily: 'var(--font-sans)', fontSize: 13, border: 'none' }}
+            onClick={copyList}
+          >
+            <Copy size={13} /> Kopiera lista
+          </Button>
+          <Button
+            variant="outline"
+            className="rounded-full"
+            style={{ fontFamily: 'var(--font-sans)', fontSize: 13 }}
+            onClick={() => setEditOpen(true)}
+          >
+            Redigera
+          </Button>
+        </div>
       </div>
-    </div>
+    </>
   )
 }
 

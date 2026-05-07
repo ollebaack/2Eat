@@ -5,6 +5,7 @@ using _2Eat.Infrastructure.Services.PantryServices;
 using _2Eat.Infrastructure.Services.ReceiptScanServices;
 using _2Eat.Infrastructure.Services.RecipeServices;
 using _2Eat.Infrastructure.Services.ScanServices;
+using _2Eat.Infrastructure.Services.ShoppingListServices;
 using _2Eat.Infrastructure.Services.UserServices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -33,6 +34,7 @@ namespace _2Eat.Infrastructure
             services.AddScoped<IPantryItemService, PantryItemService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IReceiptScanService, ReceiptScanService>();
+            services.AddScoped<IShoppingListService, ShoppingListService>();
 
             services.AddHttpClient("RecipeScan", c =>
             {
