@@ -63,6 +63,9 @@ namespace _2Eat.Infrastructure.Migrations
                 table: "MealPlans",
                 column: "UserId");
 
+            migrationBuilder.Sql("DELETE FROM \"MealPlans\" WHERE \"UserId\" NOT IN (SELECT \"Id\" FROM \"Users\");");
+            migrationBuilder.Sql("DELETE FROM \"PantryItems\" WHERE \"UserId\" NOT IN (SELECT \"Id\" FROM \"Users\");");
+
             migrationBuilder.AddForeignKey(
                 name: "FK_MealPlans_Users_UserId",
                 table: "MealPlans",
