@@ -72,13 +72,18 @@ test.describe('Skafferi (Pantry)', () => {
     await page.getByRole('button', { name: 'Lägg till' }).click()
     await expect(page.getByText(itemName)).toBeVisible({ timeout: 10_000 })
 
-    // Search to isolate our item (parallel workers may share the pantry)
+    // Search to isolate our item, then delete
     await page.getByPlaceholder('Sök i skafferiet…').fill(itemName)
     await expect(page.getByText(itemName)).toBeVisible({ timeout: 5_000 })
     await page.locator('[aria-label="Ta bort"]').click()
 
-    // Check item is gone — more reliable than toast timing
-    await expect(page.locator('[aria-label="Ta bort"]')).not.toBeVisible({ timeout: 8_000 })
+    // Reload to get fresh server state — bypasses any React Query caching
+    await page.reload()
+    await expect(page.locator('h1, h2, h3').first()).toBeVisible({ timeout: 10_000 })
+
+    // Search again — item should not appear
+    await page.getByPlaceholder('Sök i skafferiet…').fill(itemName)
+    await expect(page.getByText(itemName)).not.toBeVisible({ timeout: 5_000 })
   })
 
   test('receipt scan button is visible', async ({ page }) => {
