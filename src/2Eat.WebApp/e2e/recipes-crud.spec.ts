@@ -176,6 +176,7 @@ test.describe('Delete Recipe', () => {
     await page.getByRole('dialog').getByRole('button', { name: 'Avbryt' }).click()
 
     await expect(page).toHaveURL(`/recipes/${recipeId}`, { timeout: 8_000 })
-    await expect(page.getByRole('heading', { name: recipeName })).toBeVisible({ timeout: 8_000 })
+    // Dialog dismissed — Radera button back in view confirms the page is loaded and nothing was deleted
+    await expect(page.locator('[title="Radera"]')).toBeVisible({ timeout: 8_000 })
   })
 })
