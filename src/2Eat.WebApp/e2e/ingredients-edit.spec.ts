@@ -27,7 +27,7 @@ test.describe('Ingredient edit', () => {
 
     // Search by exact placeholder to surface the ingredient in the 125+ item list
     await page.getByPlaceholder('Sök ingrediens…').fill('Testvegeta')
-    await expect(page.getByText('Testvegeta')).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByText('Testvegeta').first()).toBeVisible({ timeout: 10_000 })
 
     // The edit button is conditionally rendered via React onMouseEnter state.
     // mouseenter doesn't bubble, so dispatchEvent on a child doesn't reach the card.
