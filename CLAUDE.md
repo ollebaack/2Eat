@@ -32,6 +32,12 @@ dotnet build src/2Eat.Web.API/2Eat.Web.API.csproj
 # Add/apply EF Core migrations
 dotnet ef migrations add <Name> --project src/2Eat.Infrastructure/ --startup-project src/2Eat.Web.API/
 dotnet ef database update --project src/2Eat.Infrastructure/ --startup-project src/2Eat.Web.API/
+
+# Run backend integration tests (requires Docker for Testcontainers)
+dotnet test tests/2Eat.Web.API.Tests/2Eat.Web.API.Tests.csproj --verbosity normal
+
+# Run all tests (backend integration + any future test projects)
+dotnet test 2Eat.sln
 ```
 
 ### Frontend
@@ -61,7 +67,7 @@ Two workflow files live in `.github/workflows/`:
 
 Images are tagged with short commit SHA (`type=sha`) and branch name (`type=ref,event=branch`). No secrets beyond `GITHUB_TOKEN` are required. NuGet packages are cached by `**/*.csproj` hash; npm packages by `package-lock.json` hash; Docker layers via `type=gha`.
 
-There are no test projects currently.
+Backend integration tests live in `tests/2Eat.Web.API.Tests/` — xUnit + WebApplicationFactory + Testcontainers.PostgreSql. Each test boots the real API against a throwaway PostgreSQL container. Run with `dotnet test tests/2Eat.Web.API.Tests/2Eat.Web.API.Tests.csproj` (requires Docker). When more business logic moves into Application, add `tests/2Eat.Application.Tests` for unit tests there.
 
 ## Architecture
 
