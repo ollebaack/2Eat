@@ -12,7 +12,9 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/api': 'http://localhost:5264',
+      '/api': {
+        target: process.env['services__api__http__0'] ?? 'http://localhost:5264',
+      },
     },
   },
 })
