@@ -11,39 +11,40 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace _2Eat.Infrastructure
 {
     public static class DependencyInjection
     {
-        public static IServiceCollection AddInfrastructureExtensions(this IServiceCollection services, IConfiguration configuration)
+        public static IHostApplicationBuilder AddInfrastructureExtensions(this IHostApplicationBuilder builder)
         {
-            services.AddDbContext<ApplicationDbContext>(options =>
+            builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options
                     .UseNpgsql(
-                        configuration.GetConnectionString("DefaultConnection")
-                            ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.")
+                        builder.Configuration.GetConnectionString("twoeat")
+                            ?? throw new InvalidOperationException("Connection string 'twoeat' not found.")
                     )
                     .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning))
             );
 
-            services.AddScoped<IRecipeService, RecipeService>();
-            services.AddScoped<IIngredientService, IngredientService>();
-            services.AddScoped<IFileService, FileService>();
-            services.AddScoped<IMealPlanService, MealPlanService>();
-            services.AddScoped<IPantryItemService, PantryItemService>();
-            services.AddScoped<IUserService, UserService>();
-            services.AddScoped<IReceiptScanService, ReceiptScanService>();
-            services.AddScoped<IShoppingListService, ShoppingListService>();
+            builder.Services.AddScoped<IRecipeService, RecipeService>();
+            builder.Services.AddScoped<IIngredientService, IngredientService>();
+            builder.Services.AddScoped<IFileService, FileService>();
+            builder.Services.AddScoped<IMealPlanService, MealPlanService>();
+            builder.Services.AddScoped<IPantryItemService, PantryItemService>();
+            builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.AddScoped<IReceiptScanService, ReceiptScanService>();
+            builder.Services.AddScoped<IShoppingListService, ShoppingListService>();
 
-            services.AddHttpClient("RecipeScan", c =>
+            builder.Services.AddHttpClient("RecipeScan", c =>
             {
                 c.Timeout = TimeSpan.FromSeconds(20);
                 c.DefaultRequestHeaders.UserAgent.ParseAdd("2Eat-RecipeScanner/1.0");
             });
-            services.AddScoped<IRecipeScanService, RecipeScanService>();
+            builder.Services.AddScoped<IRecipeScanService, RecipeScanService>();
 
-            return services;
+            return builder;
         }
     }
 }

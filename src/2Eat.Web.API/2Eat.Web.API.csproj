@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\2Eat.Infrastructure\2Eat.Infrastructure.csproj" />
+    <ProjectReference Include="..\2Eat.ServiceDefaults\2Eat.ServiceDefaults.csproj" />
   </ItemGroup>
 
 </Project>

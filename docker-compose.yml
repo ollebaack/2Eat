@@ -22,7 +22,7 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_HTTP_PORTS: "8080"
-      ConnectionStrings__DefaultConnection: "Host=db;Database=2eat;Username=2eat;Password=2eat"
+      ConnectionStrings__twoeat: "Host=db;Database=2eat;Username=2eat;Password=2eat"
       Jwt__Secret: "change-me-in-production-must-be-32-chars-min!"
       Jwt__Issuer: "2eat-api"
       Jwt__Audience: "2eat-app"

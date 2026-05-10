@@ -1,5 +1,6 @@
 using _2Eat.Web.API;
 using _2Eat.Infrastructure;
+using _2Eat.ServiceDefaults;
 using System.Text.Json.Serialization;
 using Scalar.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -7,6 +8,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.AddServiceDefaults();
 
 builder.Configuration.AddJsonFile("appsettings.local.json", optional: true, reloadOnChange: true);
 
@@ -30,7 +33,7 @@ builder.Services.AddCors(options =>
         });
 });
 
-builder.Services.AddInfrastructureExtensions(builder.Configuration);
+builder.AddInfrastructureExtensions();
 
 // Validate JWT config up-front so a missing section fails at startup with a
 // clear message rather than an ArgumentNullException on the first request.
@@ -85,7 +88,7 @@ app.UseCors("AllowSpecificOrigin");
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapGet("/health", () => Results.Ok()).AllowAnonymous();
+app.MapDefaultEndpoints();
 
 app.MapAuthEndpoints();
 app.MapRecipeEndpoints();

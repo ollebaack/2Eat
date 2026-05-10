@@ -13,7 +13,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Backend
 
 ```bash
-# Run API locally (http://localhost:5264)
+# Run with Aspire (preferred for local dev — dashboard + observability)
+cd aspire/2Eat.AppHost
+dotnet run
+# Dashboard: http://localhost:15888  Frontend: http://localhost:5173
+
+# One-time developer setup (run once per machine):
+cd aspire/2Eat.AppHost
+dotnet user-secrets set "Parameters:JwtSecret" "dev-only-secret-key-must-be-at-least-32-chars!"
+dotnet user-secrets set "Parameters:AnthropicApiKey" "sk-ant-..."
+
+# Run API alone (no Aspire, no observability)
 dotnet run --project src/2Eat.Web.API/
 
 # Build
@@ -34,7 +44,7 @@ npm run build
 npm run test   # Playwright smoke tests (desktop + mobile) against http://localhost
 ```
 
-### Docker (full stack)
+### Docker (full stack — production-equivalent)
 
 ```bash
 docker compose up --build
@@ -63,6 +73,8 @@ There are no test projects currently.
 2Eat.Infrastructure → EF Core DbContext, migrations, service impls
 2Eat.Web.API       → Minimal API endpoints, DI wiring, startup
 2Eat.WebApp        → React frontend
+2Eat.ServiceDefaults → Shared Aspire defaults: OTel, health checks, resilience
+2Eat.AppHost       → Aspire orchestrator (lives in aspire/2Eat.AppHost/)
 ```
 
 Domain entities never reference Application or Infrastructure. Application defines interfaces that Infrastructure implements.
@@ -72,7 +84,7 @@ Domain entities never reference Application or Infrastructure. Application defin
 - **Minimal APIs only** — no MVC controllers. Endpoints are grouped via extension methods (e.g., `app.MapRecipeEndpoints()`).
 - **Services** injected as `IRecipeService`, `IIngredientService`, `IFileService` — implement in Infrastructure, register in `Program.cs`.
 - **Auth**: JWT Bearer tokens. Config required in `appsettings.Development.json` (see file — `Jwt:Secret`, `Jwt:Issuer`, `Jwt:Audience`, `Jwt:ExpiresInMinutes`). Docker env vars are set in `docker-compose.yml`. The `/api/auth/login` and `/api/auth/register` endpoints use `noAuthRedirect: true` in the API client so a 401 throws an error (shows a toast) rather than redirecting the user away from the auth pages.
-- **Secrets**: `appsettings.json` and `appsettings.Development.json` are committed with placeholder/dev values only — never put real keys in them. Real secrets (e.g. `Anthropic:ApiKey`) go in `appsettings.local.json` (gitignored, loaded automatically by `Program.cs`). For Docker/production use environment variables.
+- **Secrets**: `appsettings.json` and `appsettings.Development.json` are committed with placeholder/dev values only — never put real keys in them. When running with Aspire, secrets go in AppHost user secrets (see one-time setup above). When running the API directly, real secrets go in `appsettings.local.json` (gitignored, loaded automatically by `Program.cs`). For Docker/production use environment variables.
 - **Database**: PostgreSQL via Npgsql EF Core 10. `ApplicationDbContext` is in Infrastructure. Migrations auto-apply on startup via `app.Services.ApplyMigrations()`.
 - **File uploads**: stored in `/uploads` folder with randomized filenames; original name and content type tracked in `FileUpload` entity.
 - **OpenAPI**: Scalar UI available at `/scalar/v1` in development.
@@ -100,9 +112,12 @@ Domain entities never reference Application or Infrastructure. Application defin
 
 ### Infrastructure
 
-- Docker Compose runs three services: `db` (PostgreSQL 17), `api` (.NET 10), `webapp` (React + Nginx).
+- **.NET Aspire** is the preferred local development orchestrator. Running `dotnet run` in `aspire/2Eat.AppHost/` starts PostgreSQL, the API, and the WebApp together, with the Aspire dashboard at `http://localhost:15888`.
+- When running with Aspire, secrets (`JwtSecret`, `AnthropicApiKey`) are managed via .NET User Secrets on the AppHost project — not `appsettings.local.json`.
+- **Docker Compose** is preserved for production-equivalent and CI runs. It runs three services: `db` (PostgreSQL 17), `api` (.NET 10), `webapp` (React + Nginx).
 - DB data persisted in `postgres_data` volume; uploads in `uploads` volume shared between host and API container.
-- Database connection string lives in `appsettings.json` (not committed for production — use env vars or secrets).
+- Database connection string key is `2eat` (used by Aspire). Docker Compose passes the connection string via environment variables.
+- Connection string config lives in `appsettings.json` (not committed for production — use env vars or secrets).
 
 ## Conventions
 
