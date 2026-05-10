@@ -1,12 +1,15 @@
 using _2Eat.Infrastructure.Services.FileServices;
-using _2Eat.Infrastructure.Services.IngredientServices;
-using _2Eat.Infrastructure.Services.MealPlanServices;
+using _2Eat.Application.Ingredients;
+using _2Eat.Infrastructure.Ingredients;
+using _2Eat.Application.MealPlanning;
+using _2Eat.Infrastructure.MealPlanning;
 using _2Eat.Infrastructure.Services.PantryServices;
 using _2Eat.Infrastructure.Services.ReceiptScanServices;
-using _2Eat.Infrastructure.Services.RecipeServices;
-using _2Eat.Infrastructure.Services.ScanServices;
+using _2Eat.Application.Recipes;
+using _2Eat.Infrastructure.Recipes;
 using _2Eat.Infrastructure.Services.ShoppingListServices;
-using _2Eat.Infrastructure.Services.UserServices;
+using _2Eat.Application.Auth;
+using _2Eat.Infrastructure.Auth;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
@@ -28,12 +31,16 @@ namespace _2Eat.Infrastructure
                     .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning))
             );
 
+            builder.Services.AddScoped<IRecipeRepository, EfRecipeRepository>();
             builder.Services.AddScoped<IRecipeService, RecipeService>();
+            builder.Services.AddScoped<IIngredientRepository, EfIngredientRepository>();
             builder.Services.AddScoped<IIngredientService, IngredientService>();
             builder.Services.AddScoped<IFileService, FileService>();
-            builder.Services.AddScoped<IMealPlanService, MealPlanService>();
+            builder.Services.AddScoped<IMealPlanRepository, EfMealPlanRepository>();
+            builder.Services.AddScoped<IMealPlanService, _2Eat.Application.MealPlanning.MealPlanService>();
             builder.Services.AddScoped<IPantryItemService, PantryItemService>();
-            builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.AddScoped<IUserRepository, EfUserRepository>();
+            builder.Services.AddScoped<IUserService, _2Eat.Application.Auth.UserService>();
             builder.Services.AddScoped<IReceiptScanService, ReceiptScanService>();
             builder.Services.AddScoped<IShoppingListService, ShoppingListService>();
 
@@ -42,7 +49,7 @@ namespace _2Eat.Infrastructure
                 c.Timeout = TimeSpan.FromSeconds(20);
                 c.DefaultRequestHeaders.UserAgent.ParseAdd("2Eat-RecipeScanner/1.0");
             });
-            builder.Services.AddScoped<IRecipeScanService, RecipeScanService>();
+            builder.Services.AddScoped<IRecipeScanService, RecipeScanClient>();
 
             return builder;
         }

@@ -1,5 +1,5 @@
 ﻿using _2Eat.Domain;
-using _2Eat.Infrastructure.Services.RecipeServices;
+using _2Eat.Application.Recipes;
 using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace _2Eat.Web.API

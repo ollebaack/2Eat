@@ -1,5 +1,6 @@
+using _2Eat.Application.Auth;
+using _2Eat.Application.Auth.Dtos;
 using _2Eat.Domain;
-using _2Eat.Infrastructure.Services.UserServices;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -20,13 +21,6 @@ namespace _2Eat.Web.API
             group.MapPut("/me/password", ChangePassword).RequireAuthorization();
             group.MapDelete("/me", DeleteMe).RequireAuthorization();
         }
-
-        record RegisterRequest(string Email, string Password, string DisplayName);
-        record LoginRequest(string Email, string Password);
-        record UpdateProfileRequest(string DisplayName, string Email, string? AvatarUrl);
-        record ChangePasswordRequest(string CurrentPassword, string NewPassword);
-        record UserDto(int Id, string Email, string DisplayName, string? AvatarUrl);
-        record AuthResponse(string Token, UserDto User);
 
         static async Task<IResult> Register(RegisterRequest req, IUserService svc, IConfiguration config)
         {

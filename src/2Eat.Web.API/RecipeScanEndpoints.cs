@@ -1,4 +1,5 @@
-using _2Eat.Infrastructure.Services.ScanServices;
+using _2Eat.Application.Recipes;
+using _2Eat.Application.Recipes.Dtos;
 using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace _2Eat.Web.API
