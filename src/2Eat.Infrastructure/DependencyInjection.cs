@@ -8,6 +8,7 @@ using _2Eat.Infrastructure.Services.ScanServices;
 using _2Eat.Infrastructure.Services.ShoppingListServices;
 using _2Eat.Infrastructure.Services.UserServices;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -19,7 +20,13 @@ namespace _2Eat.Infrastructure
         public static IHostApplicationBuilder AddInfrastructureExtensions(this IHostApplicationBuilder builder)
         {
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseNpgsql(builder.Configuration.GetConnectionString("twoeat")));
+                options
+                    .UseNpgsql(
+                        builder.Configuration.GetConnectionString("twoeat")
+                            ?? throw new InvalidOperationException("Connection string 'twoeat' not found.")
+                    )
+                    .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning))
+            );
 
             builder.Services.AddScoped<IRecipeService, RecipeService>();
             builder.Services.AddScoped<IIngredientService, IngredientService>();
