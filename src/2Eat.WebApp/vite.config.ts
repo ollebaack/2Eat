@@ -15,6 +15,7 @@ export default defineConfig({
   server: {
     port,
     strictPort: Boolean(process.env['PORT']),
+    hmr: false,
     proxy: {
       '/api': {
         target: process.env['services__api__http__0'] ?? 'http://localhost:5264',
