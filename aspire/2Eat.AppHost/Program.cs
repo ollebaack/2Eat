@@ -4,6 +4,7 @@ var jwtSecret = builder.AddParameter("JwtSecret", secret: true);
 var anthropicApiKey = builder.AddParameter("AnthropicApiKey", secret: true);
 
 var postgres = builder.AddPostgres("postgres")
+    .WithEnvironment("POSTGRES_DB", "twoeat")
     .AddDatabase("twoeat");
 
 var api = builder.AddProject<Projects._2Eat_Web_API>("api")
