@@ -10,7 +10,6 @@ namespace _2Eat.Infrastructure.Services.RecipeServices
         public RecipeService(ApplicationDbContext context)
         {
             _context = context;
-            _context.Database.EnsureCreated();
         }
 
         public async Task<List<Recipe>> GetRecipesAsync()

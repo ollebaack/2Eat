@@ -4,6 +4,7 @@ var jwtSecret = builder.AddParameter("JwtSecret", secret: true);
 var anthropicApiKey = builder.AddParameter("AnthropicApiKey", secret: true);
 
 var postgres = builder.AddPostgres("postgres")
+    .WithDataVolume()
     .WithEnvironment("POSTGRES_DB", "twoeat")
     .AddDatabase("twoeat");
 
