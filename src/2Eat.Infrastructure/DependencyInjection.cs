@@ -7,6 +7,8 @@ using _2Eat.Infrastructure.Services.RecipeServices;
 using _2Eat.Infrastructure.Services.ScanServices;
 using _2Eat.Infrastructure.Services.ShoppingListServices;
 using _2Eat.Infrastructure.Services.UserServices;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -16,7 +18,8 @@ namespace _2Eat.Infrastructure
     {
         public static IHostApplicationBuilder AddInfrastructureExtensions(this IHostApplicationBuilder builder)
         {
-            builder.AddNpgsqlDbContext<ApplicationDbContext>("twoeat");
+            builder.Services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseNpgsql(builder.Configuration.GetConnectionString("twoeat")));
 
             builder.Services.AddScoped<IRecipeService, RecipeService>();
             builder.Services.AddScoped<IIngredientService, IngredientService>();
