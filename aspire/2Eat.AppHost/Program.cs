@@ -2,9 +2,10 @@ var builder = DistributedApplication.CreateBuilder(args);
 
 var jwtSecret = builder.AddParameter("JwtSecret", secret: true);
 var anthropicApiKey = builder.AddParameter("AnthropicApiKey", secret: true);
+var postgresPassword = builder.AddParameter("PostgresPassword", secret: true);
 
-var postgres = builder.AddPostgres("postgres")
-    .WithDataVolume()
+var postgres = builder.AddPostgres("postgres", password: postgresPassword)
+    .WithDataVolume("2eat-postgres-data")
     .WithEnvironment("POSTGRES_DB", "twoeat")
     .AddDatabase("twoeat");
 
