@@ -1,4 +1,6 @@
-using _2Eat.Infrastructure.Services.FileServices;
+using _2Eat.Application.Files;
+using _2Eat.Infrastructure.Files;
+using AppFileService = _2Eat.Application.Files.FileService;
 using _2Eat.Infrastructure.Services.IngredientServices;
 using _2Eat.Infrastructure.Services.MealPlanServices;
 using _2Eat.Infrastructure.Services.PantryServices;
@@ -30,7 +32,8 @@ namespace _2Eat.Infrastructure
 
             builder.Services.AddScoped<IRecipeService, RecipeService>();
             builder.Services.AddScoped<IIngredientService, IngredientService>();
-            builder.Services.AddScoped<IFileService, FileService>();
+            builder.Services.AddScoped<IFileRepository, EfFileRepository>();
+            builder.Services.AddScoped<IFileService, AppFileService>();
             builder.Services.AddScoped<IMealPlanService, MealPlanService>();
             builder.Services.AddScoped<IPantryItemService, PantryItemService>();
             builder.Services.AddScoped<IUserService, UserService>();
