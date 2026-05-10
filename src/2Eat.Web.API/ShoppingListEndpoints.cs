@@ -1,4 +1,4 @@
-using _2Eat.Infrastructure.Services.ShoppingListServices;
+using _2Eat.Application.ShoppingLists;
 using System.Security.Claims;
 
 namespace _2Eat.Web.API

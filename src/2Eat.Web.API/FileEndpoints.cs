@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 using _2Eat.Domain.Files;
-using _2Eat.Infrastructure.Services.FileServices;
+using _2Eat.Application.Files;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
