@@ -1,8 +1,8 @@
+using _2Eat.Application.Pantry;
+using _2Eat.Infrastructure.Pantry;
 using _2Eat.Infrastructure.Services.FileServices;
 using _2Eat.Infrastructure.Services.IngredientServices;
 using _2Eat.Infrastructure.Services.MealPlanServices;
-using _2Eat.Infrastructure.Services.PantryServices;
-using _2Eat.Infrastructure.Services.ReceiptScanServices;
 using _2Eat.Infrastructure.Services.RecipeServices;
 using _2Eat.Infrastructure.Services.ScanServices;
 using _2Eat.Infrastructure.Services.ShoppingListServices;
@@ -32,9 +32,10 @@ namespace _2Eat.Infrastructure
             builder.Services.AddScoped<IIngredientService, IngredientService>();
             builder.Services.AddScoped<IFileService, FileService>();
             builder.Services.AddScoped<IMealPlanService, MealPlanService>();
+            builder.Services.AddScoped<IPantryRepository, EfPantryRepository>();
             builder.Services.AddScoped<IPantryItemService, PantryItemService>();
             builder.Services.AddScoped<IUserService, UserService>();
-            builder.Services.AddScoped<IReceiptScanService, ReceiptScanService>();
+            builder.Services.AddScoped<IReceiptScanService, ReceiptScanClient>();
             builder.Services.AddScoped<IShoppingListService, ShoppingListService>();
 
             builder.Services.AddHttpClient("RecipeScan", c =>

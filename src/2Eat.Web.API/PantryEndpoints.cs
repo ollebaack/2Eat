@@ -1,6 +1,5 @@
+using _2Eat.Application.Pantry;
 using _2Eat.Domain;
-using _2Eat.Infrastructure.Services.PantryServices;
-using _2Eat.Infrastructure.Services.ReceiptScanServices;
 using System.Security.Claims;
 
 namespace _2Eat.Web.API
