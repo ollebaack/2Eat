@@ -69,8 +69,11 @@ There are no test projects currently.
 
 ```
 2Eat.Domain        → Core entities, no dependencies
-2Eat.Application   → Services, interfaces, error types
-2Eat.Infrastructure → EF Core DbContext, migrations, service impls
+2Eat.Application   → Services, interfaces, repository interfaces — organized by module:
+                     Auth/, Files/, Ingredients/, MealPlanning/, Pantry/, Recipes/, ShoppingLists/
+2Eat.Infrastructure → EF Core DbContext, migrations, EF repository implementations,
+                     external clients (Anthropic SDK) — organized by module:
+                     Auth/, Files/, Ingredients/, MealPlanning/, Pantry/, Recipes/, ShoppingLists/
 2Eat.Web.API       → Minimal API endpoints, DI wiring, startup
 2Eat.WebApp        → React frontend
 2Eat.ServiceDefaults → Shared Aspire defaults: OTel, health checks, resilience
@@ -82,7 +85,7 @@ Domain entities never reference Application or Infrastructure. Application defin
 ### Backend Patterns
 
 - **Minimal APIs only** — no MVC controllers. Endpoints are grouped via extension methods (e.g., `app.MapRecipeEndpoints()`).
-- **Services** injected as `IRecipeService`, `IIngredientService`, `IFileService` — implement in Infrastructure, register in `Program.cs`.
+- **Services** live in `2Eat.Application/<Module>/` (e.g., `Application/Recipes/RecipeService.cs`). Each module exposes a service interface and a repository interface. Infrastructure implements the repository (`EfXxxRepository`) and any external API clients (`RecipeScanClient`, `ReceiptScanClient`). Register via `DependencyInjection.cs` in Infrastructure.
 - **Auth**: JWT Bearer tokens. Config required in `appsettings.Development.json` (see file — `Jwt:Secret`, `Jwt:Issuer`, `Jwt:Audience`, `Jwt:ExpiresInMinutes`). Docker env vars are set in `docker-compose.yml`. The `/api/auth/login` and `/api/auth/register` endpoints use `noAuthRedirect: true` in the API client so a 401 throws an error (shows a toast) rather than redirecting the user away from the auth pages.
 - **Secrets**: `appsettings.json` and `appsettings.Development.json` are committed with placeholder/dev values only — never put real keys in them. When running with Aspire, secrets go in AppHost user secrets (see one-time setup above). When running the API directly, real secrets go in `appsettings.local.json` (gitignored, loaded automatically by `Program.cs`). For Docker/production use environment variables.
 - **Database**: PostgreSQL via Npgsql EF Core 10. `ApplicationDbContext` is in Infrastructure. Migrations auto-apply on startup via `app.Services.ApplyMigrations()`.
