@@ -23,8 +23,8 @@ namespace _2Eat.Domain
         public int CookTime { get; set; }
         public int PrepTime { get; set; }
         public int TotalTime => CookTime + PrepTime;
-        public DateTimeOffset LastModified { get; set; } = DateTimeOffset.Now;
-        public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.Now;
+        public DateTimeOffset LastModified { get; set; } = DateTimeOffset.UtcNow;
+        public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
         public int CategoryId { get; set; }
         public string GetLastModifiedTimeAgo()
         {
