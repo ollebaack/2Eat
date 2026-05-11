@@ -54,6 +54,13 @@ namespace _2Eat.Infrastructure
                 c.Timeout = TimeSpan.FromSeconds(20);
                 c.DefaultRequestHeaders.UserAgent.ParseAdd("2Eat-RecipeScanner/1.0");
             });
+            builder.Services.AddHttpClient("InstagramScan", c =>
+            {
+                c.Timeout = TimeSpan.FromSeconds(20);
+                c.DefaultRequestHeaders.UserAgent.ParseAdd(
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+                c.DefaultRequestHeaders.Add("Accept-Language", "en-US,en;q=0.9");
+            });
             builder.Services.AddScoped<IRecipeScanService, RecipeScanClient>();
 
             return builder;

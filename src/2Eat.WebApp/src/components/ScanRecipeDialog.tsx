@@ -222,7 +222,7 @@ export function ScanRecipeDialog({ open, onOpenChange, onApply }: Props) {
             {tab === 'url' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <p style={{ margin: 0, fontFamily: 'var(--font-sans)', fontSize: 13, color: 'var(--ink-60)', lineHeight: 1.5 }}>
-                  Klistra in en länk till en receptsida så hämtar vi receptet automatiskt.
+                  Klistra in en länk till en receptsida eller ett Instagram-inlägg så hämtar vi receptet automatiskt.
                 </p>
                 <input
                   type="url"
