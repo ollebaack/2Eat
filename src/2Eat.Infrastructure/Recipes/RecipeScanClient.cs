@@ -222,7 +222,11 @@ public class RecipeScanClient : IRecipeScanService
         If a field cannot be determined, use null. Do not include any text outside the JSON.
         """;
 
-    private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        Converters = { new FlexibleDoubleConverter() }
+    };
 
     private static ScannedRecipeDto ParseResponse(string json)
     {
