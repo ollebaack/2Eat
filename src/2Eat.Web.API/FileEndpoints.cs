@@ -12,7 +12,7 @@ namespace _2Eat.Web.API
         {
             //endpoints.MapGet("/api/files", GetFiles);
 
-            endpoints.MapGet("/api/files/{fileName}", DownloadFileByFileName).RequireAuthorization();
+            endpoints.MapGet("/api/files/{fileName}", DownloadFileByFileName);
 
             endpoints.MapPost("/api/files", CreateFile).DisableAntiforgery().RequireAuthorization();
 
