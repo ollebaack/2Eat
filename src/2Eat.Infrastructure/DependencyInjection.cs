@@ -60,8 +60,10 @@ namespace _2Eat.Infrastructure
             builder.Services.AddHttpClient("InstagramScan", c =>
             {
                 c.Timeout = TimeSpan.FromSeconds(30);
+                // Instagram (Meta) serves server-side rendered HTML with OG meta tags to Meta's
+                // own external hit scraper, ensuring posts preview well when shared on Facebook.
                 c.DefaultRequestHeaders.UserAgent.ParseAdd(
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36");
+                    "facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)");
                 c.DefaultRequestHeaders.AcceptLanguage.ParseAdd("en-US,en;q=0.9");
                 c.DefaultRequestHeaders.Accept.ParseAdd("text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
             });
