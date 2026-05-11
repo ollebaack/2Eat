@@ -100,27 +100,13 @@ public class RecipeScanClient : IRecipeScanService
 
     private async Task<string> FetchInstagramContentAsync(string url, CancellationToken ct)
     {
-        var embedUrl = ToInstagramEmbedUrl(url);
+        // Strip tracking query parameters; the main post page has OG meta tags with the caption.
+        var uri = new Uri(url);
+        var cleanUrl = $"https://www.instagram.com{uri.AbsolutePath.TrimEnd('/')}/";
+
         var http = _httpFactory.CreateClient("InstagramScan");
-
-        string html;
-        try
-        {
-            html = await http.GetStringAsync(embedUrl, ct);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Failed to fetch Instagram embed URL {EmbedUrl}, falling back to original", embedUrl);
-            html = await http.GetStringAsync(url, ct);
-        }
-
+        var html = await http.GetStringAsync(cleanUrl, ct);
         return ExtractInstagramText(html);
-    }
-
-    private static string ToInstagramEmbedUrl(string url)
-    {
-        var path = new Uri(url).AbsolutePath.TrimEnd('/');
-        return $"https://www.instagram.com{path}/embed/";
     }
 
     private static string ExtractInstagramText(string html)
@@ -134,7 +120,11 @@ public class RecipeScanClient : IRecipeScanService
             parts.Add($"Title: {title}");
 
         if (!string.IsNullOrWhiteSpace(description))
-            parts.Add($"Caption: {description}");
+        {
+            // OG description format: "N likes, N comments - @user on Instagram: "caption text""
+            var caption = ExtractCaptionFromOgDescription(description);
+            parts.Add($"Caption: {caption}");
+        }
 
         if (parts.Count == 0)
         {
@@ -145,6 +135,21 @@ public class RecipeScanClient : IRecipeScanService
 
         var combined = string.Join("\n\n", parts);
         return combined.Length > 80_000 ? combined[..80_000] : combined;
+    }
+
+    private static string ExtractCaptionFromOgDescription(string description)
+    {
+        // Strip "N likes, N comments - @username on Instagram: " prefix
+        var idx = description.IndexOf("on Instagram:", StringComparison.OrdinalIgnoreCase);
+        if (idx < 0) return description;
+
+        var after = description[(idx + "on Instagram:".Length)..].Trim();
+
+        // Strip surrounding quotes if present
+        if (after.Length > 2 && after[0] == '"' && after[^1] == '"')
+            return after[1..^1];
+
+        return after;
     }
 
     private static string? ExtractOgMetaContent(string html, string property)
