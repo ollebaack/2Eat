@@ -213,7 +213,7 @@ internal static partial class JsonLdRecipeScraper
             RegexOptions.IgnoreCase);
 
         double quantity = 0;
-        var unit = "st";
+        var unit = "";
         var name = raw.Trim();
 
         if (match.Success)

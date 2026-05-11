@@ -135,7 +135,7 @@ export function RecipeFormPage() {
         key: crypto.randomUUID(),
         name: ing.name,
         quantity: ing.quantity ?? 0,
-        unit: (UNIT_MAP[ing.unit?.toLowerCase() ?? ''] ?? 'st') as UnitOfMeasurement,
+        unit: (UNIT_MAP[ing.unit?.toLowerCase() ?? ''] ?? ((ing.quantity ?? 0) > 0 ? 'st' : 'g')) as UnitOfMeasurement,
         order: i + 1,
       })))
     }
