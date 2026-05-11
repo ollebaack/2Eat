@@ -183,11 +183,22 @@ internal static partial class JsonLdRecipeScraper
 
     private static ScannedIngredientDto ParseIngredient(string raw)
     {
-        // Normalize unicode fractions and slash notation
+        // Normalize unicode fractions to slash notation first
         raw = raw
-            .Replace("½", "0.5").Replace("¼", "0.25")
-            .Replace("¾", "0.75").Replace("⅓", "0.33")
-            .Replace("⅔", "0.67");
+            .Replace("½", "1/2").Replace("¼", "1/4")
+            .Replace("¾", "3/4").Replace("⅓", "1/3")
+            .Replace("⅔", "2/3");
+
+        // Collapse mixed numbers before slash fractions: "2 1/2" → "2.5"
+        raw = MixedFraction().Replace(raw, m =>
+        {
+            var whole = double.Parse(m.Groups[1].Value, CultureInfo.InvariantCulture);
+            var num   = double.Parse(m.Groups[2].Value, CultureInfo.InvariantCulture);
+            var den   = double.Parse(m.Groups[3].Value, CultureInfo.InvariantCulture);
+            return (whole + num / den).ToString("G", CultureInfo.InvariantCulture);
+        });
+
+        // Remaining simple slash fractions: "1/2" → "0.5"
         raw = SlashFraction().Replace(raw, m =>
         {
             var n = double.Parse(m.Groups[1].Value, CultureInfo.InvariantCulture);
@@ -195,9 +206,10 @@ internal static partial class JsonLdRecipeScraper
             return (n / d).ToString("G", CultureInfo.InvariantCulture);
         });
 
+        // \b ensures the unit matches as a complete word, not a prefix ("st" won't match inside "ströbröd")
         var unitPattern = string.Join("|", Units.Select(Regex.Escape));
         var match = Regex.Match(raw.Trim(),
-            $@"^([\d.,]+)?\s*({unitPattern})?\s*(.+)?$",
+            $@"^([\d.,]+)?\s*({unitPattern}\b)?\s*(.+)?$",
             RegexOptions.IgnoreCase);
 
         double quantity = 0;
@@ -223,6 +235,10 @@ internal static partial class JsonLdRecipeScraper
 
     [GeneratedRegex(@"<script[^>]+type=[""']application/ld\+json[""'][^>]*>([\s\S]*?)</script>", RegexOptions.IgnoreCase)]
     private static partial Regex LdJsonPattern();
+
+    // Matches "2 1/2" style mixed numbers (whole number followed by a fraction)
+    [GeneratedRegex(@"(\d+)\s+(\d+)/(\d+)")]
+    private static partial Regex MixedFraction();
 
     [GeneratedRegex(@"(\d+)/(\d+)")]
     private static partial Regex SlashFraction();
