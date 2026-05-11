@@ -60,10 +60,18 @@ public class RecipeScanClient : IRecipeScanService
 
     public async Task<ScannedRecipeDto> ScanFromUrlAsync(string url, CancellationToken ct = default)
     {
-        EnsureConfigured();
-
         var http = _httpFactory.CreateClient("RecipeScan");
         var html = await http.GetStringAsync(url, ct);
+
+        var scraped = JsonLdRecipeScraper.TryScrape(html);
+        if (scraped is not null)
+        {
+            _logger.LogInformation("Recipe extracted via JSON-LD scraping from {Url}", url);
+            return scraped;
+        }
+
+        // Fall back to AI when no structured data is found
+        EnsureConfigured();
         var text = StripHtml(html);
         if (text.Length > 80_000) text = text[..80_000];
 
