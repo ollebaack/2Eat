@@ -1,6 +1,6 @@
 namespace _2Eat.Application.Recipes.Dtos;
 
-public record ScannedIngredientDto(string Name, double Quantity, string Unit);
+public record ScannedIngredientDto(string Name, double? Quantity, string Unit);
 
 public record ScannedRecipeDto(
     string? Name,
