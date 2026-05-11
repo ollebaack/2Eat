@@ -129,6 +129,7 @@ export function RecipeFormPage() {
     if (data.cookTime)    setCookTime(data.cookTime)
     if (data.difficulty && ['Lätt', 'Medel', 'Svår'].includes(data.difficulty))
       setDifficulty(data.difficulty)
+    if (data.imageUrl)    setImageUrl(data.imageUrl)
     if (data.steps?.length) setSteps(data.steps)
     if (data.ingredients?.length) {
       setRows(data.ingredients.map((ing, i) => ({

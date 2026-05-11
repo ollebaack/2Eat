@@ -10,5 +10,6 @@ public record ScannedRecipeDto(
     int? PrepTime,
     int? CookTime,
     string? Difficulty,
-    ScannedIngredientDto[]? Ingredients
+    ScannedIngredientDto[]? Ingredients,
+    string? ImageUrl = null
 );
