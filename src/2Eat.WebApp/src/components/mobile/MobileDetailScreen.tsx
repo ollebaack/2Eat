@@ -84,6 +84,7 @@ export function MobileDetailScreen({ recipe }: { recipe: Recipe }) {
 
         {/* Back button */}
         <button
+          aria-label="Tillbaka"
           onClick={() => navigate(-1)}
           style={{ ...glassBtn, position: 'absolute', top: 56, left: 16 }}
         >
