@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { getRecipeById, createRecipe, updateRecipe, uploadFile, getRecipes, ALLERGEN_OPTIONS } from '@/lib/api'
 import type { RecipeIngredient, ScannedRecipe, UnitOfMeasurement } from '@/types'
 import { ScanRecipeDialog } from '@/components/ScanRecipeDialog'
+import { PhotoSlot } from '@/components/PhotoSlot'
 
 const UNITS: UnitOfMeasurement[] = [
   'g', 'ml', 'kg', 'krm', 'tsk', 'msk', 'dl', 'l', 'kaffemått', 'st',
@@ -57,6 +58,7 @@ export function RecipeFormPage() {
   const [allergens, setAllergens] = useState<string[]>([])
   const [initialized, setInitialized] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [localPreview, setLocalPreview] = useState<string | undefined>()
   const [scanOpen, setScanOpen] = useState(false)
 
   if (isEdit && existing && !initialized) {
@@ -101,12 +103,14 @@ export function RecipeFormPage() {
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
+    const preview = URL.createObjectURL(file)
+    setLocalPreview(preview)
     setUploading(true)
     try {
       const upload = await uploadFile(file)
-      if (upload.isSuccess) setImageUrl(upload.storedFileName)
-      else toast.error('Uppladdning misslyckades')
-    } catch { toast.error('Uppladdning misslyckades') }
+      if (upload.isSuccess) { setImageUrl(upload.storedFileName); setLocalPreview(undefined); URL.revokeObjectURL(preview) }
+      else { toast.error('Uppladdning misslyckades'); setLocalPreview(undefined); URL.revokeObjectURL(preview) }
+    } catch { toast.error('Uppladdning misslyckades'); setLocalPreview(undefined); URL.revokeObjectURL(preview) }
     finally { setUploading(false) }
   }
 
@@ -256,28 +260,55 @@ export function RecipeFormPage() {
         {/* Image upload */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6, gridColumn: 'span 4' }}>
           <label style={labelStyle}>Bild</label>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <button
-              type="button"
-              disabled={uploading}
-              onClick={() => fileRef.current?.click()}
-              style={{
-                display: 'inline-flex', alignItems: 'center', gap: 8,
-                padding: '9px 16px', borderRadius: 999,
-                border: '1px solid var(--line)', background: 'transparent',
-                cursor: uploading ? 'wait' : 'pointer',
-                fontFamily: 'var(--font-sans)', fontSize: 13, color: 'var(--ink)',
-              }}
-            >
-              ↑ {uploading ? 'Laddar upp…' : 'Ladda upp bild'}
-            </button>
-            {imageUrl && (
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--ink-50)', letterSpacing: '0.06em' }}>
-                {imageUrl}
-              </span>
-            )}
-            <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFileChange} />
-          </div>
+          {(localPreview || imageUrl) ? (
+            <div style={{ position: 'relative', borderRadius: 12, overflow: 'hidden', maxWidth: 360, aspectRatio: '4/3' }}>
+              {localPreview
+                ? <img src={localPreview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                : <PhotoSlot imageUrl={imageUrl} aspect="4/3" />
+              }
+              {uploading && (
+                <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'grid', placeItems: 'center' }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'white', letterSpacing: '0.08em' }}>Laddar upp…</span>
+                </div>
+              )}
+              {!uploading && (
+                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end', padding: 10, gap: 6 }}>
+                  <button
+                    type="button"
+                    onClick={() => fileRef.current?.click()}
+                    style={{ padding: '6px 12px', borderRadius: 999, background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)', border: 'none', color: 'white', fontFamily: 'var(--font-sans)', fontSize: 12, cursor: 'pointer' }}
+                  >
+                    Byt bild
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setImageUrl(undefined)}
+                    style={{ padding: '6px 12px', borderRadius: 999, background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)', border: 'none', color: 'white', fontFamily: 'var(--font-sans)', fontSize: 12, cursor: 'pointer' }}
+                  >
+                    Ta bort
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <button
+                type="button"
+                disabled={uploading}
+                onClick={() => fileRef.current?.click()}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 8,
+                  padding: '9px 16px', borderRadius: 999,
+                  border: '1px solid var(--line)', background: 'transparent',
+                  cursor: uploading ? 'wait' : 'pointer',
+                  fontFamily: 'var(--font-sans)', fontSize: 13, color: 'var(--ink)',
+                }}
+              >
+                ↑ Ladda upp bild
+              </button>
+            </div>
+          )}
+          <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFileChange} />
         </div>
       </section>
 
