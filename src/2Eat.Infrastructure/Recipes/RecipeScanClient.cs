@@ -61,28 +61,35 @@ public class RecipeScanClient : IRecipeScanService
 
     public async Task<ScannedRecipeDto> ScanFromUrlAsync(string url, CancellationToken ct = default)
     {
-        EnsureConfigured();
-
-        string text;
-        string userMessage;
-
         if (IsInstagramUrl(new Uri(url)))
         {
-            text = await FetchInstagramContentAsync(url, ct);
-            userMessage = $"Extract a recipe from this Instagram post. The caption may use informal language, emojis, or abbreviated measurements.\n\n{ExtractionPrompt()}\n\nInstagram post content:\n{text}";
+            EnsureConfigured();
+            var instagramText = await FetchInstagramContentAsync(url, ct);
+            var instagramMessages = new List<Message>
+            {
+                new Message(RoleType.User, $"Extract a recipe from this Instagram post. The caption may use informal language, emojis, or abbreviated measurements.\n\n{ExtractionPrompt()}\n\nInstagram post content:\n{instagramText}")
+            };
+            return await CallClaude(instagramMessages, ct);
         }
-        else
+
+        var http = _httpFactory.CreateClient("RecipeScan");
+        var html = await http.GetStringAsync(url, ct);
+
+        var scraped = JsonLdRecipeScraper.TryScrape(html);
+        if (scraped is not null)
         {
-            var http = _httpFactory.CreateClient("RecipeScan");
-            var html = await http.GetStringAsync(url, ct);
-            text = StripHtml(html);
-            if (text.Length > 80_000) text = text[..80_000];
-            userMessage = $"Extract a recipe from this web page content.\n\n{ExtractionPrompt()}\n\nPage content:\n{text}";
+            _logger.LogInformation("Recipe extracted via JSON-LD scraping from {Url}", url);
+            return scraped;
         }
+
+        // Fall back to AI when no structured data is found
+        EnsureConfigured();
+        var text = StripHtml(html);
+        if (text.Length > 80_000) text = text[..80_000];
 
         var messages = new List<Message>
         {
-            new Message(RoleType.User, userMessage)
+            new Message(RoleType.User, $"Extract a recipe from this web page content.\n\n{ExtractionPrompt()}\n\nPage content:\n{text}")
         };
 
         return await CallClaude(messages, ct);
