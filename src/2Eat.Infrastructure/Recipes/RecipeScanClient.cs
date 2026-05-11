@@ -5,6 +5,7 @@ using _2Eat.Application.Recipes;
 using _2Eat.Application.Recipes.Dtos;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using System.Net;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
@@ -60,6 +61,17 @@ public class RecipeScanClient : IRecipeScanService
 
     public async Task<ScannedRecipeDto> ScanFromUrlAsync(string url, CancellationToken ct = default)
     {
+        if (IsInstagramUrl(new Uri(url)))
+        {
+            EnsureConfigured();
+            var instagramText = await FetchInstagramContentAsync(url, ct);
+            var instagramMessages = new List<Message>
+            {
+                new Message(RoleType.User, $"Extract a recipe from this Instagram post. The caption may use informal language, emojis, or abbreviated measurements.\n\n{ExtractionPrompt()}\n\nInstagram post content:\n{instagramText}")
+            };
+            return await CallClaude(instagramMessages, ct);
+        }
+
         var http = _httpFactory.CreateClient("RecipeScan");
         var html = await http.GetStringAsync(url, ct);
 
@@ -81,6 +93,70 @@ public class RecipeScanClient : IRecipeScanService
         };
 
         return await CallClaude(messages, ct);
+    }
+
+    private static bool IsInstagramUrl(Uri uri) =>
+        uri.Host is "www.instagram.com" or "instagram.com";
+
+    private async Task<string> FetchInstagramContentAsync(string url, CancellationToken ct)
+    {
+        var embedUrl = ToInstagramEmbedUrl(url);
+        var http = _httpFactory.CreateClient("InstagramScan");
+
+        string html;
+        try
+        {
+            html = await http.GetStringAsync(embedUrl, ct);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to fetch Instagram embed URL {EmbedUrl}, falling back to original", embedUrl);
+            html = await http.GetStringAsync(url, ct);
+        }
+
+        return ExtractInstagramText(html);
+    }
+
+    private static string ToInstagramEmbedUrl(string url)
+    {
+        var path = new Uri(url).AbsolutePath.TrimEnd('/');
+        return $"https://www.instagram.com{path}/embed/";
+    }
+
+    private static string ExtractInstagramText(string html)
+    {
+        var parts = new List<string>();
+
+        var title = ExtractOgMetaContent(html, "og:title");
+        var description = ExtractOgMetaContent(html, "og:description");
+
+        if (!string.IsNullOrWhiteSpace(title))
+            parts.Add($"Title: {title}");
+
+        if (!string.IsNullOrWhiteSpace(description))
+            parts.Add($"Caption: {description}");
+
+        if (parts.Count == 0)
+        {
+            var stripped = StripHtml(html);
+            if (!string.IsNullOrWhiteSpace(stripped))
+                parts.Add(stripped);
+        }
+
+        var combined = string.Join("\n\n", parts);
+        return combined.Length > 80_000 ? combined[..80_000] : combined;
+    }
+
+    private static string? ExtractOgMetaContent(string html, string property)
+    {
+        var escaped = Regex.Escape(property);
+        var match = Regex.Match(html,
+            $@"<meta[^>]+property=""{escaped}""[^>]+content=""([^""]*)""|<meta[^>]+content=""([^""]*)""[^>]+property=""{escaped}""",
+            RegexOptions.IgnoreCase);
+
+        if (!match.Success) return null;
+        var raw = match.Groups[1].Success ? match.Groups[1].Value : match.Groups[2].Value;
+        return WebUtility.HtmlDecode(raw);
     }
 
     private async Task<ScannedRecipeDto> CallClaude(List<Message> messages, CancellationToken ct)
