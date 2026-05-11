@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search } from 'lucide-react'
+import { Search, ArrowRight, Bookmark } from 'lucide-react'
 import type { Recipe } from '@/types'
 import { getFileUrl } from '@/lib/api'
+import { useAuth } from '@/context/AuthContext'
 
 const SWATCHES = [
   'oklch(0.65 0.12 50)', 'oklch(0.6 0.1 145)', 'oklch(0.62 0.12 30)',
@@ -46,12 +47,40 @@ function PhotoSlot({ recipe, height = 'auto', aspect = '4/3' }: {
   )
 }
 
+function Stars({ value = 0, size = 10 }: { value: number; size?: number }) {
+  return (
+    <span style={{ display: 'inline-flex', gap: 1 }}>
+      {[1,2,3,4,5].map(i => (
+        <svg key={i} width={size} height={size} viewBox="0 0 24 24" fill="none">
+          <path
+            d="M12 3l2.7 5.5 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.8 1-6.1L3.2 9.4l6.1-.9z"
+            fill={i <= value ? 'var(--2eat-accent)' : 'none'}
+            stroke={i <= value ? 'var(--2eat-accent)' : 'var(--ink-30)'}
+            strokeWidth="1.5"
+            strokeLinejoin="round"
+          />
+        </svg>
+      ))}
+    </span>
+  )
+}
+
+function timeGreeting(): string {
+  const h = new Date().getHours()
+  if (h < 10) return 'God morgon'
+  if (h < 13) return 'God förmiddag'
+  if (h < 17) return 'God eftermiddag'
+  if (h < 21) return 'God kväll'
+  return 'God natt'
+}
+
 export interface MobileListScreenProps {
   recipes: Recipe[]
 }
 
 export function MobileListScreen({ recipes }: MobileListScreenProps) {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [q, setQ] = useState('')
   const [activeCategory, setActiveCategory] = useState('Alla')
 
@@ -59,6 +88,11 @@ export function MobileListScreen({ recipes }: MobileListScreenProps) {
   const dayNames = ['Söndag', 'Måndag', 'Tisdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lördag']
   const monthNames = ['jan', 'feb', 'mars', 'apr', 'maj', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec']
   const dateStr = `${dayNames[today.getDay()]} · ${today.getDate()} ${monthNames[today.getMonth()]}`
+
+  const firstName = user?.displayName?.split(' ')[0] ?? ''
+  const initials = user?.displayName
+    ? user.displayName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
+    : '?'
 
   const categoryNames = ['Alla', ...Array.from(new Set(recipes.map(r => r.category?.name).filter(Boolean)))]
 
@@ -95,16 +129,25 @@ export function MobileListScreen({ recipes }: MobileListScreenProps) {
               fontFamily: 'var(--font-serif)', fontSize: 34, lineHeight: 1.0,
               letterSpacing: '-0.035em', margin: '4px 0 0', fontWeight: 400, color: 'var(--ink)',
             }}>
-              Vad ska vi{' '}
-              <em style={{ fontStyle: 'italic', color: 'var(--2eat-accent-deep)' }}>äta</em>?
+              {timeGreeting()}{firstName && (
+                <>, <em style={{ fontStyle: 'italic', color: 'var(--2eat-accent-deep)' }}>{firstName}</em></>
+              )}
             </h1>
           </div>
-          <div style={{
-            width: 38, height: 38, borderRadius: '50%', flexShrink: 0,
-            background: 'linear-gradient(135deg, var(--2eat-accent), var(--2eat-accent-deep))',
-            display: 'grid', placeItems: 'center', color: 'var(--paper)',
-            fontFamily: 'var(--font-serif)', fontSize: 14,
-          }}>EL</div>
+          {user?.avatarUrl ? (
+            <img
+              src={getFileUrl(user.avatarUrl)}
+              alt={user.displayName}
+              style={{ width: 38, height: 38, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+            />
+          ) : (
+            <div style={{
+              width: 38, height: 38, borderRadius: '50%', flexShrink: 0,
+              background: 'linear-gradient(135deg, var(--2eat-accent), var(--2eat-accent-deep))',
+              display: 'grid', placeItems: 'center', color: 'var(--paper)',
+              fontFamily: 'var(--font-serif)', fontSize: 14,
+            }}>{initials}</div>
+          )}
         </div>
 
         {/* Search bar */}
@@ -113,7 +156,7 @@ export function MobileListScreen({ recipes }: MobileListScreenProps) {
           padding: '11px 14px',
           background: 'var(--surface-1)', border: '1px solid var(--line)', borderRadius: 999,
         }}>
-          <Search size={15} color="var(--ink-50)" />
+          <Search size={15} color="var(--ink-50)" strokeWidth={1.5} />
           <input
             value={q}
             onChange={e => setQ(e.target.value)}
@@ -149,7 +192,7 @@ export function MobileListScreen({ recipes }: MobileListScreenProps) {
             onClick={() => navigate(`/recipes/${featured.id}`)}
             style={{ borderRadius: 22, overflow: 'hidden', border: '1px solid var(--line)', cursor: 'pointer' }}
           >
-            <div style={{ height: 200, position: 'relative' }}>
+            <div style={{ height: 220, position: 'relative' }}>
               <PhotoSlot recipe={featured} height="100%" />
               <div style={{ position: 'absolute', top: 14, left: 14 }}>
                 <span style={{
@@ -159,6 +202,14 @@ export function MobileListScreen({ recipes }: MobileListScreenProps) {
                   fontFamily: 'var(--font-mono)', fontSize: 10,
                   letterSpacing: '0.06em', textTransform: 'uppercase',
                 }}>★ Veckans</span>
+              </div>
+              <div style={{ position: 'absolute', top: 14, right: 14 }}>
+                <div style={{
+                  width: 32, height: 32, borderRadius: '50%',
+                  background: 'rgba(255,255,255,0.92)', display: 'grid', placeItems: 'center',
+                }}>
+                  <Bookmark size={14} strokeWidth={1.5} color="var(--ink)" />
+                </div>
               </div>
             </div>
             <div style={{ padding: 18, background: 'var(--paper)' }}>
@@ -170,7 +221,7 @@ export function MobileListScreen({ recipes }: MobileListScreenProps) {
                 {featured.category?.name} · {featured.totalTime} min · {featured.servings} pers
               </div>
               <h2 style={{
-                fontFamily: 'var(--font-serif)', fontSize: 26, lineHeight: 1.05,
+                fontFamily: 'var(--font-serif)', fontSize: 28, lineHeight: 1.05,
                 letterSpacing: '-0.03em', margin: 0, fontWeight: 400, color: 'var(--ink)',
               }}>
                 {featured.name}
@@ -188,8 +239,8 @@ export function MobileListScreen({ recipes }: MobileListScreenProps) {
         </div>
       )}
 
-      {/* Category chips — horizontal scroll */}
-      <div style={{ padding: '4px 0 12px' }}>
+      {/* Category chips */}
+      <div style={{ padding: '4px 0 8px' }}>
         <div style={{
           display: 'flex', gap: 8, overflowX: 'auto', padding: '4px 20px',
           scrollbarWidth: 'none',
@@ -211,48 +262,68 @@ export function MobileListScreen({ recipes }: MobileListScreenProps) {
       </div>
 
       {/* Recipe list */}
-      <div style={{ padding: '8px 20px 20px', display: 'flex', flexDirection: 'column' }}>
-        {rest.length === 0 && !featured && (
-          <p style={{ color: 'var(--ink-50)', fontFamily: 'var(--font-sans)', fontSize: 14 }}>
+      <div style={{ padding: '8px 20px 20px' }}>
+        {rest.length > 0 && (
+          <div style={{
+            display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12,
+          }}>
+            <h2 style={{
+              fontFamily: 'var(--font-serif)', fontSize: 24, letterSpacing: '-0.025em',
+              margin: 0, fontWeight: 400, color: 'var(--ink)',
+            }}>
+              Senaste recepten
+            </h2>
+            <span style={{
+              fontFamily: 'var(--font-mono)', fontSize: 10,
+              color: 'var(--ink-50)', letterSpacing: '0.1em', textTransform: 'uppercase',
+            }}>
+              {recipes.length} st
+            </span>
+          </div>
+        )}
+
+        {filtered.length === 0 && (
+          <p style={{ color: 'var(--ink-50)', fontFamily: 'var(--font-sans)', fontSize: 14, textAlign: 'center', paddingTop: 32 }}>
             Inga recept hittades.
           </p>
         )}
-        {rest.map((r, i) => (
-          <div
-            key={r.id}
-            onClick={() => navigate(`/recipes/${r.id}`)}
-            style={{
-              display: 'flex', gap: 14, padding: '12px 0',
-              borderBottom: i < rest.length - 1 ? '1px solid var(--line)' : 'none',
-              cursor: 'pointer', alignItems: 'center',
-            }}
-          >
-            <div style={{
-              width: 72, height: 72, borderRadius: 12, flexShrink: 0,
-              overflow: 'hidden',
-            }}>
-              <PhotoSlot recipe={r} height="100%" />
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <h3 style={{
-                fontFamily: 'var(--font-serif)', fontSize: 18,
-                letterSpacing: '-0.02em', margin: '0 0 4px', fontWeight: 400,
-                lineHeight: 1.1, color: 'var(--ink)',
-              }}>{r.name}</h3>
-              <div style={{
-                fontFamily: 'var(--font-mono)', fontSize: 10,
-                letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--ink-50)',
-              }}>
-                {r.totalTime} min · {r.servings} pers · {r.category?.name}
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {rest.map(r => (
+            <article
+              key={r.id}
+              onClick={() => navigate(`/recipes/${r.id}`)}
+              style={{
+                display: 'grid', gridTemplateColumns: '88px 1fr', gap: 14,
+                padding: 10, background: 'var(--paper)',
+                border: '1px solid var(--line)', borderRadius: 16,
+                cursor: 'pointer',
+              }}
+            >
+              <div style={{ borderRadius: 10, overflow: 'hidden', height: 88 }}>
+                <PhotoSlot recipe={r} height="100%" />
               </div>
-            </div>
-            {r.rating > 0 && (
-              <span style={{ color: 'var(--2eat-accent)', fontSize: 11, flexShrink: 0 }}>
-                {'★'.repeat(r.rating)}
-              </span>
-            )}
-          </div>
-        ))}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0, paddingTop: 2 }}>
+                <span style={{
+                  fontFamily: 'var(--font-mono)', fontSize: 9.5,
+                  letterSpacing: '0.12em', color: 'var(--ink-50)', textTransform: 'uppercase',
+                }}>
+                  {r.category?.name} · {r.totalTime} MIN
+                </span>
+                <h3 style={{
+                  fontFamily: 'var(--font-serif)', fontSize: 19, lineHeight: 1.15,
+                  letterSpacing: '-0.02em', margin: 0, fontWeight: 400, color: 'var(--ink)',
+                }}>
+                  {r.name}
+                </h3>
+                <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Stars value={r.rating} size={10} />
+                  <ArrowRight size={14} strokeWidth={1.5} color="var(--ink-40)" />
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
       </div>
     </div>
   )

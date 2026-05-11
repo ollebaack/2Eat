@@ -1,24 +1,23 @@
 import { useNavigate, useMatch } from 'react-router-dom'
+import { BookOpen, Search, Utensils, Users } from 'lucide-react'
 
 const TABS = [
-  { key: 'home',        label: 'Recept',      icon: '📖', to: '/'            },
-  { key: 'ingredients', label: 'Ingredienser', icon: '🥕', to: '/ingredients' },
-  { key: 'veckoplan',   label: 'Plan',         icon: '📅', to: '/veckoplan'   },
-  { key: 'me',          label: 'Profil',       icon: '👤', to: '/profile'     },
+  { key: 'home',   label: 'Recept', Icon: BookOpen, to: '/'          },
+  { key: 'search', label: 'Sök',    Icon: Search,   to: '/?search=1' },
+  { key: 'plan',   label: 'Plan',   Icon: Utensils, to: '/veckoplan' },
+  { key: 'me',     label: 'Mig',    Icon: Users,    to: '/profile'   },
 ]
 
 export function MobileTabBar() {
   const navigate = useNavigate()
-  const isHome        = !!useMatch({ path: '/', end: true })
-  const isIngredients = !!useMatch('/ingredients')
-  const isVeckoplan   = !!useMatch('/veckoplan')
-  const isProfile     = !!useMatch('/profile')
+  const isHome      = !!useMatch({ path: '/', end: true })
+  const isVeckoplan = !!useMatch('/veckoplan')
+  const isProfile   = !!useMatch('/profile')
 
   function isActive(key: string) {
-    if (key === 'home')        return isHome
-    if (key === 'ingredients') return isIngredients
-    if (key === 'veckoplan')   return isVeckoplan
-    if (key === 'me')          return isProfile
+    if (key === 'home')   return isHome
+    if (key === 'plan')   return isVeckoplan
+    if (key === 'me')     return isProfile
     return false
   }
 
@@ -36,13 +35,13 @@ export function MobileTabBar() {
         display: 'flex', justifyContent: 'space-around',
       }}
     >
-      {TABS.map(tab => {
-        const active = isActive(tab.key)
+      {TABS.map(({ key, label, Icon, to }) => {
+        const active = isActive(key)
         return (
           <button
-            key={tab.key}
-            onClick={() => tab.to && navigate(tab.to)}
-            aria-label={tab.label}
+            key={key}
+            onClick={() => navigate(to)}
+            aria-label={label}
             style={{
               flex: 1, padding: '6px 0',
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
@@ -51,8 +50,12 @@ export function MobileTabBar() {
               fontFamily: 'var(--font-sans)', fontSize: 10.5, fontWeight: 500,
             }}
           >
-            <span style={{ fontSize: 20 }}>{tab.icon}</span>
-            <span>{tab.label}</span>
+            <Icon
+              size={20}
+              strokeWidth={1.5}
+              color={active ? 'var(--2eat-accent-deep)' : 'var(--ink-50)'}
+            />
+            <span>{label}</span>
           </button>
         )
       })}

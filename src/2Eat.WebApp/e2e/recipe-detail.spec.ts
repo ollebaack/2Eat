@@ -93,7 +93,7 @@ test.describe('Recipe Detail', () => {
 
   test('back button navigates away from recipe detail', async ({ page }, testInfo) => {
     if (testInfo.project.name === 'mobile') {
-      await page.getByRole('button', { name: '←' }).click()
+      await page.getByRole('button', { name: 'Tillbaka' }).click()
     } else {
       await page.getByRole('button', { name: /Tillbaka till alla recept/i }).click()
     }
