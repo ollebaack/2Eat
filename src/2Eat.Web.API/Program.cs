@@ -100,3 +100,5 @@ app.MapPantryEndpoints();
 app.MapShoppingListEndpoints();
 
 app.Run();
+
+public partial class Program { }

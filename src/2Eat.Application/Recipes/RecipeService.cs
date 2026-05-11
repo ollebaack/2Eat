@@ -52,7 +52,7 @@ public class RecipeService : IRecipeService
         recipeEntity.Description = recipe.Description;
         recipeEntity.Instructions = recipe.Instructions;
         recipeEntity.ImageUrl = recipe.ImageUrl;
-        recipeEntity.LastModified = DateTimeOffset.Now;
+        recipeEntity.LastModified = DateTimeOffset.UtcNow;
 
         foreach (var recipeIngredient in recipe.Ingredients)
         {
