@@ -158,7 +158,7 @@ test.describe('Delete Recipe', () => {
     await page.getByRole('dialog').getByRole('button', { name: 'Ta bort' }).click()
 
     await expect(page).toHaveURL('/', { timeout: 10_000 })
-    await expect(page.getByText(recipeName)).not.toBeVisible({ timeout: 8_000 })
+    await expect(page.getByText(recipeName)).toHaveCount(0, { timeout: 8_000 })
   })
 
   test('cancel delete dialog keeps the user on the detail page', async ({ page, isMobile }) => {

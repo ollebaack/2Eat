@@ -64,22 +64,25 @@ public class RecipeScanClient : IRecipeScanService
         if (IsInstagramUrl(new Uri(url)))
         {
             EnsureConfigured();
-            var instagramText = await FetchInstagramContentAsync(url, ct);
+            var (instagramText, instagramImageUrl) = await FetchInstagramContentAsync(url, ct);
             var instagramMessages = new List<Message>
             {
                 new Message(RoleType.User, $"Extract a recipe from this Instagram post. The caption may use informal language, emojis, or abbreviated measurements.\n\n{ExtractionPrompt()}\n\nInstagram post content:\n{instagramText}")
             };
-            return await CallClaude(instagramMessages, ct);
+            var instagramResult = await CallClaude(instagramMessages, ct);
+            return instagramResult with { ImageUrl = instagramImageUrl };
         }
 
         var http = _httpFactory.CreateClient("RecipeScan");
         var html = await http.GetStringAsync(url, ct);
 
+        var ogImageUrl = ExtractOgMetaContent(html, "og:image");
+
         var scraped = JsonLdRecipeScraper.TryScrape(html);
         if (scraped is not null)
         {
             _logger.LogInformation("Recipe extracted via JSON-LD scraping from {Url}", url);
-            return scraped;
+            return scraped with { ImageUrl = ogImageUrl };
         }
 
         // Fall back to AI when no structured data is found
@@ -92,13 +95,14 @@ public class RecipeScanClient : IRecipeScanService
             new Message(RoleType.User, $"Extract a recipe from this web page content.\n\n{ExtractionPrompt()}\n\nPage content:\n{text}")
         };
 
-        return await CallClaude(messages, ct);
+        var result = await CallClaude(messages, ct);
+        return result with { ImageUrl = ogImageUrl };
     }
 
     private static bool IsInstagramUrl(Uri uri) =>
         uri.Host is "www.instagram.com" or "instagram.com";
 
-    private async Task<string> FetchInstagramContentAsync(string url, CancellationToken ct)
+    private async Task<(string Text, string? ImageUrl)> FetchInstagramContentAsync(string url, CancellationToken ct)
     {
         // Strip tracking query parameters; the main post page has OG meta tags with the caption.
         var uri = new Uri(url);
@@ -112,7 +116,8 @@ public class RecipeScanClient : IRecipeScanService
             _logger.LogWarning("No content extracted from Instagram URL {Url}. Response snippet: {Snippet}",
                 cleanUrl, html.Length > 500 ? html[..500] : html);
 
-        return text;
+        var imageUrl = ExtractOgMetaContent(html, "og:image");
+        return (text, imageUrl);
     }
 
     private static string ExtractInstagramText(string html)

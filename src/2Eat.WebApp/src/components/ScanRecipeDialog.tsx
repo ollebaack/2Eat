@@ -7,7 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { getScanStatus, scanRecipeFromImage, scanRecipeFromUrl } from '@/lib/api'
+import { getScanStatus, scanRecipeFromImage, scanRecipeFromUrl, getFileUrl } from '@/lib/api'
 import type { ScannedRecipe } from '@/types'
 
 interface Props {
@@ -127,7 +127,15 @@ export function ScanRecipeDialog({ open, onOpenChange, onApply }: Props) {
 
         {!scanning && preview && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div style={{ background: 'var(--paper)', border: '1px solid var(--line)', borderRadius: 12, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ background: 'var(--paper)', border: '1px solid var(--line)', borderRadius: 12, overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: 0 }}>
+              {preview.imageUrl && (
+                <img
+                  src={getFileUrl(preview.imageUrl)}
+                  alt=""
+                  style={{ width: '100%', height: 160, objectFit: 'cover', display: 'block' }}
+                />
+              )}
+              <div style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
               <p style={{ margin: 0, fontFamily: 'var(--font-serif)', fontSize: 18, letterSpacing: '-0.02em', color: 'var(--ink)' }}>
                 {preview.name ?? '—'}
               </p>
@@ -151,6 +159,7 @@ export function ScanRecipeDialog({ open, onOpenChange, onApply }: Props) {
                     {((preview.prepTime ?? 0) + (preview.cookTime ?? 0))} min totalt
                   </span>
                 ) : null}
+              </div>
               </div>
             </div>
 
