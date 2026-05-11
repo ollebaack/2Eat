@@ -106,7 +106,13 @@ public class RecipeScanClient : IRecipeScanService
 
         var http = _httpFactory.CreateClient("InstagramScan");
         var html = await http.GetStringAsync(cleanUrl, ct);
-        return ExtractInstagramText(html);
+        var text = ExtractInstagramText(html);
+
+        if (string.IsNullOrWhiteSpace(text))
+            _logger.LogWarning("No content extracted from Instagram URL {Url}. Response snippet: {Snippet}",
+                cleanUrl, html.Length > 500 ? html[..500] : html);
+
+        return text;
     }
 
     private static string ExtractInstagramText(string html)
@@ -155,12 +161,15 @@ public class RecipeScanClient : IRecipeScanService
     private static string? ExtractOgMetaContent(string html, string property)
     {
         var escaped = Regex.Escape(property);
+        // Handle both attribute orderings and both double- and single-quoted attribute values.
         var match = Regex.Match(html,
-            $@"<meta[^>]+property=""{escaped}""[^>]+content=""([^""]*)""|<meta[^>]+content=""([^""]*)""[^>]+property=""{escaped}""",
+            $@"<meta[^>]+property=""{escaped}""[^>]+content=""([^""]*)""|<meta[^>]+content=""([^""]*)""[^>]+property=""{escaped}""|<meta[^>]+property='{escaped}'[^>]+content='([^']*)'|<meta[^>]+content='([^']*)'[^>]+property='{escaped}'",
             RegexOptions.IgnoreCase);
 
         if (!match.Success) return null;
-        var raw = match.Groups[1].Success ? match.Groups[1].Value : match.Groups[2].Value;
+        var raw = Enumerable.Range(1, 4)
+            .Select(i => match.Groups[i])
+            .First(g => g.Success).Value;
         return WebUtility.HtmlDecode(raw);
     }
 
