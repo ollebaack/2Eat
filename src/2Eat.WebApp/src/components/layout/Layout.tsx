@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { NavLink, Outlet, Link, useNavigate, useMatch } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { Plus, BookOpen, Carrot, Calendar, ShoppingBasket, Moon, Sun, LogOut } from 'lucide-react'
+import { Plus, BookOpen, Settings, Calendar, ShoppingBasket, Moon, Sun, LogOut } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import { MobileTabBar } from '@/components/mobile/MobileTabBar'
@@ -10,7 +10,7 @@ import { getFileUrl } from '@/lib/api'
 
 const navItems = [
   { to: '/',            label: 'Recept',       icon: BookOpen,       end: true  },
-  { to: '/ingredients', label: 'Ingredienser', icon: Carrot,         end: false },
+  { to: '/settings',    label: 'Inställningar', icon: Settings,       end: false },
   { to: '/veckoplan',   label: 'Veckoplan',    icon: Calendar,       end: false },
   { to: '/skafferi',    label: 'Skafferi',     icon: ShoppingBasket, end: false },
 ]
@@ -187,7 +187,7 @@ export function Layout() {
           <div
             className="flex flex-col min-w-0 flex-1 cursor-pointer"
             style={{ lineHeight: 1.2 }}
-            onClick={() => navigate('/profile')}
+            onClick={() => navigate('/settings')}
           >
             <span className="truncate" style={{ fontSize: 13, color: 'var(--ink)', fontWeight: 500 }}>
               {user?.displayName ?? ''}

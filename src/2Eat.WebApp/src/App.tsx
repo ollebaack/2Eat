@@ -13,6 +13,7 @@ import { SkafferiPage } from '@/pages/SkafferiPage'
 import { LoginPage } from '@/pages/LoginPage'
 import { RegisterPage } from '@/pages/RegisterPage'
 import { ProfilePage } from '@/pages/ProfilePage'
+import { SettingsPage } from '@/pages/SettingsPage'
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000 } },
@@ -36,6 +37,7 @@ export default function App() {
                 <Route path="veckoplan" element={<VeckoplanPage />} />
                 <Route path="skafferi" element={<SkafferiPage />} />
                 <Route path="profile" element={<ProfilePage />} />
+                <Route path="settings" element={<SettingsPage />} />
               </Route>
             </Route>
           </Routes>
