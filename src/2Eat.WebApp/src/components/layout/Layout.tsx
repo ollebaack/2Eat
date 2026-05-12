@@ -68,7 +68,9 @@ export function Layout() {
   }
 
   const { isDark, setIsDark } = useTheme()
-  const isRecipeForm = !!useMatch('/recipes/new') || !!useMatch('/recipes/:id/edit')
+  const isNewRecipe  = !!useMatch('/recipes/new')
+  const isEditRecipe = !!useMatch('/recipes/:id/edit')
+  const isRecipeForm = isNewRecipe || isEditRecipe
 
   if (isMobile) {
     return (
