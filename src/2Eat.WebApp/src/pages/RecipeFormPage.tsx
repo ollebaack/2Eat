@@ -74,7 +74,7 @@ export function RecipeFormPage() {
     setImageUrl(existing.imageUrl)
     const sorted = [...(existing.ingredients ?? [])].sort((a, b) => a.order - b.order)
     setRows(sorted.length > 0
-      ? sorted.map((ri: RecipeIngredient) => ({ key: String(ri.id), name: ri.ingredient?.name ?? '', quantity: ri.ingredientMeasurement?.quantity ?? 0, unit: ri.ingredientMeasurement?.unit ?? 'g', order: ri.order }))
+      ? sorted.map((ri: RecipeIngredient) => ({ key: String(ri.ingredientMeasurementId), name: ri.ingredient?.name ?? '', quantity: ri.ingredientMeasurement?.quantity ?? 0, unit: ri.ingredientMeasurement?.unit ?? 'g', order: ri.order }))
       : [newRow(1)])
     const parsedSteps = existing.instructions.split(/\n+/).map(s => s.replace(/^\d+[.)]\s*/, '').trim()).filter(Boolean)
     if (parsedSteps.length > 0) setSteps(parsedSteps)
