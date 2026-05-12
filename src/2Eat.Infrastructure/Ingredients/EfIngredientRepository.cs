@@ -22,13 +22,14 @@ public class EfIngredientRepository(ApplicationDbContext context) : IIngredientR
         return entry.Entity;
     }
 
-    public async Task<Ingredient?> UpdateAsync(int id, string name, int categoryId)
+    public async Task<Ingredient?> UpdateAsync(int id, string name, int categoryId, decimal? pricePerUnit)
     {
         var ingredient = await context.Ingredients.FindAsync(id);
         if (ingredient is null) return null;
 
         ingredient.Name = name;
         ingredient.CategoryId = categoryId;
+        ingredient.PricePerUnit = pricePerUnit;
         await context.SaveChangesAsync();
         return ingredient;
     }

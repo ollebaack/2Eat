@@ -67,7 +67,7 @@ namespace _2Eat.Web.API
             if (body == null || string.IsNullOrWhiteSpace(body.Name))
                 return TypedResults.BadRequest();
 
-            var updated = await _service.UpdateIngredientAsync(id, body.Name, body.CategoryId);
+            var updated = await _service.UpdateIngredientAsync(id, body.Name, body.CategoryId, body.PricePerUnit);
             if (updated == null)
                 return TypedResults.NotFound();
 
@@ -93,5 +93,5 @@ namespace _2Eat.Web.API
         }
     }
 
-    public record UpdateIngredientRequest(string Name, int CategoryId);
+    public record UpdateIngredientRequest(string Name, int CategoryId, decimal? PricePerUnit);
 }

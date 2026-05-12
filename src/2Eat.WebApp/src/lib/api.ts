@@ -64,7 +64,7 @@ export const getIngredients = () => request<Ingredient[]>('/ingredients')
 export const getIngredientById = (id: number) => request<Ingredient>(`/ingredients/${id}`)
 export const createIngredient = (data: Partial<Ingredient>) =>
   request<Ingredient>('/ingredients', { method: 'POST', body: JSON.stringify(data) })
-export const updateIngredient = (id: number, data: { name: string; categoryId: number }) =>
+export const updateIngredient = (id: number, data: { name: string; categoryId: number; pricePerUnit?: number | null }) =>
   request<Ingredient>(`/ingredients/${id}`, { method: 'PUT', body: JSON.stringify(data) })
 export const deleteIngredient = (id: number) =>
   request<Ingredient>(`/ingredients/${id}`, { method: 'DELETE' })

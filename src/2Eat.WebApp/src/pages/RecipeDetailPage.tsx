@@ -206,6 +206,13 @@ export function RecipeDetailPage() {
   const currentServings = servings ?? recipe.servings
   const factor = currentServings / (recipe.servings || 1)
 
+  const pricedIngredients = sortedIngredients.filter(ri => ri.ingredient?.pricePerUnit != null)
+  const totalCost = pricedIngredients.reduce((sum, ri) => {
+    const qty = (ri.ingredientMeasurement?.quantity ?? 0) * factor
+    return sum + qty * (ri.ingredient.pricePerUnit ?? 0)
+  }, 0)
+  const hasCost = pricedIngredients.length > 0
+
   // Parse instructions into steps array (split on numbered lines or newlines)
   const steps = (recipe.instructions ?? '')
     .split(/\n+/)
@@ -281,13 +288,14 @@ export function RecipeDetailPage() {
       </header>
 
       {/* ── Stat strip ─────────────────────────────��────────────── */}
-      <section style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', background: 'var(--paper)', border: '1px solid var(--line)', borderRadius: 18, padding: '24px 28px', marginBottom: 40 }}>
+      <section style={{ display: 'grid', gridTemplateColumns: `repeat(${hasCost ? 6 : 5}, 1fr)`, background: 'var(--paper)', border: '1px solid var(--line)', borderRadius: 18, padding: '24px 28px', marginBottom: 40 }}>
         {[
           { k: 'Förberedelse', v: recipe.prepTime,   u: 'min' },
           { k: 'Tillagning',   v: recipe.cookTime,   u: 'min' },
           { k: 'Total tid',    v: recipe.totalTime,  u: 'min' },
           { k: 'Portioner',    v: currentServings,         u: 'st'  },
           { k: 'Svårighet',    v: recipe.difficulty || 'Medel', u: '' },
+          ...(hasCost ? [{ k: 'Kostnad', v: `~${Math.round(totalCost)}`, u: 'kr' }] : []),
         ].map((s, i) => (
           <div key={s.k} style={{ display: 'flex', flexDirection: 'column', gap: 6, paddingLeft: i === 0 ? 0 : 28, borderLeft: i === 0 ? 'none' : '1px solid var(--line)' }}>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--ink-50)' }}>{s.k}</span>
@@ -352,13 +360,28 @@ export function RecipeDetailPage() {
               )
             })}
           </ul>
-          <div style={{ marginTop: 18, padding: 14, background: 'var(--surface-1)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--ink-60)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-              {Object.values(checked).filter(Boolean).length} / {sortedIngredients.length} ikryssat
-            </span>
-            <Button variant="outline" size="sm" className="rounded-full gap-1.5 text-xs" onClick={() => addToShoppingListMutation.mutate()} disabled={addToShoppingListMutation.isPending}>
-              <Plus size={12} /> Till handlista
-            </Button>
+          <div style={{ marginTop: 18, padding: 14, background: 'var(--surface-1)', borderRadius: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--ink-60)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                {Object.values(checked).filter(Boolean).length} / {sortedIngredients.length} ikryssat
+              </span>
+              <Button variant="outline" size="sm" className="rounded-full gap-1.5 text-xs" onClick={() => addToShoppingListMutation.mutate()} disabled={addToShoppingListMutation.isPending}>
+                <Plus size={12} /> Till handlista
+              </Button>
+            </div>
+            {hasCost && (
+              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', borderTop: '1px dotted var(--line)', paddingTop: 10 }}>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--ink-50)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                  Beräknad kostnad
+                  {pricedIngredients.length < sortedIngredients.length && (
+                    <span style={{ marginLeft: 4, opacity: 0.7 }}>({pricedIngredients.length}/{sortedIngredients.length} ing.)</span>
+                  )}
+                </span>
+                <span style={{ fontFamily: 'var(--font-serif)', fontSize: 20, color: 'var(--ink)', letterSpacing: '-0.02em' }}>
+                  ~{Math.round(totalCost)} kr
+                </span>
+              </div>
+            )}
           </div>
         </aside>
 

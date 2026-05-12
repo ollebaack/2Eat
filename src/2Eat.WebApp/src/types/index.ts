@@ -25,6 +25,7 @@ export interface Ingredient {
   category: Category
   categoryId: number
   allergens: Allergen[]
+  pricePerUnit?: number
 }
 
 export interface RecipeIngredient {

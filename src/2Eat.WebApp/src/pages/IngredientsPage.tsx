@@ -28,6 +28,7 @@ export function IngredientsPage() {
   const [newName, setNewName] = useState('')
   const [toEdit, setToEdit] = useState<Ingredient | null>(null)
   const [editName, setEditName] = useState('')
+  const [editPrice, setEditPrice] = useState<string>('')
   const [query, setQuery] = useState('')
   const [activeCat, setActiveCat] = useState('Alla')
 
@@ -58,8 +59,8 @@ export function IngredientsPage() {
   })
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, name, categoryId }: { id: number; name: string; categoryId: number }) =>
-      updateIngredient(id, { name, categoryId }),
+    mutationFn: ({ id, name, categoryId, pricePerUnit }: { id: number; name: string; categoryId: number; pricePerUnit?: number | null }) =>
+      updateIngredient(id, { name, categoryId, pricePerUnit }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ingredients'] })
       toast.success('Ingrediens uppdaterad')
@@ -188,7 +189,7 @@ export function IngredientsPage() {
                   <IngredientCard
                     key={ing.id}
                     ingredient={ing}
-                    onEdit={() => { setToEdit(ing); setEditName(ing.name) }}
+                    onEdit={() => { setToEdit(ing); setEditName(ing.name); setEditPrice(ing.pricePerUnit != null ? String(ing.pricePerUnit) : '') }}
                     onDelete={() => setToDelete(ing)}
                   />
                 ))}
@@ -249,21 +250,43 @@ export function IngredientsPage() {
               Redigera ingrediens
             </DialogTitle>
           </DialogHeader>
-          <div className="flex flex-col gap-2">
-            <Label
-              className="uppercase text-ink-50"
-              style={{ fontFamily: 'var(--font-mono)', fontSize: 10.5, letterSpacing: '0.12em' }}
-            >
-              Namn
-            </Label>
-            <Input
-              value={editName}
-              onChange={e => setEditName(e.target.value)}
-              placeholder="t.ex. Lax"
-              style={{ fontFamily: 'var(--font-sans)', fontSize: 14 }}
-              onKeyDown={e => e.key === 'Enter' && editName.trim() && toEdit &&
-                updateMutation.mutate({ id: toEdit.id, name: editName, categoryId: toEdit.categoryId })}
-            />
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-2">
+              <Label
+                className="uppercase text-ink-50"
+                style={{ fontFamily: 'var(--font-mono)', fontSize: 10.5, letterSpacing: '0.12em' }}
+              >
+                Namn
+              </Label>
+              <Input
+                value={editName}
+                onChange={e => setEditName(e.target.value)}
+                placeholder="t.ex. Lax"
+                style={{ fontFamily: 'var(--font-sans)', fontSize: 14 }}
+                onKeyDown={e => e.key === 'Enter' && editName.trim() && toEdit &&
+                  updateMutation.mutate({ id: toEdit.id, name: editName, categoryId: toEdit.categoryId, pricePerUnit: editPrice ? parseFloat(editPrice) : null })}
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label
+                className="uppercase text-ink-50"
+                style={{ fontFamily: 'var(--font-mono)', fontSize: 10.5, letterSpacing: '0.12em' }}
+              >
+                Pris per enhet (kr)
+              </Label>
+              <Input
+                type="number"
+                min="0"
+                step="0.01"
+                value={editPrice}
+                onChange={e => setEditPrice(e.target.value)}
+                placeholder="t.ex. 0,08 per g"
+                style={{ fontFamily: 'var(--font-sans)', fontSize: 14 }}
+              />
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--ink-40)', letterSpacing: '0.06em' }}>
+                Används för att beräkna receptkostnaden
+              </span>
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" className="rounded-full" onClick={() => setToEdit(null)}>
@@ -273,7 +296,7 @@ export function IngredientsPage() {
               className="rounded-full"
               style={{ background: 'var(--2eat-accent)', color: 'var(--paper)', border: 'none' }}
               disabled={!editName.trim() || updateMutation.isPending}
-              onClick={() => toEdit && updateMutation.mutate({ id: toEdit.id, name: editName, categoryId: toEdit.categoryId })}
+              onClick={() => toEdit && updateMutation.mutate({ id: toEdit.id, name: editName, categoryId: toEdit.categoryId, pricePerUnit: editPrice ? parseFloat(editPrice) : null })}
             >
               Spara
             </Button>
