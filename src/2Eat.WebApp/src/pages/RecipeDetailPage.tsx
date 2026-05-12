@@ -320,11 +320,11 @@ export function RecipeDetailPage() {
           <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column' }}>
             {sortedIngredients.map((ri, i) => {
               const qty = (ri.ingredientMeasurement?.quantity ?? 0) * factor
-              const isOn = !!checked[ri.id]
+              const isOn = !!checked[ri.ingredientMeasurementId]
               return (
                 <li
-                  key={ri.id}
-                  onClick={() => setChecked(c => ({ ...c, [ri.id]: !c[ri.id] }))}
+                  key={ri.ingredientMeasurementId}
+                  onClick={() => setChecked(c => ({ ...c, [ri.ingredientMeasurementId]: !c[ri.ingredientMeasurementId] }))}
                   style={{
                     display: 'grid', gridTemplateColumns: '20px 1fr auto',
                     gap: 12, alignItems: 'baseline',

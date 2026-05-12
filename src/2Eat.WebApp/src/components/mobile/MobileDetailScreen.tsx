@@ -203,11 +203,11 @@ export function MobileDetailScreen({ recipe }: { recipe: Recipe }) {
         {tab === 'ingredients' && (
           <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
             {recipe.ingredients.map((ri, i) => {
-              const isOn = !!checked[ri.id]
+              const isOn = !!checked[ri.ingredientMeasurementId]
               return (
                 <li
-                  key={ri.id}
-                  onClick={() => toggle(ri.id)}
+                  key={ri.ingredientMeasurementId}
+                  onClick={() => toggle(ri.ingredientMeasurementId)}
                   style={{
                     display: 'grid', gridTemplateColumns: '20px 1fr auto',
                     gap: 12, alignItems: 'center',
