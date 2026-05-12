@@ -1,21 +1,23 @@
 import { useNavigate, useMatch } from 'react-router-dom'
-import { BookOpen, Search, Utensils, Settings } from 'lucide-react'
+import { BookOpen, ShoppingBasket, Utensils, Settings } from 'lucide-react'
 
 const TABS = [
-  { key: 'home',     label: 'Recept', Icon: BookOpen, to: '/'           },
-  { key: 'search',   label: 'Sök',    Icon: Search,   to: '/?search=1'  },
-  { key: 'plan',     label: 'Plan',   Icon: Utensils, to: '/veckoplan'  },
-  { key: 'settings', label: 'Mer',    Icon: Settings, to: '/settings'   },
+  { key: 'home',     label: 'Recept',   Icon: BookOpen,       to: '/'          },
+  { key: 'skafferi', label: 'Skafferi', Icon: ShoppingBasket, to: '/skafferi'  },
+  { key: 'plan',     label: 'Plan',     Icon: Utensils,       to: '/veckoplan' },
+  { key: 'settings', label: 'Mer',      Icon: Settings,       to: '/settings'  },
 ]
 
 export function MobileTabBar() {
   const navigate = useNavigate()
   const isHome      = !!useMatch({ path: '/', end: true })
+  const isSkafferi  = !!useMatch('/skafferi')
   const isVeckoplan = !!useMatch('/veckoplan')
   const isSettings  = !!useMatch('/settings')
 
   function isActive(key: string) {
     if (key === 'home')     return isHome
+    if (key === 'skafferi') return isSkafferi
     if (key === 'plan')     return isVeckoplan
     if (key === 'settings') return isSettings
     return false
