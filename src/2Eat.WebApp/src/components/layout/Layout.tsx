@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react'
 import { NavLink, Outlet, Link, useNavigate, useMatch } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Plus, BookOpen, Settings, Calendar, ShoppingBasket, Moon, Sun, LogOut } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useIsMobile } from '@/hooks/useIsMobile'
+import { useTheme } from '@/hooks/useTheme'
 import { MobileTabBar } from '@/components/mobile/MobileTabBar'
 import { useAuth } from '@/context/AuthContext'
 import { getFileUrl } from '@/lib/api'
@@ -67,27 +67,33 @@ export function Layout() {
     navigate('/login')
   }
 
-  const [isDark, setIsDark] = useState(() => {
-    const stored = localStorage.getItem('theme')
-    return stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)
-  })
-
-  useEffect(() => {
-    if (isDark) {
-      document.documentElement.classList.add('dark')
-      localStorage.setItem('theme', 'dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-      localStorage.setItem('theme', 'light')
-    }
-  }, [isDark])
+  const { isDark, setIsDark } = useTheme()
+  const isNewRecipe  = !!useMatch('/recipes/new')
+  const isEditRecipe = !!useMatch('/recipes/:id/edit')
+  const isRecipeForm = isNewRecipe || isEditRecipe
 
   if (isMobile) {
     return (
       <div style={{ background: 'var(--paper)', minHeight: '100vh' }}>
-        <main>
+        <main style={{ paddingBottom: 100 }}>
           <Outlet />
         </main>
+        {!isRecipeForm && (
+          <button
+            onClick={() => navigate('/recipes/new')}
+            aria-label="Nytt recept"
+            style={{
+              position: 'fixed', bottom: 90, right: 20, zIndex: 40,
+              width: 52, height: 52, borderRadius: '50%',
+              background: 'var(--2eat-accent)', color: 'var(--paper)',
+              border: 'none', cursor: 'pointer',
+              display: 'grid', placeItems: 'center',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.18)',
+            }}
+          >
+            <Plus size={22} strokeWidth={2} />
+          </button>
+        )}
         <MobileTabBar />
       </div>
     )
