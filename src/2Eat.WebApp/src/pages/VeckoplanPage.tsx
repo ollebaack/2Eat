@@ -1,8 +1,8 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, X, ArrowLeft, ArrowRight, Search, Sparkles, Copy, Trash2 } from 'lucide-react'
+import { Plus, X, ArrowLeft, ArrowRight, Search, Sparkles, Copy, Trash2, Check } from 'lucide-react'
 import { toast } from 'sonner'
-import { getWeekPlan, setDaySlot, clearDaySlot, getRecipes, getShoppingList, updateShoppingListItem, deleteShoppingListItem } from '@/lib/api'
+import { getWeekPlan, setDaySlot, clearDaySlot, getRecipes } from '@/lib/api'
 import type { Recipe, WeekPlan } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -386,64 +386,83 @@ function StatsStrip({ weekPlan, recipes }: { weekPlan: WeekPlan | undefined; rec
 
 // ── Shopping list edit dialog ────────────────────────────────────────────────
 
-function ShoppingListEditDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const queryClient = useQueryClient()
+type EditableIngredient = {
+  key: string
+  name: string
+  qty: number
+  unit: string
+  category: string
+  checked: boolean
+  removed: boolean
+}
 
-  const { data: items = [], isLoading } = useQuery({
-    queryKey: ['shopping-list'],
-    queryFn: getShoppingList,
-    enabled: open,
-    staleTime: 0,
-  })
+function ShoppingListEditDialog({
+  open,
+  onClose,
+  sourceItems,
+}: {
+  open: boolean
+  onClose: () => void
+  sourceItems: Array<{ key: string; name: string; qty: number; unit: string; category: string }>
+}) {
+  const [items, setItems] = useState<EditableIngredient[]>([])
 
-  const toggleMutation = useMutation({
-    mutationFn: ({ id, isChecked }: { id: number; isChecked: boolean }) =>
-      updateShoppingListItem(id, isChecked),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['shopping-list'] }),
-  })
+  useEffect(() => {
+    if (open) {
+      setItems(sourceItems.map(it => ({ ...it, checked: false, removed: false })))
+    }
+  }, [open, sourceItems])
 
-  const deleteMutation = useMutation({
-    mutationFn: (id: number) => deleteShoppingListItem(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['shopping-list'] }),
-  })
+  const visible = items.filter(it => !it.removed)
+
+  function toggle(key: string) {
+    setItems(prev => prev.map(it => it.key === key ? { ...it, checked: !it.checked } : it))
+  }
+
+  function remove(key: string) {
+    setItems(prev => prev.map(it => it.key === key ? { ...it, removed: true } : it))
+  }
 
   return (
     <Dialog open={open} onOpenChange={v => { if (!v) onClose() }}>
       <DialogContent style={{ background: 'var(--paper)', border: '1px solid var(--line)', borderRadius: 20, maxWidth: 480 }}>
         <DialogHeader>
           <DialogTitle style={{ fontFamily: 'var(--font-serif)', fontSize: 24, letterSpacing: '-0.025em', fontWeight: 400 }}>
-            Handlista
+            Inköpslista
           </DialogTitle>
         </DialogHeader>
-        <div style={{ maxHeight: 400, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 4 }}>
-          {isLoading && (
-            <p style={{ fontFamily: 'var(--font-sans)', fontSize: 13, color: 'var(--ink-50)', padding: '12px 0' }}>Laddar...</p>
-          )}
-          {!isLoading && items.length === 0 && (
+        <div style={{ maxHeight: 420, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {visible.length === 0 && (
             <p style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontSize: 14, color: 'var(--ink-50)', padding: '12px 0' }}>
-              Handlistan är tom.
+              Inköpslistan är tom — planera middagar för att fylla på.
             </p>
           )}
-          {items.map((item) => (
-            <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0', borderBottom: '1px dotted var(--line)' }}>
+          {visible.map(item => (
+            <div key={item.key} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: '1px dotted var(--line)' }}>
               <button
-                onClick={() => toggleMutation.mutate({ id: item.id, isChecked: !item.isChecked })}
+                onClick={() => toggle(item.key)}
                 style={{
-                  width: 18, height: 18, borderRadius: '50%', flexShrink: 0,
-                  border: `1.5px solid ${item.isChecked ? 'var(--2eat-accent)' : 'var(--ink-30)'}`,
-                  background: item.isChecked ? 'var(--2eat-accent)' : 'transparent',
+                  width: 20, height: 20, borderRadius: '50%', flexShrink: 0,
+                  border: `1.5px solid ${item.checked ? 'var(--accent)' : 'var(--ink-30)'}`,
+                  background: item.checked ? 'var(--accent)' : 'transparent',
                   cursor: 'pointer', display: 'grid', placeItems: 'center',
+                  color: 'var(--paper)',
                 }}
-              />
+              >
+                {item.checked && <Check size={11} strokeWidth={2.5} />}
+              </button>
               <span style={{
                 flex: 1, fontFamily: 'var(--font-sans)', fontSize: 14,
-                color: item.isChecked ? 'var(--ink-40)' : 'var(--ink)',
-                textDecoration: item.isChecked ? 'line-through' : 'none',
+                color: item.checked ? 'var(--ink-40)' : 'var(--ink)',
+                textDecoration: item.checked ? 'line-through' : 'none',
               }}>
                 {item.name}
               </span>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--ink-50)', whiteSpace: 'nowrap' }}>
+                {item.qty} {item.unit}
+              </span>
               <button
-                onClick={() => deleteMutation.mutate(item.id)}
+                onClick={() => remove(item.key)}
                 style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink-40)', padding: 4, display: 'grid', placeItems: 'center' }}
                 aria-label="Ta bort"
               >
@@ -462,8 +481,8 @@ function ShoppingListEditDialog({ open, onClose }: { open: boolean; onClose: () 
 function ShoppingList({ weekPlan, recipes }: { weekPlan: WeekPlan | undefined; recipes: Recipe[] | undefined }) {
   const [editOpen, setEditOpen] = useState(false)
 
-  const groups = useMemo(() => {
-    if (!weekPlan || !recipes) return {}
+  const { groups, flatItems } = useMemo(() => {
+    if (!weekPlan || !recipes) return { groups: {} as Record<string, Array<{ name: string; unit: string; qty: number; recipes: string[] }>>, flatItems: [] }
     const map = new Map<string, { name: string; unit: string; qty: number; recipes: string[]; category: string }>()
 
     weekPlan.days.forEach(day => {
@@ -493,10 +512,19 @@ function ShoppingList({ weekPlan, recipes }: { weekPlan: WeekPlan | undefined; r
       if (!grouped[it.category]) grouped[it.category] = []
       grouped[it.category].push({ name: it.name, unit: it.unit, qty: it.qty, recipes: it.recipes })
     }
-    return grouped
+
+    const flat = Array.from(map.values()).map(it => ({
+      key: `${it.name}|${it.unit}`,
+      name: it.name,
+      qty: it.qty,
+      unit: it.unit,
+      category: it.category,
+    }))
+
+    return { groups: grouped, flatItems: flat }
   }, [weekPlan, recipes])
 
-  const isEmpty = Object.keys(groups).length === 0
+  const isEmpty = flatItems.length === 0
 
   function copyList() {
     const lines: string[] = []
@@ -514,7 +542,7 @@ function ShoppingList({ weekPlan, recipes }: { weekPlan: WeekPlan | undefined; r
 
   return (
     <>
-      <ShoppingListEditDialog open={editOpen} onClose={() => setEditOpen(false)} />
+      <ShoppingListEditDialog open={editOpen} onClose={() => setEditOpen(false)} sourceItems={flatItems} />
       <div style={{
         background: 'var(--paper)', border: '1px solid var(--line)',
         borderRadius: 18, overflow: 'hidden',
