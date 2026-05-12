@@ -8,6 +8,8 @@ namespace _2Eat.Web.API
     {
         public static void MapRecipeEndpoints(this IEndpointRouteBuilder endpoints)
         {
+            endpoints.MapGet("/api/categories", GetCategories).RequireAuthorization();
+
             endpoints.MapGet("/api/recipes", GetRecipes).RequireAuthorization();
 
             endpoints.MapGet("/api/recipes/random/{count}", GetRandomRecipes).RequireAuthorization();
@@ -19,6 +21,12 @@ namespace _2Eat.Web.API
             endpoints.MapPut("/api/recipes/{id}", UpdateRecipe).RequireAuthorization();
 
             endpoints.MapDelete("/api/recipes/{id}", DeleteRecipe).RequireAuthorization();
+        }
+
+        public static async Task<Ok<List<Category>>> GetCategories(IRecipeService _service)
+        {
+            var categories = await _service.GetCategoriesAsync();
+            return TypedResults.Ok(categories);
         }
 
         public static async Task<Results<Ok<List<Recipe>>, NotFound>> GetRecipes(IRecipeService _service)

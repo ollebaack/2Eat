@@ -1,8 +1,8 @@
-import { useState, useRef, useMemo } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { getRecipeById, createRecipe, updateRecipe, uploadFile, getRecipes, ALLERGEN_OPTIONS } from '@/lib/api'
+import { getRecipeById, createRecipe, updateRecipe, uploadFile, getCategories, ALLERGEN_OPTIONS } from '@/lib/api'
 import type { RecipeIngredient, ScannedRecipe, UnitOfMeasurement } from '@/types'
 import { ScanRecipeDialog } from '@/components/ScanRecipeDialog'
 import { PhotoSlot } from '@/components/PhotoSlot'
@@ -35,13 +35,7 @@ export function RecipeFormPage() {
   const fileRef = useRef<HTMLInputElement>(null)
 
   const { data: existing } = useQuery({ queryKey: ['recipes', Number(id)], queryFn: () => getRecipeById(Number(id)), enabled: isEdit })
-  const { data: allRecipes } = useQuery({ queryKey: ['recipes'], queryFn: getRecipes })
-
-  const categories = useMemo(() =>
-    [...new Map(
-      (allRecipes ?? []).filter(r => r.category).map(r => [r.category.id, r.category])
-    ).values()],
-  [allRecipes])
+  const { data: categories = [] } = useQuery({ queryKey: ['categories'], queryFn: getCategories })
 
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
@@ -134,6 +128,10 @@ export function RecipeFormPage() {
     if (data.difficulty && ['Lätt', 'Medel', 'Svår'].includes(data.difficulty))
       setDifficulty(data.difficulty)
     if (data.imageUrl)    setImageUrl(data.imageUrl)
+    if (data.categoryName) {
+      const match = categories.find(c => c.name === data.categoryName)
+      if (match) setCategoryId(match.id)
+    }
     if (data.steps?.length) setSteps(data.steps)
     if (data.ingredients?.length) {
       setRows(data.ingredients.map((ing, i) => ({

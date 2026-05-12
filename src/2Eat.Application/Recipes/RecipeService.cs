@@ -13,6 +13,8 @@ public class RecipeService : IRecipeService
 
     public Task<List<Recipe>> GetRecipesAsync() => _repository.GetAllAsync();
 
+    public Task<List<Category>> GetCategoriesAsync() => _repository.GetCategoriesAsync();
+
     public Task<List<Recipe>> GetRandomRecipesAsync(int count) => _repository.GetRandomAsync(count);
 
     public Task<Recipe?> GetRecipeByIdAsync(int id) => _repository.GetByIdAsync(id);

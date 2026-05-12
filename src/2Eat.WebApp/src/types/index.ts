@@ -95,6 +95,7 @@ export interface ScannedRecipe {
   difficulty?: string | null
   ingredients?: ScannedIngredient[] | null
   imageUrl?: string | null
+  categoryName?: string | null
 }
 
 export interface ScanStatus {

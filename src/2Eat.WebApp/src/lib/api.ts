@@ -1,4 +1,4 @@
-import type { FileUpload, Ingredient, PantryItem, Recipe, AllergenId, WeekPlan, WeekPlanDay, ScannedRecipe, ScanStatus, ShoppingListItem } from '@/types'
+import type { Category, FileUpload, Ingredient, PantryItem, Recipe, AllergenId, WeekPlan, WeekPlanDay, ScannedRecipe, ScanStatus, ShoppingListItem } from '@/types'
 
 export const ALLERGEN_OPTIONS: AllergenId[] = [
   'Gluten',
@@ -50,6 +50,7 @@ async function request<T>(path: string, init?: RequestOptions): Promise<T> {
   return handleResponse<T>(res, noAuthRedirect)
 }
 
+export const getCategories = () => request<Category[]>('/categories')
 export const getRecipes = () => request<Recipe[]>('/recipes')
 export const getRandomRecipes = (count: number) => request<Recipe[]>(`/recipes/random/${count}`)
 export const getRecipeById = (id: number) => request<Recipe>(`/recipes/${id}`)
