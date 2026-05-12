@@ -14,4 +14,6 @@ public interface IRecipeRepository
     Task<Recipe> UpdateAsync(Recipe recipe);
     Task<Recipe> RemoveAsync(Recipe recipe);
     Task SaveAsync();
+    Task<List<Category>> GetCategoriesAsync();
+    Task<Category?> FindCategoryByNameAsync(string name);
 }

@@ -79,4 +79,10 @@ public class EfRecipeRepository : IRecipeRepository
     }
 
     public Task SaveAsync() => _context.SaveChangesAsync();
+
+    public Task<List<Category>> GetCategoriesAsync()
+        => _context.Categories.AsNoTracking().OrderBy(c => c.Id).ToListAsync();
+
+    public Task<Category?> FindCategoryByNameAsync(string name)
+        => _context.Categories.AsNoTracking().FirstOrDefaultAsync(c => c.Name == name);
 }
