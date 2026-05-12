@@ -25,18 +25,36 @@ public class RecipeService : IRecipeService
         if (recipe.CategoryId == 0)
             recipe.CategoryId = 5;
 
+        // Deduplicate ingredients by name: if a scanned recipe contains the same
+        // ingredient twice (or two names that normalise to the same title-case value),
+        // reuse the same Ingredient object so EF doesn't try to INSERT it twice and
+        // hit the IX_Ingredients_Name unique constraint.
+        var resolvedIngredients = new Dictionary<string, Ingredient>(StringComparer.OrdinalIgnoreCase);
+
         foreach (var ri in recipe.Ingredients)
         {
             if (ri.Ingredient == null) continue;
-            var existing = await _repository.FindIngredientByNameAsync(ri.Ingredient.Name);
+            var name = ri.Ingredient.Name;
+
+            if (resolvedIngredients.TryGetValue(name, out var cached))
+            {
+                ri.Ingredient = cached;
+                ri.IngredientId = cached.Id;
+                continue;
+            }
+
+            var existing = await _repository.FindIngredientByNameAsync(name);
             if (existing != null)
             {
                 ri.Ingredient = existing;
                 ri.IngredientId = existing.Id;
+                resolvedIngredients[name] = existing;
             }
-            else if (ri.Ingredient.CategoryId == 0)
+            else
             {
-                ri.Ingredient.CategoryId = 5;
+                if (ri.Ingredient.CategoryId == 0)
+                    ri.Ingredient.CategoryId = 5;
+                resolvedIngredients[name] = ri.Ingredient;
             }
         }
 
@@ -54,19 +72,32 @@ public class RecipeService : IRecipeService
         recipeEntity.ImageUrl = recipe.ImageUrl;
         recipeEntity.LastModified = DateTimeOffset.UtcNow;
 
+        // Same deduplication guard as AddRecipeAsync.
+        var resolvedIngredients = new Dictionary<string, Ingredient>(StringComparer.OrdinalIgnoreCase);
+
         foreach (var recipeIngredient in recipe.Ingredients)
         {
+            var name = recipeIngredient.Ingredient.Name;
+
             Ingredient addedIngredient;
-            var existingIngredient = await _repository.FindIngredientByNameAsync(recipeIngredient.Ingredient.Name);
-            if (existingIngredient != null)
+            if (resolvedIngredients.TryGetValue(name, out var cached))
             {
-                addedIngredient = existingIngredient;
+                addedIngredient = cached;
             }
             else
             {
-                if (recipeIngredient.Ingredient.CategoryId == 0)
-                    recipeIngredient.Ingredient.CategoryId = 5;
-                addedIngredient = await _repository.AddIngredientAsync(recipeIngredient.Ingredient);
+                var existingIngredient = await _repository.FindIngredientByNameAsync(name);
+                if (existingIngredient != null)
+                {
+                    addedIngredient = existingIngredient;
+                }
+                else
+                {
+                    if (recipeIngredient.Ingredient.CategoryId == 0)
+                        recipeIngredient.Ingredient.CategoryId = 5;
+                    addedIngredient = await _repository.AddIngredientAsync(recipeIngredient.Ingredient);
+                }
+                resolvedIngredients[name] = addedIngredient;
             }
 
             var existingRecipeIngredient = recipeEntity.Ingredients
