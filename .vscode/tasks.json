@@ -1,0 +1,12 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "dotnet",
+      "task": "watch 2Eat.AppHost",
+      "file": "C:\\Source\\2Eat\\aspire\\2Eat.AppHost\\2Eat.AppHost.csproj",
+      "problemMatcher": [],
+      "label": "dotnet: watch 2Eat.AppHost"
+    }
+  ]
+}
