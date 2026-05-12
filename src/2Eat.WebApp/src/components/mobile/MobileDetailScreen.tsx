@@ -207,6 +207,7 @@ export function MobileDetailScreen({ recipe }: { recipe: Recipe }) {
       {/* Tab content */}
       <div style={{ padding: '8px 20px 20px' }}>
         {tab === 'ingredients' && (
+          <>
           <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
             {recipe.ingredients.map((ri, i) => {
               const isOn = !!checked[ri.id]
@@ -272,6 +273,7 @@ export function MobileDetailScreen({ recipe }: { recipe: Recipe }) {
               </span>
             </div>
           )}
+          </>
         )}
 
         {tab === 'method' && (
