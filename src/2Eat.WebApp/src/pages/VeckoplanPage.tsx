@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Plus, X, ArrowLeft, ArrowRight, Search, Sparkles, Copy, Trash2, Check } from 'lucide-react'
 import { toast } from 'sonner'
@@ -386,16 +386,6 @@ function StatsStrip({ weekPlan, recipes }: { weekPlan: WeekPlan | undefined; rec
 
 // ── Shopping list edit dialog ────────────────────────────────────────────────
 
-type EditableIngredient = {
-  key: string
-  name: string
-  qty: number
-  unit: string
-  category: string
-  checked: boolean
-  removed: boolean
-}
-
 function ShoppingListEditDialog({
   open,
   onClose,
@@ -405,22 +395,22 @@ function ShoppingListEditDialog({
   onClose: () => void
   sourceItems: Array<{ key: string; name: string; qty: number; unit: string; category: string }>
 }) {
-  const [items, setItems] = useState<EditableIngredient[]>([])
+  const [checked, setChecked] = useState<Set<string>>(new Set())
+  const [removed, setRemoved] = useState<Set<string>>(new Set())
 
-  useEffect(() => {
-    if (open) {
-      setItems(sourceItems.map(it => ({ ...it, checked: false, removed: false })))
-    }
-  }, [open, sourceItems])
-
-  const visible = items.filter(it => !it.removed)
+  const visible = sourceItems.filter(it => !removed.has(it.key))
 
   function toggle(key: string) {
-    setItems(prev => prev.map(it => it.key === key ? { ...it, checked: !it.checked } : it))
+    setChecked(prev => {
+      const next = new Set(prev)
+      if (next.has(key)) next.delete(key)
+      else next.add(key)
+      return next
+    })
   }
 
   function remove(key: string) {
-    setItems(prev => prev.map(it => it.key === key ? { ...it, removed: true } : it))
+    setRemoved(prev => new Set([...prev, key]))
   }
 
   return (
@@ -437,39 +427,42 @@ function ShoppingListEditDialog({
               Inköpslistan är tom — planera middagar för att fylla på.
             </p>
           )}
-          {visible.map(item => (
-            <div key={item.key} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: '1px dotted var(--line)' }}>
-              <button
-                onClick={() => toggle(item.key)}
-                style={{
-                  width: 20, height: 20, borderRadius: '50%', flexShrink: 0,
-                  border: `1.5px solid ${item.checked ? 'var(--accent)' : 'var(--ink-30)'}`,
-                  background: item.checked ? 'var(--accent)' : 'transparent',
-                  cursor: 'pointer', display: 'grid', placeItems: 'center',
-                  color: 'var(--paper)',
-                }}
-              >
-                {item.checked && <Check size={11} strokeWidth={2.5} />}
-              </button>
-              <span style={{
-                flex: 1, fontFamily: 'var(--font-sans)', fontSize: 14,
-                color: item.checked ? 'var(--ink-40)' : 'var(--ink)',
-                textDecoration: item.checked ? 'line-through' : 'none',
-              }}>
-                {item.name}
-              </span>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--ink-50)', whiteSpace: 'nowrap' }}>
-                {item.qty} {item.unit}
-              </span>
-              <button
-                onClick={() => remove(item.key)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink-40)', padding: 4, display: 'grid', placeItems: 'center' }}
-                aria-label="Ta bort"
-              >
-                <Trash2 size={14} />
-              </button>
-            </div>
-          ))}
+          {visible.map(item => {
+            const isChecked = checked.has(item.key)
+            return (
+              <div key={item.key} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: '1px dotted var(--line)' }}>
+                <button
+                  onClick={() => toggle(item.key)}
+                  style={{
+                    width: 20, height: 20, borderRadius: '50%', flexShrink: 0,
+                    border: `1.5px solid ${isChecked ? 'var(--accent)' : 'var(--ink-30)'}`,
+                    background: isChecked ? 'var(--accent)' : 'transparent',
+                    cursor: 'pointer', display: 'grid', placeItems: 'center',
+                    color: 'var(--paper)',
+                  }}
+                >
+                  {isChecked && <Check size={11} strokeWidth={2.5} />}
+                </button>
+                <span style={{
+                  flex: 1, fontFamily: 'var(--font-sans)', fontSize: 14,
+                  color: isChecked ? 'var(--ink-40)' : 'var(--ink)',
+                  textDecoration: isChecked ? 'line-through' : 'none',
+                }}>
+                  {item.name}
+                </span>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--ink-50)', whiteSpace: 'nowrap' }}>
+                  {item.qty} {item.unit}
+                </span>
+                <button
+                  onClick={() => remove(item.key)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink-40)', padding: 4, display: 'grid', placeItems: 'center' }}
+                  aria-label="Ta bort"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            )
+          })}
         </div>
       </DialogContent>
     </Dialog>
@@ -480,6 +473,7 @@ function ShoppingListEditDialog({
 
 function ShoppingList({ weekPlan, recipes }: { weekPlan: WeekPlan | undefined; recipes: Recipe[] | undefined }) {
   const [editOpen, setEditOpen] = useState(false)
+  const [editKey, setEditKey] = useState(0)
 
   const { groups, flatItems } = useMemo(() => {
     if (!weekPlan || !recipes) return { groups: {} as Record<string, Array<{ name: string; unit: string; qty: number; recipes: string[] }>>, flatItems: [] }
@@ -542,7 +536,7 @@ function ShoppingList({ weekPlan, recipes }: { weekPlan: WeekPlan | undefined; r
 
   return (
     <>
-      <ShoppingListEditDialog open={editOpen} onClose={() => setEditOpen(false)} sourceItems={flatItems} />
+      <ShoppingListEditDialog key={editKey} open={editOpen} onClose={() => setEditOpen(false)} sourceItems={flatItems} />
       <div style={{
         background: 'var(--paper)', border: '1px solid var(--line)',
         borderRadius: 18, overflow: 'hidden',
@@ -623,7 +617,7 @@ function ShoppingList({ weekPlan, recipes }: { weekPlan: WeekPlan | undefined; r
             variant="outline"
             className="rounded-full"
             style={{ fontFamily: 'var(--font-sans)', fontSize: 13 }}
-            onClick={() => setEditOpen(true)}
+            onClick={() => { setEditKey(k => k + 1); setEditOpen(true) }}
           >
             Redigera
           </Button>
