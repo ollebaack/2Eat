@@ -2,11 +2,20 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "type": "dotnet",
-      "task": "watch 2Eat.AppHost",
-      "file": "C:\\Source\\2Eat\\aspire\\2Eat.AppHost\\2Eat.AppHost.csproj",
+      "label": "dotnet: watch 2Eat.AppHost",
+      "type": "shell",
+      "command": "dotnet",
+      "args": [
+        "watch",
+        "--project",
+        "${workspaceFolder}/aspire/2Eat.AppHost/2Eat.AppHost.csproj"
+      ],
       "problemMatcher": [],
-      "label": "dotnet: watch 2Eat.AppHost"
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      }
     }
   ]
 }
