@@ -8,7 +8,7 @@ public interface IIngredientRepository
     Task<Ingredient?> GetByIdAsync(int id);
     Task<Ingredient?> FindByNameAsync(string name);
     Task<Ingredient> AddAsync(Ingredient ingredient);
-    Task<Ingredient?> UpdateAsync(int id, string name, int categoryId);
+    Task<Ingredient?> UpdateAsync(int id, string name, int categoryId, decimal? pricePerUnit);
     Task<Ingredient> RemoveAsync(Ingredient ingredient);
     Task SaveAsync();
 }

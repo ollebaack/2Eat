@@ -54,6 +54,12 @@ export function MobileDetailScreen({ recipe }: { recipe: Recipe }) {
 
   const toggle = (id: number) => setChecked(prev => ({ ...prev, [id]: !prev[id] }))
 
+  const pricedIngredients = recipe.ingredients.filter(ri => ri.ingredient?.pricePerUnit != null)
+  const totalCost = pricedIngredients.reduce((sum, ri) => {
+    return sum + (ri.ingredientMeasurement?.quantity ?? 0) * (ri.ingredient.pricePerUnit ?? 0)
+  }, 0)
+  const hasCost = pricedIngredients.length > 0
+
   const glassBtn: React.CSSProperties = {
     width: 40, height: 40, borderRadius: '50%',
     background: 'rgba(255,255,255,0.92)',
@@ -249,6 +255,23 @@ export function MobileDetailScreen({ recipe }: { recipe: Recipe }) {
               )
             })}
           </ul>
+          {hasCost && (
+            <div style={{
+              marginTop: 14, padding: '12px 14px',
+              background: 'var(--surface-1)', borderRadius: 12,
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            }}>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--ink-50)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                Beräknad kostnad
+                {pricedIngredients.length < recipe.ingredients.length && (
+                  <span style={{ opacity: 0.7 }}> ({pricedIngredients.length}/{recipe.ingredients.length})</span>
+                )}
+              </span>
+              <span style={{ fontFamily: 'var(--font-serif)', fontSize: 20, color: 'var(--ink)', letterSpacing: '-0.02em' }}>
+                ~{Math.round(totalCost)} kr
+              </span>
+            </div>
+          )}
         )}
 
         {tab === 'method' && (

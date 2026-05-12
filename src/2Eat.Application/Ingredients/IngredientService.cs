@@ -22,8 +22,8 @@ public class IngredientService(IIngredientRepository repository) : IIngredientSe
         return await repository.AddAsync(ingredient);
     }
 
-    public Task<Ingredient?> UpdateIngredientAsync(int id, string name, int categoryId) =>
-        repository.UpdateAsync(id, name, categoryId);
+    public Task<Ingredient?> UpdateIngredientAsync(int id, string name, int categoryId, decimal? pricePerUnit) =>
+        repository.UpdateAsync(id, name, categoryId, pricePerUnit);
 
     public async Task<Ingredient> DeleteIngredientAsync(int id)
     {

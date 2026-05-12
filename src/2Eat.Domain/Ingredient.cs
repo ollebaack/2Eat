@@ -23,5 +23,7 @@ namespace _2Eat.Domain
         public ICollection<RecipeIngredient> Recipes { get; set; } = new List<RecipeIngredient>();
 
         public int CategoryId { get; set; }
+
+        public decimal? PricePerUnit { get; set; }
     }
 }
