@@ -14,7 +14,7 @@ namespace _2Eat.Infrastructure.Migrations
             migrationBuilder.InsertData(
                 table: "Categories",
                 columns: new[] { "Id", "Name" },
-                values: new object[] { 6, "Desserter" });
+                values: new object[] { 13, "Desserter" });
 
             migrationBuilder.UpdateData(
                 table: "Recipes",
@@ -51,7 +51,7 @@ namespace _2Eat.Infrastructure.Migrations
             migrationBuilder.DeleteData(
                 table: "Categories",
                 keyColumn: "Id",
-                keyValue: 6);
+                keyValue: 13);
 
             migrationBuilder.UpdateData(
                 table: "Recipes",

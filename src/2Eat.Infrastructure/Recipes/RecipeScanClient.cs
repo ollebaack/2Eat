@@ -214,13 +214,13 @@ public class RecipeScanClient : IRecipeScanService
           "prepTime": minutes as number or null,
           "cookTime": minutes as number or null,
           "difficulty": "Lätt" or "Medel" or "Svår" or null,
-          "categoryName": one of "Bakverk"|"Smörgåsar"|"Kött"|"Fisk"|"Desserter"|"Övrigt" or null,
+          "categoryName": one of "Bakverk"|"Smörgåsar"|"Kött"|"Fisk"|"Grönsaker"|"Desserter"|"Övrigt" or null,
           "ingredients": [
             { "name": "string", "quantity": number, "unit": "g|ml|kg|krm|tsk|msk|dl|l|kaffemått|st|cup|floz|oz|lbs|cl|pinch|tsp|tbsp" }
           ]
         }
         Use the exact unit from the list — do not convert; pick the closest match.
-        For categoryName: Bakverk=baked goods/pastries, Smörgåsar=sandwiches/bread dishes, Kött=meat dishes, Fisk=fish/seafood, Desserter=desserts/sweets, Övrigt=other. Pick the best match.
+        For categoryName: Bakverk=baked goods/pastries, Smörgåsar=sandwiches/bread dishes, Kött=meat dishes, Fisk=fish/seafood, Grönsaker=vegetable/plant-based dishes, Desserter=desserts/sweets, Övrigt=other. Pick the best match.
         If a field cannot be determined, use null. Do not include any text outside the JSON.
         """;
 
