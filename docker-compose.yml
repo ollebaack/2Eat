@@ -1,3 +1,5 @@
+# Development and CI testing configuration
+# For production, use Dokploy/Traefik or similar orchestration with environment variables
 services:
   db:
     image: postgres:17-alpine
@@ -42,6 +44,8 @@ services:
     build:
       context: src/2Eat.WebApp
       dockerfile: Dockerfile
+    ports:
+      - "80:80"
     depends_on:
       api:
         condition: service_healthy

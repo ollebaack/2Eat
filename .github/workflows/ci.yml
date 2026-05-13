@@ -78,6 +78,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Create .env file for docker compose
+        run: |
+          echo 'JWT_SECRET=ci-test-secret-key-minimum-32-characters-long!' > .env
+          echo 'POSTGRES_PASSWORD=test-password' >> .env
+          echo 'ASPNETCORE_ENVIRONMENT=Production' >> .env
+
       - name: Start stack
         run: docker compose up --build --wait --timeout 600
 
