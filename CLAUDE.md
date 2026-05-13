@@ -113,10 +113,10 @@ Domain entities never reference Application or Infrastructure. Application defin
 
 | Entity | Notes |
 |---|---|
-| `Recipe` | Has category, ingredients (via `RecipeIngredient`), rating, cook/prep times |
+| `Recipe` | Has category, ingredients (via `RecipeIngredient`), rating, cook/prep times, nullable nutrition fields (`Calories`/`Protein`/`Fat`/`Carbs` per serving), and a direct many-to-many with `Allergen` via `AllergenRecipe` junction table |
 | `Ingredient` | Belongs to category; names auto-normalized to title case; linked to allergens |
 | `RecipeIngredient` | Junction with `IngredientMeasurement` (quantity + unit enum) |
-| `Allergen` | Enum: Gluten, Vegetarian, Vegan, Lactose, Nuts |
+| `Allergen` | Enum: Gluten, Vegetariskt, Veganskt, Laktos, Nötter — linked to both `Ingredient` and `Recipe` (many-to-many each) |
 | `User` | Has `ShoppingList` and `MealPlan` relationships (not yet exposed via API) |
 
 ### Infrastructure

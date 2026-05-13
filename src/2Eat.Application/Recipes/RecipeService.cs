@@ -60,6 +60,13 @@ public class RecipeService : IRecipeService
             }
         }
 
+        // Resolve allergens: replace deserialized stubs with tracked entities from DB
+        if (recipe.Allergens.Count > 0)
+        {
+            var ids = recipe.Allergens.Select(a => a.Id).ToList();
+            recipe.Allergens = await _repository.FindAllergensByIdsAsync(ids);
+        }
+
         return await _repository.AddAsync(recipe);
     }
 
@@ -73,6 +80,10 @@ public class RecipeService : IRecipeService
         recipeEntity.Instructions = recipe.Instructions;
         recipeEntity.ImageUrl = recipe.ImageUrl;
         recipeEntity.LastModified = DateTimeOffset.UtcNow;
+        recipeEntity.Calories = recipe.Calories;
+        recipeEntity.Protein = recipe.Protein;
+        recipeEntity.Fat = recipe.Fat;
+        recipeEntity.Carbs = recipe.Carbs;
 
         // Same deduplication guard as AddRecipeAsync.
         var resolvedIngredients = new Dictionary<string, Ingredient>(StringComparer.OrdinalIgnoreCase);
@@ -119,6 +130,16 @@ public class RecipeService : IRecipeService
                     IngredientMeasurement = recipeIngredient.IngredientMeasurement
                 });
             }
+        }
+
+        // Update allergens: clear existing, attach resolved tracked entities
+        recipeEntity.Allergens.Clear();
+        if (recipe.Allergens.Count > 0)
+        {
+            var ids = recipe.Allergens.Select(a => a.Id).ToList();
+            var tracked = await _repository.FindAllergensByIdsAsync(ids);
+            foreach (var allergen in tracked)
+                recipeEntity.Allergens.Add(allergen);
         }
 
         return await _repository.UpdateAsync(recipeEntity);

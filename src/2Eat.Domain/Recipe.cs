@@ -26,6 +26,11 @@ namespace _2Eat.Domain
         public DateTimeOffset LastModified { get; set; } = DateTimeOffset.UtcNow;
         public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
         public int CategoryId { get; set; }
+        public ICollection<Allergen> Allergens { get; set; } = new List<Allergen>();
+        public int? Calories { get; set; }
+        public double? Protein { get; set; }
+        public double? Fat { get; set; }
+        public double? Carbs { get; set; }
         public string GetLastModifiedTimeAgo()
         {
             TimeSpan timeSinceModified = DateTimeOffset.Now - LastModified;

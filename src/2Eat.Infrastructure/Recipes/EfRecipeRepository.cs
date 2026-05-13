@@ -1,5 +1,6 @@
 using _2Eat.Application.Recipes;
 using _2Eat.Domain;
+using _2Eat.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace _2Eat.Infrastructure.Recipes;
@@ -18,8 +19,10 @@ public class EfRecipeRepository : IRecipeRepository
             .Include(x => x.Category)
             .Include(x => x.Ingredients)
                 .ThenInclude(x => x.Ingredient)
+                    .ThenInclude(x => x.Allergens)
             .Include(x => x.Ingredients)
                 .ThenInclude(x => x.IngredientMeasurement)
+            .Include(x => x.Allergens)
             .AsNoTracking()
             .ToListAsync();
 
@@ -36,8 +39,10 @@ public class EfRecipeRepository : IRecipeRepository
             .Include(x => x.Category)
             .Include(x => x.Ingredients)
                 .ThenInclude(x => x.Ingredient)
+                    .ThenInclude(x => x.Allergens)
             .Include(x => x.Ingredients)
                 .ThenInclude(x => x.IngredientMeasurement)
+            .Include(x => x.Allergens)
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == id);
 
@@ -47,10 +52,14 @@ public class EfRecipeRepository : IRecipeRepository
                 .ThenInclude(x => x.Ingredient)
             .Include(x => x.Ingredients)
                 .ThenInclude(x => x.IngredientMeasurement)
+            .Include(x => x.Allergens)
             .FirstOrDefaultAsync(x => x.Id == id);
 
     public Task<Ingredient?> FindIngredientByNameAsync(string name)
         => _context.Ingredients.FirstOrDefaultAsync(i => i.Name == name);
+
+    public Task<List<Allergen>> FindAllergensByIdsAsync(IEnumerable<AllergenEnum> ids)
+        => _context.Allergens.Where(a => ids.Contains(a.Id)).ToListAsync();
 
     public async Task<Ingredient> AddIngredientAsync(Ingredient ingredient)
     {

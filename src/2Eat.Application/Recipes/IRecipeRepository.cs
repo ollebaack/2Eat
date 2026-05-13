@@ -1,4 +1,5 @@
 using _2Eat.Domain;
+using _2Eat.Domain.Enums;
 
 namespace _2Eat.Application.Recipes;
 
@@ -9,6 +10,7 @@ public interface IRecipeRepository
     Task<Recipe?> GetByIdAsync(int id);
     Task<Recipe?> GetWithIngredientsAsync(int id);
     Task<Ingredient?> FindIngredientByNameAsync(string name);
+    Task<List<Allergen>> FindAllergensByIdsAsync(IEnumerable<AllergenEnum> ids);
     Task<Ingredient> AddIngredientAsync(Ingredient ingredient);
     Task<Recipe> AddAsync(Recipe recipe);
     Task<Recipe> UpdateAsync(Recipe recipe);

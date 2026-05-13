@@ -183,7 +183,7 @@ public class RecipeScanClient : IRecipeScanService
         var parameters = new MessageParameters
         {
             Model = AnthropicModels.Claude45Haiku,
-            MaxTokens = 2048,
+            MaxTokens = 3072,
             Messages = messages,
             System = new List<SystemMessage>
             {
@@ -217,10 +217,16 @@ public class RecipeScanClient : IRecipeScanService
           "categoryName": one of "Bakverk"|"Smörgåsar"|"Kött"|"Fisk"|"Grönsaker"|"Desserter"|"Övrigt" or null,
           "ingredients": [
             { "name": "string", "quantity": number, "unit": "g|ml|kg|krm|tsk|msk|dl|l|kaffemått|st|cup|floz|oz|lbs|cl|pinch|tsp|tbsp" }
-          ]
+          ],
+          "calories": estimated kcal per serving as integer or null,
+          "protein": estimated grams of protein per serving as number or null,
+          "fat": estimated grams of fat per serving as number or null,
+          "carbs": estimated grams of carbohydrates per serving as number or null,
+          "allergens": array of applicable tags from ["Gluten","Vegetariskt","Veganskt","Laktos","Nötter"] or []
         }
         Use the exact unit from the list — do not convert; pick the closest match.
         For categoryName: Bakverk=baked goods/pastries, Smörgåsar=sandwiches/bread dishes, Kött=meat dishes, Fisk=fish/seafood, Grönsaker=vegetable/plant-based dishes, Desserter=desserts/sweets, Övrigt=other. Pick the best match.
+        Estimate nutrition per serving based on the ingredients and quantities. Include "Vegetariskt" if the recipe contains no meat or fish. Include "Veganskt" if it contains no animal products at all. Include "Gluten" if it contains wheat, rye, barley, or oats. Include "Laktos" if it contains dairy. Include "Nötter" if it contains tree nuts or peanuts.
         If a field cannot be determined, use null. Do not include any text outside the JSON.
         """;
 

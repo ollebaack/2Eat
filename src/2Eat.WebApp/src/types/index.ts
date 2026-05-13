@@ -47,6 +47,7 @@ export interface Recipe {
   category: Category
   categoryId: number
   ingredients: RecipeIngredient[]
+  allergens?: Allergen[]
   servings: number
   rating: number
   difficulty?: string
@@ -55,6 +56,10 @@ export interface Recipe {
   totalTime: number
   lastModified: string
   createdAt: string
+  calories?: number | null
+  protein?: number | null
+  fat?: number | null
+  carbs?: number | null
 }
 
 export interface FileUpload {
@@ -96,6 +101,11 @@ export interface ScannedRecipe {
   ingredients?: ScannedIngredient[] | null
   imageUrl?: string | null
   categoryName?: string | null
+  calories?: number | null
+  protein?: number | null
+  fat?: number | null
+  carbs?: number | null
+  allergens?: string[] | null
 }
 
 export interface ScanStatus {
