@@ -345,6 +345,7 @@ function ShuffleModal({ open, recipes, onClose, onPick }: {
 
 // ── Main export ───────────────────────────────────────────────────────────
 export function RecipesPage() {
+  console.log('[RecipesPage] Rendering recipes page')
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
