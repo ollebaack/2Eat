@@ -5,8 +5,6 @@ services:
       POSTGRES_DB: 2eat
       POSTGRES_USER: 2eat
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-2eat}
-    ports:
-      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -28,8 +26,6 @@ services:
       Jwt__Audience: "2eat-app"
       Jwt__ExpiresInMinutes: ${JWT_EXPIRES_IN_MINUTES:-60}
       Anthropic__ApiKey: ${ANTHROPIC_API_KEY:-}
-    ports:
-      - "5264:8080"
     volumes:
       - uploads:/app/uploads
     depends_on:
@@ -46,8 +42,6 @@ services:
     build:
       context: src/2Eat.WebApp
       dockerfile: Dockerfile
-    ports:
-      - "80:80"
     depends_on:
       api:
         condition: service_healthy
