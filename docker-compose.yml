@@ -4,7 +4,7 @@ services:
     environment:
       POSTGRES_DB: 2eat
       POSTGRES_USER: 2eat
-      POSTGRES_PASSWORD: 2eat
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-2eat}
     ports:
       - "5432:5432"
     volumes:
@@ -20,13 +20,14 @@ services:
       context: .
       dockerfile: src/2Eat.Web.API/Dockerfile
     environment:
-      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
       ASPNETCORE_HTTP_PORTS: "8080"
-      ConnectionStrings__twoeat: "Host=db;Database=2eat;Username=2eat;Password=2eat"
-      Jwt__Secret: "change-me-in-production-must-be-32-chars-min!"
+      ConnectionStrings__twoeat: "Host=db;Database=2eat;Username=2eat;Password=${POSTGRES_PASSWORD:-2eat}"
+      Jwt__Secret: ${JWT_SECRET:?JWT_SECRET is required}
       Jwt__Issuer: "2eat-api"
       Jwt__Audience: "2eat-app"
-      Jwt__ExpiresInMinutes: "60"
+      Jwt__ExpiresInMinutes: ${JWT_EXPIRES_IN_MINUTES:-60}
+      Anthropic__ApiKey: ${ANTHROPIC_API_KEY:-}
     ports:
       - "5264:8080"
     volumes:
