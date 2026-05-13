@@ -30,7 +30,6 @@ const labelStyle: React.CSSProperties = {
 export function RecipeFormPage() {
   const { id } = useParams<{ id: string }>()
   const isEdit = !!id
-  console.log('[RecipeFormPage] Rendering form, isEdit:', isEdit, 'id:', id)
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const fileRef = useRef<HTMLInputElement>(null)

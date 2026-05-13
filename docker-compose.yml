@@ -19,8 +19,6 @@ services:
     build:
       context: .
       dockerfile: src/2Eat.Web.API/Dockerfile
-    ports:
-      - "80:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
       ASPNETCORE_HTTP_PORTS: "8080"
@@ -46,6 +44,8 @@ services:
     build:
       context: src/2Eat.WebApp
       dockerfile: Dockerfile
+    ports:
+      - "80:80"
     depends_on:
       api:
         condition: service_healthy

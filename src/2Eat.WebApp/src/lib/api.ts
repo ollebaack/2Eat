@@ -25,7 +25,6 @@ interface RequestOptions extends RequestInit {
 
 async function handleResponse<T>(res: Response, noAuthRedirect = false): Promise<T> {
   if (res.status === 401) {
-    console.error('[API] 401 Unauthorized')
     if (!noAuthRedirect) {
       localStorage.removeItem(TOKEN_KEY)
       localStorage.removeItem(USER_KEY)
@@ -34,7 +33,6 @@ async function handleResponse<T>(res: Response, noAuthRedirect = false): Promise
     throw new Error('401 Unauthorized')
   }
   if (!res.ok) {
-    console.error(`[API] Error: ${res.status} ${res.statusText}`)
     throw new Error(`${res.status} ${res.statusText}`)
   }
   if (res.status === 204) return undefined as T
@@ -43,8 +41,6 @@ async function handleResponse<T>(res: Response, noAuthRedirect = false): Promise
 
 async function request<T>(path: string, init?: RequestOptions): Promise<T> {
   const { noAuthRedirect, ...fetchInit } = init ?? {}
-  const method = fetchInit.method || 'GET'
-  console.log(`[API] ${method} ${BASE}${path}`)
   const res = await fetch(`${BASE}${path}`, {
     headers: {
       'Content-Type': 'application/json',
@@ -53,7 +49,6 @@ async function request<T>(path: string, init?: RequestOptions): Promise<T> {
     },
     ...fetchInit,
   })
-  console.log(`[API] ${method} ${BASE}${path} -> ${res.status}`)
   return handleResponse<T>(res, noAuthRedirect)
 }
 

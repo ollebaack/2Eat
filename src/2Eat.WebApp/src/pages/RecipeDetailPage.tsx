@@ -162,7 +162,6 @@ function DetailSkeleton() {
 // ── Main page ─────────────────────────────────────────────────────────────
 export function RecipeDetailPage() {
   const { id } = useParams<{ id: string }>()
-  console.log('[RecipeDetailPage] Rendering recipe detail for id:', id)
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const isMobile = useIsMobile()
