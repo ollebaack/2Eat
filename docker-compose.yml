@@ -1,3 +1,5 @@
+# Development and CI testing configuration
+# For production, use Dokploy/Traefik or similar orchestration with environment variables
 services:
   db:
     image: postgres:17-alpine
