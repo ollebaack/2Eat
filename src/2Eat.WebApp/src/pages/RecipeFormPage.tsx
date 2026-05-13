@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { getRecipeById, createRecipe, updateRecipe, uploadFile, getCategories, ALLERGEN_OPTIONS } from '@/lib/api'
-import type { RecipeIngredient, ScannedRecipe, UnitOfMeasurement } from '@/types'
+import type { AllergenId, RecipeIngredient, ScannedRecipe, UnitOfMeasurement } from '@/types'
 import { ScanRecipeDialog } from '@/components/ScanRecipeDialog'
 import { PhotoSlot } from '@/components/PhotoSlot'
 
