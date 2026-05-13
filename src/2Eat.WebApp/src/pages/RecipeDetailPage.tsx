@@ -232,7 +232,7 @@ export function RecipeDetailPage() {
           variant="ghost"
           className="gap-2 -ml-2"
           style={{ color: 'var(--ink-60)', fontFamily: 'var(--font-sans)', fontSize: 13 }}
-          onClick={() => navigate('/recipes')}
+          onClick={() => navigate('/')}
         >
           <ArrowLeft size={14} strokeWidth={1.5} /> Tillbaka till alla recept
         </Button>
