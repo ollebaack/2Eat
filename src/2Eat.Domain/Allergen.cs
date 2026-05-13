@@ -8,5 +8,6 @@ namespace _2Eat.Domain
         [Key]
         public AllergenEnum Id { get; set; }
         public ICollection<Ingredient> Ingredients { get; set; } = new List<Ingredient>();
+        public ICollection<Recipe> Recipes { get; set; } = new List<Recipe>();
     }
 }

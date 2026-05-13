@@ -12,5 +12,10 @@ public record ScannedRecipeDto(
     string? Difficulty,
     ScannedIngredientDto[]? Ingredients,
     string? ImageUrl = null,
-    string? CategoryName = null
+    string? CategoryName = null,
+    int? Calories = null,
+    double? Protein = null,
+    double? Fat = null,
+    double? Carbs = null,
+    string[]? Allergens = null
 );

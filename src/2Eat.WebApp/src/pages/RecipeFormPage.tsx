@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { getRecipeById, createRecipe, updateRecipe, uploadFile, getCategories, ALLERGEN_OPTIONS } from '@/lib/api'
-import type { RecipeIngredient, ScannedRecipe, UnitOfMeasurement } from '@/types'
+import type { AllergenId, RecipeIngredient, ScannedRecipe, UnitOfMeasurement } from '@/types'
 import { ScanRecipeDialog } from '@/components/ScanRecipeDialog'
 import { PhotoSlot } from '@/components/PhotoSlot'
 
@@ -50,6 +50,10 @@ export function RecipeFormPage() {
   const [rows, setRows] = useState<IngredientRow[]>([newRow(1)])
   const [steps, setSteps] = useState<string[]>([''])
   const [allergens, setAllergens] = useState<string[]>([])
+  const [calories, setCalories] = useState<number | undefined>()
+  const [protein, setProtein] = useState<number | undefined>()
+  const [fat, setFat] = useState<number | undefined>()
+  const [carbs, setCarbs] = useState<number | undefined>()
   const [initialized, setInitialized] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [localPreview, setLocalPreview] = useState<string | undefined>()
@@ -72,6 +76,11 @@ export function RecipeFormPage() {
       : [newRow(1)])
     const parsedSteps = existing.instructions.split(/\n+/).map(s => s.replace(/^\d+[.)]\s*/, '').trim()).filter(Boolean)
     if (parsedSteps.length > 0) setSteps(parsedSteps)
+    setAllergens((existing.allergens ?? []).map(a => a.id))
+    if (existing.calories != null) setCalories(existing.calories)
+    if (existing.protein != null) setProtein(existing.protein)
+    if (existing.fat != null) setFat(existing.fat)
+    if (existing.carbs != null) setCarbs(existing.carbs)
     setInitialized(true)
   }
 
@@ -82,6 +91,11 @@ export function RecipeFormPage() {
         ...(categoryId !== undefined ? { categoryId } : {}),
         instructions: steps.filter(s => s.trim()).map((s, i) => `${i + 1}. ${s}`).join('\n') || instructions,
         servings, rating, prepTime, cookTime, imageUrl,
+        calories: calories ?? null,
+        protein: protein ?? null,
+        fat: fat ?? null,
+        carbs: carbs ?? null,
+        allergens: allergens.map(id => ({ id })),
         ingredients: rows.filter(r => r.name.trim()).map((r, i) => ({
           order: i + 1,
           ingredient: { name: r.name },
@@ -142,6 +156,11 @@ export function RecipeFormPage() {
         order: i + 1,
       })))
     }
+    if (data.calories != null) setCalories(data.calories)
+    if (data.protein != null) setProtein(data.protein)
+    if (data.fat != null) setFat(data.fat)
+    if (data.carbs != null) setCarbs(data.carbs)
+    if (data.allergens?.length) setAllergens(data.allergens.filter(a => ALLERGEN_OPTIONS.includes(a as AllergenId)))
     toast.success('Recept skannat — granska och spara')
   }
 

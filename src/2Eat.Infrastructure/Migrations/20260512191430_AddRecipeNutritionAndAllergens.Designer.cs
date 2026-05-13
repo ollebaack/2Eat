@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using _2Eat.Infrastructure;
@@ -11,9 +12,11 @@ using _2Eat.Infrastructure;
 namespace _2Eat.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260512191430_AddRecipeNutritionAndAllergens")]
+    partial class AddRecipeNutritionAndAllergens
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -585,7 +588,7 @@ namespace _2Eat.Infrastructure.Migrations
                             Id = 1,
                             CategoryId = 1,
                             CookTime = 15,
-                            CreatedAt = new DateTimeOffset(new DateTime(2026, 5, 12, 19, 6, 30, 807, DateTimeKind.Unspecified).AddTicks(8061), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 5, 12, 19, 14, 30, 367, DateTimeKind.Unspecified).AddTicks(9947), new TimeSpan(0, 0, 0, 0, 0)),
                             Description = "Traditionella svenska kanelbullar",
                             Difficulty = "Medel",
                             Instructions = "Blanda ingredienser och baka i 180°C i 15 minuter.",
@@ -600,7 +603,7 @@ namespace _2Eat.Infrastructure.Migrations
                             Id = 2,
                             CategoryId = 2,
                             CookTime = 0,
-                            CreatedAt = new DateTimeOffset(new DateTime(2026, 5, 12, 19, 6, 30, 807, DateTimeKind.Unspecified).AddTicks(9660), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 5, 12, 19, 14, 30, 368, DateTimeKind.Unspecified).AddTicks(1226), new TimeSpan(0, 0, 0, 0, 0)),
                             Description = "En klassisk svensk räkmacka",
                             Difficulty = "Medel",
                             Instructions = "Montera mackan med bröd, räkor, majonnäs och dill.",
@@ -615,7 +618,7 @@ namespace _2Eat.Infrastructure.Migrations
                             Id = 3,
                             CategoryId = 3,
                             CookTime = 120,
-                            CreatedAt = new DateTimeOffset(new DateTime(2026, 5, 12, 19, 6, 30, 807, DateTimeKind.Unspecified).AddTicks(9665), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 5, 12, 19, 14, 30, 368, DateTimeKind.Unspecified).AddTicks(1231), new TimeSpan(0, 0, 0, 0, 0)),
                             Description = "Älgstek med enbär",
                             Difficulty = "Medel",
                             Instructions = "Rosta älgköttet med enbär och servera med potatis och lingon.",
@@ -630,7 +633,7 @@ namespace _2Eat.Infrastructure.Migrations
                             Id = 4,
                             CategoryId = 4,
                             CookTime = 30,
-                            CreatedAt = new DateTimeOffset(new DateTime(2026, 5, 12, 19, 6, 30, 807, DateTimeKind.Unspecified).AddTicks(9667), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 5, 12, 19, 14, 30, 368, DateTimeKind.Unspecified).AddTicks(1240), new TimeSpan(0, 0, 0, 0, 0)),
                             Description = "Lax i en krämig sås",
                             Difficulty = "Medel",
                             Instructions = "Laga laxen i en gräddig sås med dill och servera med kokt potatis.",

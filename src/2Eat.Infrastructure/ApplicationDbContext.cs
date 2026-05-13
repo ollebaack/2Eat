@@ -48,6 +48,10 @@ namespace _2Eat.Infrastructure
                 .HasMany(x => x.Allergens)
                 .WithMany(x => x.Ingredients);
 
+            modelBuilder.Entity<Recipe>()
+                .HasMany(x => x.Allergens)
+                .WithMany(x => x.Recipes);
+
             // Ensure the Name property of Ingredient is unique
             modelBuilder.Entity<Ingredient>()
                 .HasIndex(i => i.Name)

@@ -306,15 +306,38 @@ export function RecipeDetailPage() {
         ))}
       </section>
 
-      {/* ── Allergens ───────────────────────────────────────────── */}
-      {sortedIngredients.some(ri => ri.ingredient?.allergens?.length > 0) && (
-        <section style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 36, flexWrap: 'wrap' }}>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10.5, color: 'var(--ink-50)', letterSpacing: '0.12em', textTransform: 'uppercase' }}>Innehåller / passar</span>
-          {[...new Set(sortedIngredients.flatMap(ri => ri.ingredient?.allergens?.map(a => a.id) ?? []))].map(a => (
-            <Pill key={a} tone="default" size="sm">{a}</Pill>
+      {/* ── Nutrition ───────────────────────────────────────────── */}
+      {(recipe.calories || recipe.protein || recipe.fat || recipe.carbs) && (
+        <section style={{ display: 'flex', alignItems: 'center', gap: 32, marginBottom: 28, flexWrap: 'wrap', padding: '20px 24px', background: 'var(--surface-1)', border: '1px solid var(--line)', borderRadius: 14 }}>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10.5, color: 'var(--ink-50)', letterSpacing: '0.12em', textTransform: 'uppercase', flexShrink: 0 }}>Per portion</span>
+          {([
+            { label: 'Kcal',         value: recipe.calories != null ? String(recipe.calories) : null },
+            { label: 'Protein',      value: recipe.protein  != null ? `${recipe.protein}g`    : null },
+            { label: 'Fett',         value: recipe.fat      != null ? `${recipe.fat}g`        : null },
+            { label: 'Kolhydrater',  value: recipe.carbs    != null ? `${recipe.carbs}g`      : null },
+          ] as { label: string; value: string | null }[]).filter(n => n.value !== null).map(n => (
+            <div key={n.label} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--ink-50)' }}>{n.label}</span>
+              <span style={{ fontFamily: 'var(--font-serif)', fontSize: 22, color: 'var(--ink)', letterSpacing: '-0.02em' }}>{n.value}</span>
+            </div>
           ))}
         </section>
       )}
+
+      {/* ── Allergens ───────────────────────────────────────────── */}
+      {(() => {
+        const ingredientAllergenIds = [...new Set(sortedIngredients.flatMap(ri => ri.ingredient?.allergens?.map(a => a.id) ?? []))]
+        const recipeAllergenIds = (recipe.allergens ?? []).map(a => a.id)
+        const allAllergenIds = [...new Set([...ingredientAllergenIds, ...recipeAllergenIds])]
+        return allAllergenIds.length > 0 ? (
+          <section style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 36, flexWrap: 'wrap' }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10.5, color: 'var(--ink-50)', letterSpacing: '0.12em', textTransform: 'uppercase' }}>Innehåller / passar</span>
+            {allAllergenIds.map(a => (
+              <Pill key={a} tone="default" size="sm">{a}</Pill>
+            ))}
+          </section>
+        ) : null
+      })()}
 
       {/* ── Magazine body (ingredients + instructions) ──────────── */}
       <section style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: 56 }}>

@@ -176,6 +176,47 @@ export function MobileDetailScreen({ recipe }: { recipe: Recipe }) {
         </p>
       )}
 
+      {/* Nutrition strip */}
+      {(recipe.calories || recipe.protein || recipe.fat || recipe.carbs) && (
+        <div style={{ margin: '12px 16px 0', display: 'flex', gap: 0, background: 'var(--surface-1)', border: '1px solid var(--line)', borderRadius: 14, overflow: 'hidden' }}>
+          {([
+            { label: 'Kcal',  value: recipe.calories != null ? String(recipe.calories) : null },
+            { label: 'Prot',  value: recipe.protein  != null ? `${recipe.protein}g`    : null },
+            { label: 'Fett',  value: recipe.fat      != null ? `${recipe.fat}g`        : null },
+            { label: 'Kh',    value: recipe.carbs    != null ? `${recipe.carbs}g`      : null },
+          ] as { label: string; value: string | null }[]).filter(n => n.value !== null).map((n, i) => (
+            <div key={n.label} style={{
+              flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+              padding: '10px 4px',
+              borderLeft: i === 0 ? 'none' : '1px solid var(--line)',
+            }}>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 8.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--ink-50)' }}>{n.label}</span>
+              <span style={{ fontFamily: 'var(--font-serif)', fontSize: 18, lineHeight: 1, color: 'var(--ink)', letterSpacing: '-0.02em' }}>{n.value}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Allergens */}
+      {(() => {
+        const ingredientAllergenIds = [...new Set(recipe.ingredients.flatMap(ri => ri.ingredient?.allergens?.map(a => a.id) ?? []))]
+        const recipeAllergenIds = (recipe.allergens ?? []).map(a => a.id)
+        const allAllergenIds = [...new Set([...ingredientAllergenIds, ...recipeAllergenIds])]
+        return allAllergenIds.length > 0 ? (
+          <div style={{ margin: '10px 16px 0', display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--ink-50)' }}>Innehåller / passar</span>
+            {allAllergenIds.map(a => (
+              <span key={a} style={{
+                padding: '2px 8px', borderRadius: 999,
+                border: '1px solid var(--line)', background: 'var(--surface-2)',
+                fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--ink-70)',
+                letterSpacing: '0.04em', textTransform: 'uppercase',
+              }}>{a}</span>
+            ))}
+          </div>
+        ) : null
+      })()}
+
       {/* Segmented tabs */}
       <div style={{ margin: '14px 20px 8px' }}>
         <div style={{
