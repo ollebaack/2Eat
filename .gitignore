@@ -407,3 +407,6 @@ uploads/
 # Local secrets — never commit real keys
 appsettings.local.json
 appsettings.*.local.json
+
+# Local deployment notes (contains server details)
+docs/deployment.md
