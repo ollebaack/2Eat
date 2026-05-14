@@ -60,6 +60,11 @@ public class RecipeService : IRecipeService
             }
         }
 
+        // Composite PK is {RecipeId, IngredientId} — drop duplicates EF would reject.
+        recipe.Ingredients = recipe.Ingredients
+            .DistinctBy(ri => ri.Ingredient)
+            .ToList();
+
         // Resolve allergens: replace deserialized stubs with tracked entities from DB
         if (recipe.Allergens.Count > 0)
         {
