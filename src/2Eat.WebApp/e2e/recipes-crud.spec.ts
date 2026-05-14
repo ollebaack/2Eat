@@ -57,7 +57,9 @@ test.describe('Create Recipe', () => {
     // Category is required (FK constraint). The <select> has no htmlFor so we
     // target it via its "Välj kategori…" placeholder option; "1" = Bakverk (seeded).
     await page.locator('select:has(option[value=""])').selectOption('1')
-    await page.getByRole('button', { name: /Spara recept/ }).click()
+    const saveBtn = page.getByRole('button', { name: /Spara recept/ })
+    await saveBtn.scrollIntoViewIfNeeded()
+    await saveBtn.click()
 
     // Should redirect to the new recipe's detail page
     await expect(page).toHaveURL(/\/recipes\/\d+$/, { timeout: 10_000 })
@@ -150,7 +152,7 @@ test.describe('Delete Recipe', () => {
     const recipeId = await createRecipeViaApi(page, recipeName)
 
     await page.goto(`/recipes/${recipeId}`)
-    await page.locator('[title="Radera"]').click()
+    await page.locator('[title="Ta bort recept"]').click()
 
     await expect(page.getByRole('heading', { name: 'Ta bort recept?' })).toBeVisible({ timeout: 8_000 })
 
@@ -168,7 +170,7 @@ test.describe('Delete Recipe', () => {
     const recipeId = await createRecipeViaApi(page, recipeName)
 
     await page.goto(`/recipes/${recipeId}`)
-    await page.locator('[title="Radera"]').click()
+    await page.locator('[title="Ta bort recept"]').click()
 
     await expect(page.getByRole('heading', { name: 'Ta bort recept?' })).toBeVisible({ timeout: 8_000 })
 
