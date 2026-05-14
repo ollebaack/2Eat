@@ -75,8 +75,8 @@ public class FileTests(ApiTestFixture fixture)
     [Fact]
     public async Task DownloadFile_NonExistentStoredFileName_Returns404()
     {
-        // The download endpoint is public (no RequireAuthorization), so no token needed.
-        var client = fixture.Factory.CreateClient();
+        // Authenticated request for a file that doesn't exist should return 404.
+        var client = await fixture.CreateAuthenticatedClientAsync();
 
         var response = await client.GetAsync("/api/files/nonexistent-file-that-does-not-exist.tmp");
 
