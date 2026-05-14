@@ -64,7 +64,6 @@ public class FileTests(ApiTestFixture fixture)
         var body = await uploadResp.Content.ReadFromJsonAsync<JsonElement>();
         var storedFileName = body.GetProperty("storedFileName").GetString()!;
 
-        // Download using the stored file name — no auth required on this endpoint.
         var downloadResp = await client.GetAsync($"/api/files/{storedFileName}");
 
         Assert.Equal(HttpStatusCode.OK, downloadResp.StatusCode);
@@ -75,8 +74,7 @@ public class FileTests(ApiTestFixture fixture)
     [Fact]
     public async Task DownloadFile_NonExistentStoredFileName_Returns404()
     {
-        // The download endpoint is public (no RequireAuthorization), so no token needed.
-        var client = fixture.Factory.CreateClient();
+        var client = await fixture.CreateAuthenticatedClientAsync();
 
         var response = await client.GetAsync("/api/files/nonexistent-file-that-does-not-exist.tmp");
 
