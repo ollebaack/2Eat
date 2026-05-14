@@ -4,6 +4,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Keep this file current.** When you make changes that affect any of the topics below — new layers, changed commands, added dependencies, new conventions, infrastructure changes — update the relevant section before finishing the task.
 
+## Working on Tasks
+
+When starting work on a Linear issue, assign yourself to it before beginning implementation. Use the Linear MCP tools (`save_issue`) to set yourself as the assignee.
+
 ## What This Is
 
 2Eat is a full-stack recipe management application. Backend is ASP.NET Core (.NET 10) Minimal APIs with PostgreSQL via EF Core. Frontend is React 19 + TypeScript + Vite + Tailwind CSS.
