@@ -24,6 +24,8 @@ namespace _2Eat.Infrastructure
         public DbSet<ShoppingListItem> ShoppingListItems { get; set; } = default!;
         public DbSet<User> Users { get; set; } = default!;
         public DbSet<Domain.Files.FileUpload> Files { get; set; } = default!;
+        public DbSet<Samling> Samlingar { get; set; } = default!;
+        public DbSet<SamlingRecept> SamlingarRecept { get; set; } = default!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -110,6 +112,36 @@ namespace _2Eat.Infrastructure
 
             modelBuilder.Entity<ShoppingListItem>()
                 .HasIndex(x => x.ShoppingListId);
+
+            modelBuilder.Entity<SamlingRecept>()
+                .HasKey(sr => new { sr.SamlingId, sr.ReceptId });
+
+            modelBuilder.Entity<Samling>()
+                .HasOne<User>()
+                .WithMany()
+                .HasForeignKey(s => s.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Samling>()
+                .HasMany(s => s.Recept)
+                .WithOne(sr => sr.Samling)
+                .HasForeignKey(sr => sr.SamlingId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<SamlingRecept>()
+                .HasOne(sr => sr.Recipe)
+                .WithMany()
+                .HasForeignKey(sr => sr.ReceptId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Samling>()
+                .HasIndex(s => s.UserId);
+
+            modelBuilder.Entity<SamlingRecept>()
+                .HasIndex(sr => sr.SamlingId);
+
+            modelBuilder.Entity<SamlingRecept>()
+                .HasIndex(sr => sr.ReceptId);
 
             SeedData(modelBuilder);
         }

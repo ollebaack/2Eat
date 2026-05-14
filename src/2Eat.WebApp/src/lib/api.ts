@@ -1,4 +1,4 @@
-import type { Category, FileUpload, Ingredient, PantryItem, Recipe, AllergenId, WeekPlan, WeekPlanDay, ScannedRecipe, ScanStatus, ShoppingListItem } from '@/types'
+import type { Category, FileUpload, Ingredient, PantryItem, Recipe, AllergenId, WeekPlan, WeekPlanDay, ScannedRecipe, ScanStatus, ShoppingListItem, SamlingListItem, SamlingDetail } from '@/types'
 
 export const ALLERGEN_OPTIONS: AllergenId[] = [
   'Gluten',
@@ -166,3 +166,22 @@ export const changePassword = (data: { currentPassword: string; newPassword: str
   request<void>('/auth/me/password', { method: 'PUT', body: JSON.stringify(data) })
 
 export const deleteAccount = () => request<void>('/auth/me', { method: 'DELETE' })
+
+// Samlingar API
+export const getSamlingar = () => request<SamlingListItem[]>('/samlingar')
+export const createSamling = (name: string) =>
+  request<SamlingListItem>('/samlingar', { method: 'POST', body: JSON.stringify({ name }) })
+export const getSamlingById = (id: number) => request<SamlingDetail>(`/samlingar/${id}`)
+export const renameSamling = (id: number, name: string) =>
+  request<SamlingListItem>(`/samlingar/${id}`, { method: 'PUT', body: JSON.stringify({ name }) })
+export const deleteSamling = (id: number) => request<void>(`/samlingar/${id}`, { method: 'DELETE' })
+export const addReceptToSamling = (samlingId: number, receptId: number) =>
+  request<void>(`/samlingar/${samlingId}/recept`, { method: 'POST', body: JSON.stringify({ receptId }) })
+export const removeReceptFromSamling = (samlingId: number, receptId: number) =>
+  request<void>(`/samlingar/${samlingId}/recept/${receptId}`, { method: 'DELETE' })
+export const updateSamlingOrder = (samlingId: number, receptIds: number[]) =>
+  request<void>(`/samlingar/${samlingId}/recept/order`, { method: 'PUT', body: JSON.stringify({ receptIds }) })
+export const getSamlingarForRecept = (receptId: number) =>
+  request<{ samlingIds: number[] }>(`/recipes/${receptId}/samlingar`)
+export const syncReceptSamlingar = (receptId: number, samlingIds: number[]) =>
+  request<void>(`/recipes/${receptId}/samlingar`, { method: 'PUT', body: JSON.stringify({ samlingIds }) })
