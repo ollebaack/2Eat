@@ -1,82 +1,20 @@
-import { useState, useId } from 'react'
+import { useState } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Pencil, Trash2, Bookmark, Star, Check, Plus } from 'lucide-react'
+import { ArrowLeft, Pencil, Trash2, Bookmark, Check, Plus } from 'lucide-react'
 import { toast } from 'sonner'
-import { getRecipeById, deleteRecipe, getRecipes, getFileUrl, addRecipeToShoppingList } from '@/lib/api'
+import { getRecipeById, deleteRecipe, getRecipes, addRecipeToShoppingList } from '@/lib/api'
 import type { Recipe } from '@/types'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import { MobileDetailScreen } from '@/components/mobile/MobileDetailScreen'
-
-// ── Photo placeholder ─────────────────────────────────────────────────────
-const SWATCHES = ['oklch(0.65 0.12 50)','oklch(0.6 0.1 145)','oklch(0.62 0.12 30)','oklch(0.6 0.08 210)','oklch(0.58 0.1 330)','oklch(0.65 0.1 90)']
-function recipeSwatch(id: number) { return SWATCHES[id % SWATCHES.length] }
-
-function PhotoSlot({ imageUrl, swatch, label = '', aspect = '4/5', height }: {
-  imageUrl?: string; swatch?: string; label?: string; aspect?: string; height?: string
-}) {
-  const uid = useId()
-  const containerStyle: React.CSSProperties = {
-    position: 'relative', width: '100%',
-    height: height ?? 'auto',
-    aspectRatio: height ? undefined : aspect,
-    overflow: 'hidden', borderRadius: 'inherit',
-  }
-  if (imageUrl) {
-    return <div style={containerStyle}><img src={getFileUrl(imageUrl)} alt={label} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /></div>
-  }
-  const fill = swatch ?? 'oklch(0.65 0.08 60)'
-  return (
-    <div style={{ ...containerStyle, background: fill }}>
-      <svg width="100%" height="100%" style={{ position: 'absolute', inset: 0 }} aria-hidden>
-        <defs>
-          <pattern id={uid} width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(35)">
-            <line x1="0" y1="0" x2="0" y2="14" stroke="rgba(255,255,255,0.08)" strokeWidth="6" />
-          </pattern>
-          <radialGradient id={uid + 'r'} cx="30%" cy="25%" r="80%">
-            <stop offset="0%" stopColor="rgba(255,255,255,0.22)" />
-            <stop offset="100%" stopColor="rgba(0,0,0,0.18)" />
-          </radialGradient>
-        </defs>
-        <rect width="100%" height="100%" fill={`url(#${uid})`} />
-        <rect width="100%" height="100%" fill={`url(#${uid}r)`} />
-      </svg>
-    </div>
-  )
-}
-
-// ── Stars ─────────────────────────────────────────────────────────────────
-function Stars({ value = 0, size = 13 }: { value: number; size?: number }) {
-  return (
-    <span style={{ display: 'inline-flex', gap: 2 }}>
-      {[1,2,3,4,5].map(i => (
-        <Star key={i} size={size} strokeWidth={1.5}
-          fill={i <= value ? 'var(--2eat-accent)' : 'none'}
-          stroke={i <= value ? 'var(--2eat-accent)' : 'var(--ink-30)'} />
-      ))}
-    </span>
-  )
-}
-
-// ── Pill (Badge wrapper) ──────────────────────────────────────────────────
-function Pill({ children, tone = 'default', size = 'md' }: { children: React.ReactNode; tone?: 'default' | 'accent'; size?: 'sm' | 'md' }) {
-  const style = tone === 'accent'
-    ? { background: 'color-mix(in oklch, var(--2eat-accent) 12%, transparent)', color: 'var(--2eat-accent-deep)', borderColor: 'color-mix(in oklch, var(--2eat-accent) 35%, transparent)' }
-    : { background: 'var(--surface-2)', color: 'var(--ink-70)', borderColor: 'var(--line)' }
-  return (
-    <Badge
-      variant="outline"
-      style={{ ...style, fontFamily: 'var(--font-mono)', fontSize: size === 'sm' ? 10.5 : 11.5, letterSpacing: '0.06em', textTransform: 'uppercase', lineHeight: 1, padding: size === 'sm' ? '2px 8px' : '4px 10px' }}
-    >
-      {children}
-    </Badge>
-  )
-}
+import { PhotoSlot } from '@/components/PhotoSlot'
+import { StarRating } from '@/components/StarRating'
+import { Pill } from '@/components/Pill'
+import { recipeSwatch } from '@/lib/recipeUtils'
 
 // ── Servings scaler ───────────────────────────────────────────────────────
 function ScalerControl({ servings, setServings }: { servings: number; setServings: (n: number) => void }) {
@@ -126,7 +64,7 @@ function RelatedCard({ recipe }: { recipe: Recipe }) {
           <h4 style={{ fontFamily: 'var(--font-serif)', fontSize: 19, letterSpacing: '-0.02em', color: 'var(--ink)', margin: 0, fontWeight: 400, lineHeight: 1.15 }}>{recipe.name}</h4>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10.5, color: 'var(--ink-50)', letterSpacing: '0.06em' }}>{recipe.totalTime} MIN · {recipe.servings} PERS</span>
-            <Stars value={recipe.rating} size={10} />
+            <StarRating value={recipe.rating} size={10} />
           </div>
         </div>
       </article>
@@ -262,7 +200,7 @@ export function RecipeDetailPage() {
             {recipe.description}
           </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 'auto' }}>
-            <Stars value={recipe.rating} size={14} />
+            <StarRating value={recipe.rating} size={14} />
             <span style={{ width: 1, height: 16, background: 'var(--line)', display: 'inline-block' }} />
             <span style={{ fontFamily: 'var(--font-sans)', fontSize: 13, color: 'var(--ink-60)' }}>Senast ändrad {lastModified}</span>
           </div>

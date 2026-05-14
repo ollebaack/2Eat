@@ -24,21 +24,21 @@ namespace _2Eat.Web.API
         static IResult GetScanStatus(IRecipeScanService svc)
             => Results.Ok(new { enabled = svc.IsConfigured });
 
-        static async Task<Results<Ok<ScannedRecipeDto>, BadRequest<string>, StatusCodeHttpResult>>
+        static async Task<Results<Ok<ScannedRecipeDto>, ProblemHttpResult, StatusCodeHttpResult>>
             ScanFromImage(IFormFile file, IRecipeScanService svc, IWebHostEnvironment env, IFileService fileService, CancellationToken ct)
         {
             if (!svc.IsConfigured)
                 return TypedResults.StatusCode(503);
 
             if (file.Length == 0)
-                return TypedResults.BadRequest("No file provided.");
+                return TypedResults.Problem(detail: "No file provided.", statusCode: 400);
 
             if (file.Length > 10 * 1024 * 1024)
-                return TypedResults.BadRequest("Image must be under 10 MB.");
+                return TypedResults.Problem(detail: "Image must be under 10 MB.", statusCode: 400);
 
             var allowed = new[] { "image/jpeg", "image/png", "image/gif", "image/webp" };
             if (!allowed.Contains(file.ContentType))
-                return TypedResults.BadRequest("Unsupported image type.");
+                return TypedResults.Problem(detail: "Unsupported image type.", statusCode: 400);
 
             byte[] bytes;
             using (var ms = new MemoryStream())
@@ -75,14 +75,14 @@ namespace _2Eat.Web.API
 
         record ScanUrlRequest(string Url);
 
-        static async Task<Results<Ok<ScannedRecipeDto>, BadRequest<string>, StatusCodeHttpResult>>
+        static async Task<Results<Ok<ScannedRecipeDto>, ProblemHttpResult, StatusCodeHttpResult>>
             ScanFromUrl(ScanUrlRequest req, IRecipeScanService svc, IWebHostEnvironment env, IFileService fileService, IHttpClientFactory httpFactory, CancellationToken ct)
         {
             if (!svc.IsConfigured)
                 return TypedResults.StatusCode(503);
 
             if (string.IsNullOrWhiteSpace(req.Url) || !Uri.TryCreate(req.Url, UriKind.Absolute, out _))
-                return TypedResults.BadRequest("Invalid URL.");
+                return TypedResults.Problem(detail: "Invalid URL.", statusCode: 400);
 
             ScannedRecipeDto result;
             try
@@ -91,7 +91,7 @@ namespace _2Eat.Web.API
             }
             catch (HttpRequestException)
             {
-                return TypedResults.BadRequest("Could not fetch the URL.");
+                return TypedResults.Problem(detail: "Could not fetch the URL.", statusCode: 400);
             }
             catch
             {

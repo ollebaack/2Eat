@@ -87,11 +87,29 @@ namespace _2Eat.Infrastructure
                 .HasForeignKey(x => x.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            modelBuilder.Entity<MealPlan>()
+                .HasIndex(x => x.UserId);
+
+            modelBuilder.Entity<MealPlanDay>()
+                .HasIndex(x => x.MealPlanId);
+
+            modelBuilder.Entity<MealPlanDay>()
+                .HasIndex(x => x.RecipeId);
+
             modelBuilder.Entity<PantryItem>()
                 .HasOne<User>()
                 .WithMany()
                 .HasForeignKey(x => x.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<PantryItem>()
+                .HasIndex(x => x.UserId);
+
+            modelBuilder.Entity<ShoppingList>()
+                .HasIndex(x => x.UserId);
+
+            modelBuilder.Entity<ShoppingListItem>()
+                .HasIndex(x => x.ShoppingListId);
 
             SeedData(modelBuilder);
         }
