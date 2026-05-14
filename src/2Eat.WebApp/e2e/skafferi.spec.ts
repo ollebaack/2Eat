@@ -76,6 +76,7 @@ test.describe('Skafferi (Pantry)', () => {
     await page.getByPlaceholder('Sök i skafferiet…').fill(itemName)
     await expect(page.getByText(itemName)).toBeVisible({ timeout: 5_000 })
     await page.locator('[aria-label="Ta bort"]').click()
+    await expect(page.getByText('Borttagen')).toBeVisible({ timeout: 5_000 })
 
     // Reload to get fresh server state — bypasses any React Query caching
     await page.reload()
