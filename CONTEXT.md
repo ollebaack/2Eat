@@ -5,8 +5,12 @@ A recipe management and meal planning application for Swedish households. Users 
 ## Language
 
 **Samling** (plural: **Samlingar**):
-A user-owned, named set of Recept. Acts as a curation tool — analogous to a recipe book or thematic playlist.
+A user-owned, named set of Recept. Acts as a curation tool — analogous to a recipe book or thematic playlist. Currently always manually curated; see *Smart Samling* for the deferred auto-generated variant.
 _Avoid_: Collection, folder, list, category
+
+**Smart Samling** (plural: **Smarta Samlingar**) — *deferred, not yet implemented*:
+A read-only Samling whose membership is computed by a rule rather than set by the user. Examples: *Snabbt ikväll* (total time ≤ 30 min), *Nyligen lagat* (Recept in a Veckoplan within the last 30 days), *Från skafferiet* (Recept whose ingredients are covered by the current Skafferi). When implemented, distinguished from manual Samlingar by an `IsManaged` flag on the entity. Users cannot add or remove Recept from a Smart Samling.
+_Avoid_: Smart collection, automatic collection, filter preset
 
 **Favoriter**:
 The default Samling auto-created for every User on registration. Semantically identical to a user-created Samling; distinguished only by being pre-populated at signup.
