@@ -6,6 +6,7 @@ import { getRecipeById, createRecipe, updateRecipe, uploadFile, getCategories, A
 import type { AllergenId, RecipeIngredient, ScannedRecipe, UnitOfMeasurement } from '@/types'
 import { ScanRecipeDialog } from '@/components/ScanRecipeDialog'
 import { PhotoSlot } from '@/components/PhotoSlot'
+import { StarPicker } from '@/components/StarPicker'
 
 const UNITS: UnitOfMeasurement[] = [
   'g', 'ml', 'kg', 'krm', 'tsk', 'msk', 'dl', 'l', 'kaffemått', 'st',
@@ -270,8 +271,10 @@ export function RecipeFormPage() {
 
         {/* Rating */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <label style={labelStyle}>Betyg (1–5)</label>
-          <input type="number" min={1} max={5} value={rating} onChange={e => setRating(Number(e.target.value))} style={inputStyle} />
+          <label style={labelStyle}>Betyg</label>
+          <div style={{ padding: '8px 10px', background: 'var(--paper)', border: '1px solid var(--line)', borderRadius: 10 }}>
+            <StarPicker value={rating} onChange={setRating} />
+          </div>
         </div>
 
         {/* Image upload */}
