@@ -116,7 +116,7 @@ test.describe('Recipe Detail', () => {
     await page.goto(`/recipes/${id}`)
     await expect(page.locator('h1, h2').first()).toBeVisible({ timeout: 10_000 })
 
-    await page.locator('[title="Radera"]').click()
+    await page.locator('[title="Ta bort recept"]').click()
 
     // Dialog heading confirms the dialog is open
     await expect(page.getByRole('heading', { name: 'Ta bort recept?' })).toBeVisible({ timeout: 5_000 })

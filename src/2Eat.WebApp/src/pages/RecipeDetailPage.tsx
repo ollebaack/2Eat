@@ -176,7 +176,7 @@ export function RecipeDetailPage() {
           <DeleteConfirmDialog
             open={deleteOpen}
             onOpenChange={setDeleteOpen}
-            title="Ta bort recept"
+            title="Ta bort recept?"
             description={<>Är du säker på att du vill ta bort <strong style={{ color: 'var(--ink)' }}>{recipe.name}</strong>? Åtgärden kan inte ångras.</>}
             onConfirm={() => deleteMutation.mutate()}
             isPending={deleteMutation.isPending}
