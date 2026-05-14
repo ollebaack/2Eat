@@ -282,11 +282,52 @@ export function MobileListScreen({ recipes }: MobileListScreenProps) {
           </div>
         )}
 
-        {filtered.length === 0 && (
-          <p style={{ color: 'var(--ink-50)', fontFamily: 'var(--font-sans)', fontSize: 14, textAlign: 'center', paddingTop: 32 }}>
-            Inga recept hittades.
-          </p>
-        )}
+        {filtered.length === 0 && (() => {
+          const hasTextSearch = !!q
+          const hasCategoryFilter = activeCategory !== 'Alla'
+          if (!hasTextSearch && !hasCategoryFilter) {
+            return (
+              <p style={{ color: 'var(--ink-50)', fontFamily: 'var(--font-sans)', fontSize: 14, textAlign: 'center', paddingTop: 32 }}>
+                Inga recept ännu.
+              </p>
+            )
+          }
+          if (hasTextSearch && !hasCategoryFilter) {
+            return (
+              <div style={{ textAlign: 'center', paddingTop: 32 }}>
+                <p style={{ color: 'var(--ink)', fontFamily: 'var(--font-serif)', fontSize: 18, margin: '0 0 6px' }}>
+                  Inga recept matchar sökningen «{q}».
+                </p>
+                <p style={{ color: 'var(--ink-50)', fontFamily: 'var(--font-sans)', fontSize: 13, margin: 0 }}>
+                  Prova ett annat sökord.
+                </p>
+              </div>
+            )
+          }
+          if (!hasTextSearch && hasCategoryFilter) {
+            return (
+              <div style={{ textAlign: 'center', paddingTop: 32 }}>
+                <p style={{ color: 'var(--ink)', fontFamily: 'var(--font-serif)', fontSize: 18, margin: '0 0 6px' }}>
+                  Inga recept i den här kategorin.
+                </p>
+                <p style={{ color: 'var(--ink-50)', fontFamily: 'var(--font-sans)', fontSize: 13, margin: 0 }}>
+                  Prova att rensa filtren.
+                </p>
+              </div>
+            )
+          }
+          // Both text search and category filter active
+          return (
+            <div style={{ textAlign: 'center', paddingTop: 32 }}>
+              <p style={{ color: 'var(--ink)', fontFamily: 'var(--font-serif)', fontSize: 18, margin: '0 0 6px' }}>
+                Inga recept matchar.
+              </p>
+              <p style={{ color: 'var(--ink-50)', fontFamily: 'var(--font-sans)', fontSize: 13, margin: 0 }}>
+                Prova ett annat sökord eller rensa filtren.
+              </p>
+            </div>
+          )
+        })()}
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {rest.map(r => (
