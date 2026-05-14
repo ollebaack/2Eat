@@ -93,10 +93,10 @@ export function IngredientsPage() {
   }, [filtered])
 
   return (
-    <div className="max-w-[1240px] mx-auto px-10 pt-9 pb-[60px] w-full">
+    <div className="max-w-[1240px] mx-auto px-4 sm:px-6 md:px-10 pt-6 sm:pt-9 pb-[60px] w-full">
 
       {/* ── Header ─────────────────────────────────────────────── */}
-      <header className="flex items-end justify-between mb-8 flex-wrap gap-4">
+      <header className="flex items-end justify-between mb-6 sm:mb-8 flex-wrap gap-4">
         <div>
           <span
             className="text-brand-deep uppercase"
@@ -108,7 +108,7 @@ export function IngredientsPage() {
             className="text-ink m-0 font-normal"
             style={{
               fontFamily: 'var(--font-serif)',
-              fontSize: 'clamp(42px, 5vw, 60px)',
+              fontSize: 'clamp(32px, 5vw, 60px)',
               letterSpacing: '-0.035em',
               lineHeight: 0.95,
               marginTop: 6,

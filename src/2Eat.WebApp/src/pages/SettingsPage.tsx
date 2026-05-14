@@ -18,10 +18,7 @@ export function SettingsPage() {
   return (
     <div>
       <div
-        style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '12px 24px', borderBottom: '1px solid var(--line)',
-        }}
+        className="flex items-center justify-between px-4 sm:px-6 py-3 border-b border-line"
       >
         <span style={{ fontFamily: 'var(--font-sans)', fontSize: 13, color: 'var(--ink-60)' }}>
           {isDark ? 'Mörkt läge' : 'Ljust läge'}
@@ -41,11 +38,7 @@ export function SettingsPage() {
       </div>
 
       <div
-        style={{
-          borderBottom: '1px solid var(--line)',
-          display: 'flex',
-          padding: '0 24px',
-        }}
+        className="flex border-b border-line px-4 sm:px-6"
       >
         {TABS.map(tab => (
           <button

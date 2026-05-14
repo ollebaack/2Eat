@@ -1,12 +1,11 @@
-import { useState, useMemo, useEffect, useCallback, useId } from 'react'
+import { useState, useMemo, useEffect, useCallback } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Shuffle, Clock, Users, Trash2, Bookmark, Search, X, LayoutGrid, List, Star } from 'lucide-react'
+import { Plus, Shuffle, Clock, Users, Trash2, Bookmark, Search, X, LayoutGrid, List } from 'lucide-react'
 import { toast } from 'sonner'
-import { getRecipes, getRandomRecipes, deleteRecipe, getFileUrl, ALLERGEN_OPTIONS } from '@/lib/api'
+import { getRecipes, getRandomRecipes, deleteRecipe, ALLERGEN_OPTIONS } from '@/lib/api'
 import type { Recipe, AllergenId } from '@/types'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
@@ -19,83 +18,10 @@ import {
 } from '@/components/ui/dialog'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import { MobileListScreen } from '@/components/mobile/MobileListScreen'
-
-// ── Photo placeholder (striped swatch, falls back to real image) ──────────
-const SWATCHES = [
-  'oklch(0.65 0.12 50)', 'oklch(0.6 0.1 145)',  'oklch(0.62 0.12 30)',
-  'oklch(0.6 0.08 210)', 'oklch(0.58 0.1 330)',  'oklch(0.65 0.1 90)',
-]
-function recipeSwatch(id: number) { return SWATCHES[id % SWATCHES.length] }
-
-function PhotoSlot({ imageUrl, swatch, label = '', aspect = '5/4', height }: {
-  imageUrl?: string; swatch?: string; label?: string; aspect?: string; height?: string
-}) {
-  const uid = useId()
-  const containerStyle: React.CSSProperties = {
-    position: 'relative', width: '100%',
-    height: height ?? 'auto',
-    aspectRatio: height ? undefined : aspect,
-    overflow: 'hidden', borderRadius: 'inherit',
-  }
-  if (imageUrl) {
-    return (
-      <div style={containerStyle}>
-        <img src={getFileUrl(imageUrl)} alt={label} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-      </div>
-    )
-  }
-  const fill = swatch ?? 'oklch(0.65 0.08 60)'
-  return (
-    <div style={{ ...containerStyle, background: fill }}>
-      <svg width="100%" height="100%" style={{ position: 'absolute', inset: 0 }} aria-hidden>
-        <defs>
-          <pattern id={uid} width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(35)">
-            <line x1="0" y1="0" x2="0" y2="14" stroke="rgba(255,255,255,0.08)" strokeWidth="6" />
-          </pattern>
-          <radialGradient id={uid + 'r'} cx="30%" cy="25%" r="80%">
-            <stop offset="0%" stopColor="rgba(255,255,255,0.22)" />
-            <stop offset="100%" stopColor="rgba(0,0,0,0.18)" />
-          </radialGradient>
-        </defs>
-        <rect width="100%" height="100%" fill={`url(#${uid})`} />
-        <rect width="100%" height="100%" fill={`url(#${uid}r)`} />
-      </svg>
-    </div>
-  )
-}
-
-// ── Stars ─────────────────────────────────────────────────────────────────
-function Stars({ value = 0, size = 11 }: { value: number; size?: number }) {
-  return (
-    <span style={{ display: 'inline-flex', gap: 2 }}>
-      {[1,2,3,4,5].map(i => (
-        <Star key={i} size={size} strokeWidth={1.5}
-          fill={i <= value ? 'var(--2eat-accent)' : 'none'}
-          stroke={i <= value ? 'var(--2eat-accent)' : 'var(--ink-30)'} />
-      ))}
-    </span>
-  )
-}
-
-// ── Pill (Badge wrapper) ──────────────────────────────────────────────────
-function Pill({ children, tone = 'default', size = 'md' }: {
-  children: React.ReactNode; tone?: 'default' | 'accent' | 'ink' | 'ghost'; size?: 'sm' | 'md'
-}) {
-  const toneStyle = {
-    default: { background: 'var(--surface-2)',  color: 'var(--ink-70)',  borderColor: 'var(--line)' },
-    accent:  { background: 'color-mix(in oklch, var(--2eat-accent) 12%, transparent)', color: 'var(--2eat-accent-deep)', borderColor: 'color-mix(in oklch, var(--2eat-accent) 35%, transparent)' },
-    ink:     { background: 'var(--ink)',  color: 'var(--paper)',  borderColor: 'var(--ink)' },
-    ghost:   { background: 'rgba(255,255,255,0.82)', color: 'var(--ink)', borderColor: 'transparent' },
-  }[tone]
-  return (
-    <Badge
-      variant="outline"
-      style={{ ...toneStyle, fontFamily: 'var(--font-mono)', fontSize: size === 'sm' ? 10.5 : 11.5, letterSpacing: '0.06em', textTransform: 'uppercase', lineHeight: 1, padding: size === 'sm' ? '2px 8px' : '4px 10px', gap: 4, whiteSpace: 'nowrap' }}
-    >
-      {children}
-    </Badge>
-  )
-}
+import { PhotoSlot } from '@/components/PhotoSlot'
+import { StarRating } from '@/components/StarRating'
+import { Pill } from '@/components/Pill'
+import { recipeSwatch } from '@/lib/recipeUtils'
 
 // ── Hero feature ──────────────────────────────────────────────────────────
 const currentWeek = Math.ceil((Date.now() - +new Date(new Date().getFullYear(), 0, 1)) / (7 * 86400000))
@@ -202,7 +128,7 @@ function RecipeCard({ recipe, onDelete }: { recipe: Recipe; onDelete: (r: Recipe
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Clock size={12} strokeWidth={1.5} style={{ color: 'var(--ink-40)' }} />{recipe.totalTime}m</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <Stars value={recipe.rating} size={11} />
+            <StarRating value={recipe.rating} size={11} />
             <button
               onClick={e => { e.preventDefault(); e.stopPropagation(); onDelete(recipe) }}
               style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex' }}
@@ -243,7 +169,7 @@ function RecipeRow({ recipe, onDelete }: { recipe: Recipe; onDelete: (r: Recipe)
         <div>{recipe.totalTime} MIN</div>
         <div>{recipe.servings} PERS</div>
       </div>
-      <Stars value={recipe.rating} size={12} />
+      <StarRating value={recipe.rating} size={12} />
       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onDelete(recipe)}>
         <Trash2 size={14} className="text-destructive" />
       </Button>
