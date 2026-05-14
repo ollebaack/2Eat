@@ -1007,7 +1007,7 @@ export function SkafferiPage() {
       })
       .sort((a, b) => b.ratio - a.ratio)
     return {
-      cookableNow: all.filter((s) => s.missing.length === 0),
+      cookableNow: all.filter((s) => s.recipe.ingredients.length > 0 && s.missing.length === 0),
       almostThere: all.filter((s) => s.missing.length > 0 && s.missing.length <= 2),
     }
   }, [pantryItems, recipes])
