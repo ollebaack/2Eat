@@ -29,7 +29,7 @@ namespace _2Eat.Web.API
             var userId = principal.GetUserId();
             if (userId is null) return Results.Unauthorized();
             var req = await context.Request.ReadFromJsonAsync<AddItemRequest>();
-            if (req == null || string.IsNullOrWhiteSpace(req.Name)) return Results.BadRequest();
+            if (req == null || string.IsNullOrWhiteSpace(req.Name)) return TypedResults.Problem(detail: "Invalid request body.", statusCode: 400);
             var item = await service.AddItemAsync(userId.Value, req.Name, req.Quantity, req.Unit);
             return Results.Ok(item);
         }
@@ -39,7 +39,7 @@ namespace _2Eat.Web.API
             var userId = principal.GetUserId();
             if (userId is null) return Results.Unauthorized();
             var req = await context.Request.ReadFromJsonAsync<UpdateItemRequest>();
-            if (req == null) return Results.BadRequest();
+            if (req == null) return TypedResults.Problem(detail: "Invalid request body.", statusCode: 400);
             try
             {
                 var item = await service.UpdateItemAsync(id, userId.Value, req.IsChecked);

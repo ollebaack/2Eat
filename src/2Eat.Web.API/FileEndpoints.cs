@@ -12,7 +12,7 @@ namespace _2Eat.Web.API
         {
             //endpoints.MapGet("/api/files", GetFiles);
 
-            endpoints.MapGet("/api/files/{fileName}", DownloadFileByFileName);
+            endpoints.MapGet("/api/files/{fileName}", DownloadFileByFileName).RequireAuthorization();
 
             endpoints.MapPost("/api/files", CreateFile).DisableAntiforgery().RequireAuthorization();
 
@@ -54,22 +54,25 @@ namespace _2Eat.Web.API
             // return memory;
         }
 
-        private static async Task<Results<Ok<FileUpload>, BadRequest>> CreateFile(IFormFile file, IWebHostEnvironment _env, IFileService _service)
+        private static async Task<Results<Ok<FileUpload>, ProblemHttpResult>> CreateFile(IFormFile file, IWebHostEnvironment _env, IFileService _service)
         {
             //var file = files.FirstOrDefault();
+
+            if (file.Length > 10 * 1024 * 1024)
+                return TypedResults.Problem(detail: "File exceeds 10 MB limit", statusCode: 400);
 
             var uploadResult = await UploadFile(file, _env);
 
             if (uploadResult is null)
             {
-                return TypedResults.BadRequest();
+                return TypedResults.Problem(detail: "Failed to upload file.", statusCode: 400);
             }
 
             var addedFile = await _service.AddFileAsync(uploadResult);
 
             if (addedFile is null)
             {
-                return TypedResults.BadRequest();
+                return TypedResults.Problem(detail: "Failed to save file record.", statusCode: 400);
             }
 
             return TypedResults.Ok(addedFile);

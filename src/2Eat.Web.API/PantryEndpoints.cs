@@ -29,7 +29,7 @@ namespace _2Eat.Web.API
             var userId = principal.GetUserId();
             if (userId is null) return Results.Unauthorized();
             var item = await context.Request.ReadFromJsonAsync<PantryItem>();
-            if (item == null) return Results.BadRequest();
+            if (item == null) return TypedResults.Problem(detail: "Invalid request body.", statusCode: 400);
             return Results.Ok(await service.CreateAsync(userId.Value, item));
         }
 
@@ -38,7 +38,7 @@ namespace _2Eat.Web.API
             var userId = principal.GetUserId();
             if (userId is null) return Results.Unauthorized();
             var item = await context.Request.ReadFromJsonAsync<PantryItem>();
-            if (item == null) return Results.BadRequest();
+            if (item == null) return TypedResults.Problem(detail: "Invalid request body.", statusCode: 400);
             try { return Results.Ok(await service.UpdateAsync(userId.Value, id, item)); }
             catch (KeyNotFoundException) { return Results.NotFound(); }
         }
@@ -55,7 +55,7 @@ namespace _2Eat.Web.API
         {
             string[] allowed = ["image/jpeg", "image/png", "image/gif", "image/webp"];
             if (!allowed.Contains(file.ContentType, StringComparer.OrdinalIgnoreCase))
-                return Results.BadRequest(new { detail = "Unsupported image type. Use JPEG, PNG, GIF or WEBP." });
+                return TypedResults.Problem(detail: "Unsupported image type. Use JPEG, PNG, GIF or WEBP.", statusCode: 400);
 
             using var ms = new MemoryStream();
             await file.CopyToAsync(ms);

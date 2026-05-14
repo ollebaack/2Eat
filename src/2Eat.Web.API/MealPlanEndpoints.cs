@@ -17,7 +17,7 @@ namespace _2Eat.Web.API
             var userId = principal.GetUserId();
             if (userId is null) return Results.Unauthorized();
             if (!DateOnly.TryParse(weekStartDate, out var date))
-                return Results.BadRequest("Invalid date format. Use YYYY-MM-DD.");
+                return TypedResults.Problem(detail: "Invalid date format. Use YYYY-MM-DD.", statusCode: 400);
             var plan = await service.GetWeekPlanAsync(userId.Value, date);
             return Results.Ok(plan);
         }
@@ -27,9 +27,11 @@ namespace _2Eat.Web.API
             var userId = principal.GetUserId();
             if (userId is null) return Results.Unauthorized();
             if (!DateOnly.TryParse(weekStartDate, out var date))
-                return Results.BadRequest("Invalid date format.");
+                return TypedResults.Problem(detail: "Invalid date format.", statusCode: 400);
+            if (dayOfWeek < 0 || dayOfWeek > 6)
+                return TypedResults.Problem(detail: "dayOfWeek must be between 0 (Sunday) and 6 (Saturday).", statusCode: 400);
             var body = await context.Request.ReadFromJsonAsync<SetDaySlotRequest>();
-            if (body == null) return Results.BadRequest();
+            if (body == null) return TypedResults.Problem(detail: "Invalid request body.", statusCode: 400);
             var day = await service.SetDaySlotAsync(userId.Value, date, dayOfWeek, body.RecipeId, body.Note ?? string.Empty);
             return Results.Ok(day);
         }
@@ -39,7 +41,7 @@ namespace _2Eat.Web.API
             var userId = principal.GetUserId();
             if (userId is null) return Results.Unauthorized();
             if (!DateOnly.TryParse(weekStartDate, out var date))
-                return Results.BadRequest("Invalid date format.");
+                return TypedResults.Problem(detail: "Invalid date format.", statusCode: 400);
             await service.ClearDaySlotAsync(userId.Value, date, dayOfWeek);
             return Results.NoContent();
         }
