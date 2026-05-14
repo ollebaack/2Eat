@@ -253,7 +253,10 @@ public class RecipeScanClient : IRecipeScanService
 
     private static string StripHtml(string html)
     {
-        var noTags = Regex.Replace(html, "<[^>]+>", " ");
+        // Remove script/style/noscript blocks entirely (content included) before stripping tags,
+        // otherwise raw JavaScript and CSS pollute the text sent to Claude.
+        var noBlocks = Regex.Replace(html, @"<(script|style|noscript)[^>]*>[\s\S]*?</(script|style|noscript)>", " ", RegexOptions.IgnoreCase);
+        var noTags = Regex.Replace(noBlocks, "<[^>]+>", " ");
         return Regex.Replace(noTags, @"\s{2,}", " ").Trim();
     }
 
