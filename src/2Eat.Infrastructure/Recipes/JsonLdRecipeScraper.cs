@@ -29,6 +29,21 @@ internal static partial class JsonLdRecipeScraper
             catch (JsonException) { }
         }
 
+        // Fallback: Next.js sites embed structured data inside __NEXT_DATA__ rather than
+        // a separate JSON-LD script tag. Do a depth-limited recursive search for Recipe.
+        var nextDataMatch = NextDataPattern().Match(html);
+        if (nextDataMatch.Success)
+        {
+            try
+            {
+                using var doc = JsonDocument.Parse(nextDataMatch.Groups[1].Value);
+                var recipe = FindRecipeElementDeep(doc.RootElement, maxDepth: 10);
+                if (recipe is not null)
+                    return MapToDto(recipe.Value);
+            }
+            catch (JsonException) { }
+        }
+
         return null;
     }
 
@@ -61,15 +76,51 @@ internal static partial class JsonLdRecipeScraper
         if (!el.TryGetProperty("@type", out var typeProp)) return false;
 
         if (typeProp.ValueKind == JsonValueKind.String)
-            return typeProp.GetString() == "Recipe";
+            return IsRecipeTypeString(typeProp.GetString());
 
         if (typeProp.ValueKind == JsonValueKind.Array)
         {
             foreach (var t in typeProp.EnumerateArray())
-                if (t.GetString() == "Recipe") return true;
+                if (IsRecipeTypeString(t.GetString())) return true;
         }
 
         return false;
+    }
+
+    // Accepts "Recipe", "https://schema.org/Recipe", "http://schema.org/Recipe", etc.
+    private static bool IsRecipeTypeString(string? type) =>
+        type is not null && (type == "Recipe" || type.EndsWith("/Recipe", StringComparison.OrdinalIgnoreCase));
+
+    // Deep recursive search used for __NEXT_DATA__ blobs where the schema.org graph
+    // may be nested several levels below the root.
+    private static JsonElement? FindRecipeElementDeep(JsonElement el, int maxDepth)
+    {
+        if (maxDepth <= 0) return null;
+
+        if (el.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var item in el.EnumerateArray())
+            {
+                var found = FindRecipeElementDeep(item, maxDepth - 1);
+                if (found is not null) return found;
+            }
+            return null;
+        }
+
+        if (el.ValueKind != JsonValueKind.Object) return null;
+
+        if (IsRecipeType(el)) return el;
+
+        foreach (var prop in el.EnumerateObject())
+        {
+            if (prop.Value.ValueKind is JsonValueKind.Object or JsonValueKind.Array)
+            {
+                var found = FindRecipeElementDeep(prop.Value, maxDepth - 1);
+                if (found is not null) return found;
+            }
+        }
+
+        return null;
     }
 
     private static ScannedRecipeDto MapToDto(JsonElement r) => new(
@@ -235,6 +286,9 @@ internal static partial class JsonLdRecipeScraper
 
     [GeneratedRegex(@"<script[^>]+type=[""']application/ld\+json[""'][^>]*>([\s\S]*?)</script>", RegexOptions.IgnoreCase)]
     private static partial Regex LdJsonPattern();
+
+    [GeneratedRegex(@"<script[^>]+id=""__NEXT_DATA__""[^>]*>([\s\S]*?)</script>", RegexOptions.IgnoreCase)]
+    private static partial Regex NextDataPattern();
 
     // Matches "2 1/2" style mixed numbers (whole number followed by a fraction)
     [GeneratedRegex(@"(\d+)\s+(\d+)/(\d+)")]
