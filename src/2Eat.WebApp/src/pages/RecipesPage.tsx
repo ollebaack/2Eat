@@ -542,9 +542,44 @@ export function RecipesPage() {
       ) : filtered.length === 0 ? (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: '60px 0', background: 'var(--surface-1)', borderRadius: 18, border: '1px dashed var(--line)', color: 'var(--ink-50)' }}>
           <Search size={28} strokeWidth={1.5} style={{ color: 'var(--ink-40)' }} />
-          <p style={{ fontFamily: 'var(--font-serif)', fontSize: 22, color: 'var(--ink)', margin: 0 }}>Inga recept matchar.</p>
-          <p style={{ fontFamily: 'var(--font-sans)', fontSize: 13, margin: 0 }}>Prova att rensa filtren.</p>
-          <Button className="rounded-full mt-2" onClick={() => navigate('/recipes/new')}>Lägg till recept</Button>
+          {(() => {
+            const hasTextSearch = !!query
+            const hasCategoryFilter = filterCat !== 'Alla'
+            const hasOtherFilter = urlFilter === 'favorites' || activeAllergens.length > 0
+            const hasAnyFilter = hasCategoryFilter || hasOtherFilter
+
+            if (!hasTextSearch && !hasAnyFilter) {
+              return (
+                <>
+                  <p style={{ fontFamily: 'var(--font-serif)', fontSize: 22, color: 'var(--ink)', margin: 0 }}>Inga recept ännu.</p>
+                  <Button className="rounded-full mt-2" onClick={() => navigate('/recipes/new')}>Lägg till recept</Button>
+                </>
+              )
+            }
+            if (hasTextSearch && !hasAnyFilter) {
+              return (
+                <>
+                  <p style={{ fontFamily: 'var(--font-serif)', fontSize: 22, color: 'var(--ink)', margin: 0 }}>Inga recept matchar sökningen «{query}».</p>
+                  <p style={{ fontFamily: 'var(--font-sans)', fontSize: 13, margin: 0 }}>Prova ett annat sökord.</p>
+                </>
+              )
+            }
+            if (!hasTextSearch && hasAnyFilter) {
+              return (
+                <>
+                  <p style={{ fontFamily: 'var(--font-serif)', fontSize: 22, color: 'var(--ink)', margin: 0 }}>Inga recept i den här kategorin.</p>
+                  <p style={{ fontFamily: 'var(--font-sans)', fontSize: 13, margin: 0 }}>Prova att rensa filtren.</p>
+                </>
+              )
+            }
+            // Both text search and filter active
+            return (
+              <>
+                <p style={{ fontFamily: 'var(--font-serif)', fontSize: 22, color: 'var(--ink)', margin: 0 }}>Inga recept matchar.</p>
+                <p style={{ fontFamily: 'var(--font-sans)', fontSize: 13, margin: 0 }}>Prova ett annat sökord eller rensa filtren.</p>
+              </>
+            )
+          })()}
         </div>
       ) : view === 'grid' ? (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 18 }}>

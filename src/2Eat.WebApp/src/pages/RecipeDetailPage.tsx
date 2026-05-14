@@ -9,15 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog'
+import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import { MobileDetailScreen } from '@/components/mobile/MobileDetailScreen'
 
@@ -177,6 +169,7 @@ export function RecipeDetailPage() {
   const [servings, setServings] = useState<number | null>(null)
   const [checked, setChecked] = useState<Record<number, boolean>>({})
   const [stepDone, setStepDone] = useState<Record<number, boolean>>({})
+  const [deleteOpen, setDeleteOpen] = useState(false)
 
   const deleteMutation = useMutation({
     mutationFn: () => deleteRecipe(Number(id)),
@@ -241,23 +234,15 @@ export function RecipeDetailPage() {
           <Button variant="outline" size="icon" className="h-9 w-9 rounded-full" title="Redigera" asChild>
             <Link to={`/recipes/${recipe.id}/edit`}><Pencil size={15} strokeWidth={1.5} /></Link>
           </Button>
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="icon" className="h-9 w-9 rounded-full" title="Radera"><Trash2 size={15} strokeWidth={1.5} /></Button>
-            </DialogTrigger>
-            <DialogContent style={{ background: 'var(--paper)', border: '1px solid var(--line)', borderRadius: 20 }}>
-              <DialogHeader>
-                <DialogTitle style={{ fontFamily: 'var(--font-serif)', fontSize: 26, letterSpacing: '-0.02em', fontWeight: 400 }}>Ta bort recept?</DialogTitle>
-                <DialogDescription style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-60)' }}>
-                  Det här raderar <strong style={{ color: 'var(--ink)' }}>{recipe.name}</strong> permanent.
-                </DialogDescription>
-              </DialogHeader>
-              <DialogFooter>
-                <Button variant="outline" className="rounded-full">Avbryt</Button>
-                <Button variant="destructive" className="rounded-full" disabled={deleteMutation.isPending} onClick={() => deleteMutation.mutate()}>Ta bort</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+          <Button variant="outline" size="icon" className="h-9 w-9 rounded-full" title="Ta bort recept" onClick={() => setDeleteOpen(true)}><Trash2 size={15} strokeWidth={1.5} /></Button>
+          <DeleteConfirmDialog
+            open={deleteOpen}
+            onOpenChange={setDeleteOpen}
+            title="Ta bort recept"
+            description={<>Är du säker på att du vill ta bort <strong style={{ color: 'var(--ink)' }}>{recipe.name}</strong>? Åtgärden kan inte ångras.</>}
+            onConfirm={() => deleteMutation.mutate()}
+            isPending={deleteMutation.isPending}
+          />
         </div>
       </div>
 
@@ -274,7 +259,7 @@ export function RecipeDetailPage() {
             {recipe.name}
           </h1>
           <p style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontSize: 18, lineHeight: 1.5, color: 'var(--ink-70)', margin: 0, maxWidth: 520 }}>
-            "{recipe.description}"
+            {recipe.description}
           </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 'auto' }}>
             <Stars value={recipe.rating} size={14} />

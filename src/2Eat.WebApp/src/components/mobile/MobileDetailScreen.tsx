@@ -172,7 +172,7 @@ export function MobileDetailScreen({ recipe }: { recipe: Recipe }) {
           fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontSize: 15.5, lineHeight: 1.5,
           color: 'var(--ink-70)', margin: '20px 20px 8px',
         }}>
-          "{recipe.description}"
+          {recipe.description}
         </p>
       )}
 
