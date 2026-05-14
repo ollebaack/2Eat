@@ -1,18 +1,20 @@
 import { NavLink, Outlet, Link, useNavigate, useMatch } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
-import { Plus, BookOpen, Settings, Calendar, ShoppingBasket, Moon, Sun, LogOut } from 'lucide-react'
+import { Plus, BookOpen, Settings, Calendar, ShoppingBasket, Moon, Sun, LogOut, Library } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import { useTheme } from '@/hooks/useTheme'
 import { MobileTabBar } from '@/components/mobile/MobileTabBar'
 import { useAuth } from '@/context/AuthContext'
-import { getFileUrl } from '@/lib/api'
+import { getFileUrl, getSamlingar } from '@/lib/api'
 
 const navItems = [
   { to: '/',            label: 'Recept',       icon: BookOpen,       end: true  },
   { to: '/settings',    label: 'Inställningar', icon: Settings,       end: false },
   { to: '/veckoplan',   label: 'Veckoplan',    icon: Calendar,       end: false },
   { to: '/skafferi',    label: 'Skafferi',     icon: ShoppingBasket, end: false },
+  { to: '/samlingar',   label: 'Samlingar',    icon: Library,        end: false },
 ]
 
 function NavItem({ to, label, icon: Icon, end }: { to: string; label: string; icon: LucideIcon; end: boolean }) {
@@ -50,16 +52,10 @@ const iconButtonStyle: React.CSSProperties = {
   color: 'var(--ink-60)', flexShrink: 0,
 }
 
-const collections = [
-  { key: 'favs', label: 'Favoriter',    to: '/?filter=favorites'       },
-  { key: 'mid',  label: 'Vardagsmat',   to: '/?category=Vardagsmat'    },
-  { key: 'fika', label: 'Fika och bak', to: '/?category=Fika+och+bak'  },
-  { key: 'hi',   label: 'Helgmiddag',   to: '/?category=Helgmiddag'    },
-]
-
 export function Layout() {
   const navigate = useNavigate()
   const isMobile = useIsMobile()
+  const { data: samlingar } = useQuery({ queryKey: ['samlingar'], queryFn: getSamlingar })
   const { user, logout } = useAuth()
 
   function handleLogout() {
@@ -145,30 +141,32 @@ export function Layout() {
           </nav>
         </div>
 
-        <div style={{ padding: '14px 14px 6px' }}>
-          <p style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--ink-50)', padding: '0 10px 8px', margin: 0 }}>
-            Samlingar
-          </p>
-          <nav className="flex flex-col gap-0.5">
-            {collections.map(c => (
-              <NavLink
-                key={c.key}
-                to={c.to}
-                className="flex items-center gap-2.5 rounded-lg no-underline transition-colors"
-                style={({ isActive }) => ({
-                  padding: '7px 10px',
-                  background: isActive ? 'var(--surface-2)' : 'transparent',
-                  color: isActive ? 'var(--ink)' : 'var(--ink-60)',
-                  fontFamily: 'var(--font-sans)', fontSize: 13,
-                  fontWeight: isActive ? 500 : 400,
-                })}
-              >
-                <span className="inline-block rounded-sm" style={{ width: 6, height: 6, background: 'var(--ink-30)', flexShrink: 0 }} />
-                {c.label}
-              </NavLink>
-            ))}
-          </nav>
-        </div>
+        {samlingar && samlingar.length > 0 && (
+          <div style={{ padding: '14px 14px 6px' }}>
+            <p style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--ink-50)', padding: '0 10px 8px', margin: 0 }}>
+              Mina samlingar
+            </p>
+            <nav className="flex flex-col gap-0.5">
+              {samlingar.map(s => (
+                <NavLink
+                  key={s.id}
+                  to={`/samlingar/${s.id}`}
+                  className="flex items-center gap-2.5 rounded-lg no-underline transition-colors"
+                  style={({ isActive }) => ({
+                    padding: '7px 10px',
+                    background: isActive ? 'var(--surface-2)' : 'transparent',
+                    color: isActive ? 'var(--ink)' : 'var(--ink-60)',
+                    fontFamily: 'var(--font-sans)', fontSize: 13,
+                    fontWeight: isActive ? 500 : 400,
+                  })}
+                >
+                  <span className="inline-block rounded-sm" style={{ width: 6, height: 6, background: 'var(--ink-30)', flexShrink: 0 }} />
+                  {s.name}
+                </NavLink>
+              ))}
+            </nav>
+          </div>
+        )}
 
         <div className="mt-auto flex items-center gap-2 flex-wrap" style={{ padding: '14px 18px 18px', borderTop: '1px solid var(--line)' }}>
           {user?.avatarUrl ? (

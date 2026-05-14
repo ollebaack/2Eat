@@ -129,3 +129,28 @@ export interface ShoppingListItem {
   isChecked: boolean
   shoppingListId: number
 }
+
+export interface SamlingListItem {
+  id: number
+  name: string
+  receptCount: number
+  coverImages: (string | null)[]
+  createdAt: string
+}
+
+export interface SamlingReceptItem {
+  receptId: number
+  order: number
+  name: string
+  imageUrl?: string | null
+  totalTime: number
+  servings: number
+  rating: number
+}
+
+export interface SamlingDetail {
+  id: number
+  name: string
+  createdAt: string
+  recept: SamlingReceptItem[]
+}

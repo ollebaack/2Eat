@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, Pencil, Trash2, Bookmark, Check, Plus } from 'lucide-react'
 import { toast } from 'sonner'
 import { getRecipeById, deleteRecipe, getRecipes, addRecipeToShoppingList } from '@/lib/api'
+import { AddToSamlingModal } from '@/components/AddToSamlingModal'
 import type { Recipe } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -108,6 +109,7 @@ export function RecipeDetailPage() {
   const [checked, setChecked] = useState<Record<number, boolean>>({})
   const [stepDone, setStepDone] = useState<Record<number, boolean>>({})
   const [deleteOpen, setDeleteOpen] = useState(false)
+  const [samlingOpen, setSamlingOpen] = useState(false)
 
   const deleteMutation = useMutation({
     mutationFn: () => deleteRecipe(Number(id)),
@@ -168,7 +170,7 @@ export function RecipeDetailPage() {
           <ArrowLeft size={14} strokeWidth={1.5} /> Tillbaka till alla recept
         </Button>
         <div style={{ display: 'flex', gap: 6 }}>
-          <Button variant="outline" size="icon" className="h-9 w-9 rounded-full" title="Spara"><Bookmark size={15} strokeWidth={1.5} /></Button>
+          <Button variant="outline" size="icon" className="h-9 w-9 rounded-full" title="Lägg till i samling" onClick={() => setSamlingOpen(true)}><Bookmark size={15} strokeWidth={1.5} /></Button>
           <Button variant="outline" size="icon" className="h-9 w-9 rounded-full" title="Redigera" asChild>
             <Link to={`/recipes/${recipe.id}/edit`}><Pencil size={15} strokeWidth={1.5} /></Link>
           </Button>
@@ -391,6 +393,8 @@ export function RecipeDetailPage() {
       </section>
 
       {/* ── Related recipes ──────────────────────────────────────── */}
+      <AddToSamlingModal recipeId={recipe.id} open={samlingOpen} onOpenChange={setSamlingOpen} />
+
       {related.length > 0 && (
         <section style={{ marginTop: 80 }}>
           <Separator style={{ marginBottom: 40, background: 'var(--line)' }} />

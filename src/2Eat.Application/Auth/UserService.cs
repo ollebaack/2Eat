@@ -1,9 +1,10 @@
 using _2Eat.Domain;
+using _2Eat.Application.Samlingar;
 using Microsoft.AspNetCore.Identity;
 
 namespace _2Eat.Application.Auth;
 
-public class UserService(IUserRepository repository) : IUserService
+public class UserService(IUserRepository repository, ISamlingRepository samlingRepository) : IUserService
 {
     private readonly PasswordHasher<User> _hasher = new();
 
@@ -21,7 +22,9 @@ public class UserService(IUserRepository repository) : IUserService
         };
         user.PasswordHash = _hasher.HashPassword(user, password);
 
-        return await repository.AddAsync(user);
+        var created = await repository.AddAsync(user);
+        await samlingRepository.AddAsync(new Samling { UserId = created.Id, Name = "Favoriter" });
+        return created;
     }
 
     public async Task<User?> ValidateLoginAsync(string email, string password)

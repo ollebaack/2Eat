@@ -14,6 +14,8 @@ import { LoginPage } from '@/pages/LoginPage'
 import { RegisterPage } from '@/pages/RegisterPage'
 import { ProfilePage } from '@/pages/ProfilePage'
 import { SettingsPage } from '@/pages/SettingsPage'
+import { SamlingarPage } from '@/pages/SamlingarPage'
+import { SamlingDetailPage } from '@/pages/SamlingDetailPage'
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000 } },
@@ -38,6 +40,8 @@ export default function App() {
                 <Route path="skafferi" element={<SkafferiPage />} />
                 <Route path="profile" element={<ProfilePage />} />
                 <Route path="settings" element={<SettingsPage />} />
+                <Route path="samlingar" element={<SamlingarPage />} />
+                <Route path="samlingar/:id" element={<SamlingDetailPage />} />
               </Route>
             </Route>
           </Routes>

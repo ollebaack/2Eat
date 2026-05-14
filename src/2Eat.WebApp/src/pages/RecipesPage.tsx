@@ -207,7 +207,7 @@ function ShuffleModal({ open, recipes, onClose, onPick }: {
       if (n > 14) { clearInterval(iv); setPhase('done') }
     }, 80)
     return () => { clearInterval(iv); setPhase('rolling') }
-  }, [open])
+  }, [open, recipes.length])
 
   if (!open || recipes.length === 0) return null
   const r = recipes[idx]

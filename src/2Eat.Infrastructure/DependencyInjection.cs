@@ -10,6 +10,8 @@ using _2Eat.Application.Pantry;
 using _2Eat.Infrastructure.Pantry;
 using _2Eat.Application.Recipes;
 using _2Eat.Infrastructure.Recipes;
+using _2Eat.Application.Samlingar;
+using _2Eat.Infrastructure.Samlingar;
 using _2Eat.Application.ShoppingLists;
 using _2Eat.Infrastructure.ShoppingLists;
 using Microsoft.EntityFrameworkCore;
@@ -48,6 +50,8 @@ namespace _2Eat.Infrastructure
             builder.Services.AddScoped<IReceiptScanService, ReceiptScanClient>();
             builder.Services.AddScoped<IShoppingListRepository, EfShoppingListRepository>();
             builder.Services.AddScoped<IShoppingListService, ShoppingListService>();
+            builder.Services.AddScoped<ISamlingRepository, EfSamlingRepository>();
+            builder.Services.AddScoped<ISamlingService, SamlingService>();
 
             builder.Services.AddHttpClient("RecipeScan", c =>
             {
