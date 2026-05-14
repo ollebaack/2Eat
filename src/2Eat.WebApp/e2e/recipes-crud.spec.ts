@@ -58,7 +58,7 @@ test.describe('Create Recipe', () => {
     // target it via its "Välj kategori…" placeholder option; "1" = Bakverk (seeded).
     await page.locator('select:has(option[value=""])').selectOption('1')
     const saveBtn = page.getByRole('button', { name: /Spara recept/ })
-    await saveBtn.scrollIntoViewIfNeeded()
+    await saveBtn.evaluate(el => el.scrollIntoView({ block: 'center' }))
     await saveBtn.click()
 
     // Should redirect to the new recipe's detail page
