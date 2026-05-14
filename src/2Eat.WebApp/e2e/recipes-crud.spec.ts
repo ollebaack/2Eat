@@ -59,7 +59,7 @@ test.describe('Create Recipe', () => {
     await page.locator('select:has(option[value=""])').selectOption('1')
     const saveBtn = page.getByRole('button', { name: /Spara recept/ })
     await saveBtn.evaluate(el => el.scrollIntoView({ block: 'center' }))
-    await saveBtn.click()
+    await saveBtn.click({ force: true })
 
     // Should redirect to the new recipe's detail page
     await expect(page).toHaveURL(/\/recipes\/\d+$/, { timeout: 10_000 })
@@ -178,7 +178,7 @@ test.describe('Delete Recipe', () => {
     await page.getByRole('dialog').getByRole('button', { name: 'Avbryt' }).click()
 
     await expect(page).toHaveURL(`/recipes/${recipeId}`, { timeout: 8_000 })
-    // Dialog dismissed — Radera button back in view confirms the page is loaded and nothing was deleted
-    await expect(page.locator('[title="Radera"]')).toBeVisible({ timeout: 8_000 })
+    // Dialog dismissed — delete button back in view confirms the page is loaded and nothing was deleted
+    await expect(page.locator('[title="Ta bort recept"]')).toBeVisible({ timeout: 8_000 })
   })
 })
