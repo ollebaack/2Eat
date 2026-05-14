@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { getSamlingar, getSamlingarForRecept, syncReceptSamlingar } from '@/lib/api'
@@ -13,7 +13,8 @@ interface AddToSamlingModalProps {
 
 export function AddToSamlingModal({ recipeId, open, onOpenChange }: AddToSamlingModalProps) {
   const queryClient = useQueryClient()
-  const [selected, setSelected] = useState<Set<number>>(new Set())
+  // Track only the user's local toggles as an override map — no useEffect needed.
+  const [localChanges, setLocalChanges] = useState<Record<number, boolean>>({})
 
   const { data: samlingar } = useQuery({
     queryKey: ['samlingar'],
@@ -27,34 +28,35 @@ export function AddToSamlingModal({ recipeId, open, onOpenChange }: AddToSamling
     enabled: open,
   })
 
-  useEffect(() => {
-    if (membership) {
-      setSelected(new Set(membership.samlingIds))
-    }
-  }, [membership])
+  function isChecked(id: number): boolean {
+    if (id in localChanges) return localChanges[id]
+    return membership?.samlingIds.includes(id) ?? false
+  }
+
+  function toggle(id: number) {
+    setLocalChanges(prev => ({ ...prev, [id]: !isChecked(id) }))
+  }
+
+  const selectedIds = (samlingar ?? []).map(s => s.id).filter(id => isChecked(id))
 
   const syncMutation = useMutation({
-    mutationFn: () => syncReceptSamlingar(recipeId, [...selected]),
+    mutationFn: () => syncReceptSamlingar(recipeId, selectedIds),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['samlingar'] })
       queryClient.invalidateQueries({ queryKey: ['samlingar-for-recept', recipeId] })
       toast.success('Samlingar uppdaterade')
-      onOpenChange(false)
+      handleClose()
     },
     onError: () => toast.error('Kunde inte uppdatera samlingar'),
   })
 
-  function toggle(id: number) {
-    setSelected(prev => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
+  function handleClose() {
+    setLocalChanges({})
+    onOpenChange(false)
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={o => { if (!o) handleClose() }}>
       <DialogContent style={{ background: 'var(--paper)', borderRadius: 18, maxWidth: 400 }}>
         <DialogHeader>
           <DialogTitle style={{ fontFamily: 'var(--font-serif)', fontSize: 22, fontWeight: 400, letterSpacing: '-0.02em' }}>
@@ -69,7 +71,7 @@ export function AddToSamlingModal({ recipeId, open, onOpenChange }: AddToSamling
         ) : (
           <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
             {samlingar.map(s => {
-              const checked = selected.has(s.id)
+              const checked = isChecked(s.id)
               return (
                 <li key={s.id}>
                   <label
@@ -110,7 +112,7 @@ export function AddToSamlingModal({ recipeId, open, onOpenChange }: AddToSamling
         )}
 
         <DialogFooter>
-          <Button variant="outline" className="rounded-full" onClick={() => onOpenChange(false)}>Avbryt</Button>
+          <Button variant="outline" className="rounded-full" onClick={handleClose}>Avbryt</Button>
           <Button
             className="rounded-full"
             style={{ background: 'var(--2eat-accent)', color: 'var(--paper)', border: 'none' }}
