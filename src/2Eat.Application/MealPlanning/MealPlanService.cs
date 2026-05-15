@@ -17,6 +17,9 @@ public class MealPlanService(IMealPlanRepository repository) : IMealPlanService
 
     public async Task<MealPlanDay> SetDaySlotAsync(int userId, DateOnly weekStart, int dayOfWeek, int? recipeId, string note)
     {
+        if (recipeId.HasValue && !await repository.IsRecipeDinnerEligibleAsync(recipeId.Value))
+            throw new ArgumentException("Det valda receptet passar inte i veckoplanen.");
+
         var plan = await GetWeekPlanAsync(userId, weekStart);
 
         var day = await repository.GetDayAsync(plan.Id, dayOfWeek);

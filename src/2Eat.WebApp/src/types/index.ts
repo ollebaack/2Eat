@@ -1,6 +1,7 @@
 export interface Category {
   id: number
   name: string
+  isDinnerEligible: boolean
 }
 
 export type AllergenId = 'Gluten' | 'Vegetariskt' | 'Veganskt' | 'Laktos' | 'Nötter'

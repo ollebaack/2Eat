@@ -35,4 +35,10 @@ public class EfMealPlanRepository(ApplicationDbContext db) : IMealPlanRepository
     }
 
     public Task SaveAsync() => db.SaveChangesAsync();
+
+    public Task<bool> IsRecipeDinnerEligibleAsync(int recipeId)
+        => db.Recipes
+            .Where(r => r.Id == recipeId)
+            .Select(r => r.Category.IsDinnerEligible)
+            .FirstOrDefaultAsync();
 }

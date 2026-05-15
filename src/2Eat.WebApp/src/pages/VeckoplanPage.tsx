@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Plus, X, ArrowLeft, ArrowRight, Search, Sparkles, Copy, Trash2, Check } from 'lucide-react'
 import { toast } from 'sonner'
@@ -7,6 +8,7 @@ import type { Recipe, WeekPlan } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { PhotoSlot } from '@/components/PhotoSlot'
+import { EmptyState } from '@/components/EmptyState'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import {
   Dialog,
@@ -130,7 +132,17 @@ function RecipePickerModal({
 
         {/* Recipe list */}
         <div style={{ overflowY: 'auto', flex: 1 }}>
-          {filtered.length === 0 ? (
+          {recipes.length === 0 ? (
+            <div style={{ padding: '40px 24px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+              <div style={{ fontFamily: 'var(--font-serif)', fontSize: 18, color: 'var(--ink)' }}>Inga middagsrecept än</div>
+              <div style={{ fontFamily: 'var(--font-sans)', fontSize: 13, color: 'var(--ink-50)' }}>Skapa recept för att börja planera veckans middagar.</div>
+              <Link to="/recept" onClick={onClose} style={{ marginTop: 4 }}>
+                <Button variant="outline" className="rounded-full" style={{ fontFamily: 'var(--font-sans)', fontSize: 13 }}>
+                  Lägg till recept
+                </Button>
+              </Link>
+            </div>
+          ) : filtered.length === 0 ? (
             <div style={{ padding: '32px 24px', textAlign: 'center', color: 'var(--ink-50)', fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontSize: 16 }}>
               Inga recept matchar sökningen.
             </div>
@@ -668,40 +680,59 @@ function RecipeLibrary({ recipes, onDragStart }: { recipes: Recipe[]; onDragStar
         </div>
       </div>
       <div style={{ flex: 1, overflowY: 'auto', padding: '8px 0' }}>
-        {filtered.map(recipe => (
-          <div
-            key={recipe.id}
-            draggable
-            onDragStart={() => onDragStart(recipe)}
-            style={{
-              display: 'grid', gridTemplateColumns: '56px 1fr auto',
-              gap: 14, alignItems: 'center',
-              padding: '8px 16px',
-              cursor: 'grab',
-              transition: 'background 0.12s',
-              userSelect: 'none',
-            }}
-            onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-1)')}
-            onMouseLeave={e => (e.currentTarget.style.background = 'none')}
-          >
-            <div style={{ borderRadius: 8, overflow: 'hidden', height: 48, flexShrink: 0 }}>
-              <PhotoSlot imageUrl={recipe.imageUrl} recipeId={recipe.id} label={recipe.name} height="48px" />
-            </div>
-            <div style={{ minWidth: 0 }}>
-              <div style={{ fontFamily: 'var(--font-serif)', fontSize: 16, letterSpacing: '-0.015em', color: 'var(--ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {recipe.name}
-              </div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--ink-50)', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 2 }}>
-                {recipe.category?.name} · {recipe.totalTime} min
-              </div>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 3, flexShrink: 0, opacity: 0.35 }}>
-              {[0, 1, 2].map(i => (
-                <div key={i} style={{ width: 16, height: 1.5, background: 'var(--ink)', borderRadius: 1 }} />
-              ))}
-            </div>
+        {recipes.length === 0 ? (
+          <EmptyState
+            title="Inga middagsrecept"
+            description="Skapa recept för att börja planera veckans middagar."
+            action={
+              <Link to="/recept">
+                <Button variant="outline" className="rounded-full" style={{ fontFamily: 'var(--font-sans)', fontSize: 13 }}>
+                  Lägg till recept
+                </Button>
+              </Link>
+            }
+            className="m-4"
+          />
+        ) : filtered.length === 0 ? (
+          <div style={{ padding: '24px 16px', textAlign: 'center', color: 'var(--ink-50)', fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontSize: 14 }}>
+            Inga recept matchar sökningen.
           </div>
-        ))}
+        ) : (
+          filtered.map(recipe => (
+            <div
+              key={recipe.id}
+              draggable
+              onDragStart={() => onDragStart(recipe)}
+              style={{
+                display: 'grid', gridTemplateColumns: '56px 1fr auto',
+                gap: 14, alignItems: 'center',
+                padding: '8px 16px',
+                cursor: 'grab',
+                transition: 'background 0.12s',
+                userSelect: 'none',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-1)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'none')}
+            >
+              <div style={{ borderRadius: 8, overflow: 'hidden', height: 48, flexShrink: 0 }}>
+                <PhotoSlot imageUrl={recipe.imageUrl} recipeId={recipe.id} label={recipe.name} height="48px" />
+              </div>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontFamily: 'var(--font-serif)', fontSize: 16, letterSpacing: '-0.015em', color: 'var(--ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {recipe.name}
+                </div>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--ink-50)', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 2 }}>
+                  {recipe.category?.name} · {recipe.totalTime} min
+                </div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 3, flexShrink: 0, opacity: 0.35 }}>
+                {[0, 1, 2].map(i => (
+                  <div key={i} style={{ width: 16, height: 1.5, background: 'var(--ink)', borderRadius: 1 }} />
+                ))}
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   )
@@ -782,6 +813,11 @@ export function VeckoplanPage() {
     queryKey: ['recipes'],
     queryFn: getRecipes,
   })
+
+  const dinnerRecipes = useMemo(
+    () => recipes?.filter(r => r.category?.isDinnerEligible) ?? [],
+    [recipes]
+  )
 
   const setSlotMutation = useMutation({
     mutationFn: ({ dayOfWeek, recipeId, note }: { dayOfWeek: number; recipeId: number | null; note: string }) =>
@@ -864,7 +900,7 @@ export function VeckoplanPage() {
             className="rounded-full gap-2"
             style={{ fontFamily: 'var(--font-sans)', fontSize: 13, background: 'var(--paper)' }}
             onClick={() => {
-              if (!recipes || recipes.length === 0) return
+              if (dinnerRecipes.length === 0) return
 
               const emptyDays = WEEKDAYS.filter(day =>
                 !weekPlan?.days.find(d => d.dayOfWeek === day.key)?.recipeId
@@ -876,8 +912,8 @@ export function VeckoplanPage() {
               )
               const shuffle = (arr: Recipe[]) => [...arr].sort(() => Math.random() - 0.5)
               const pool = [
-                ...shuffle(recipes.filter(r => !usedIds.has(r.id))),
-                ...shuffle(recipes.filter(r => usedIds.has(r.id))),
+                ...shuffle(dinnerRecipes.filter(r => !usedIds.has(r.id))),
+                ...shuffle(dinnerRecipes.filter(r => usedIds.has(r.id))),
               ]
 
               emptyDays.forEach((day, i) => {
@@ -943,7 +979,7 @@ export function VeckoplanPage() {
       {!isMobile && (
         <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: 22 }}>
           <RecipeLibrary
-            recipes={recipes ?? []}
+            recipes={dinnerRecipes}
             onDragStart={setDraggedRecipe}
           />
           <ShoppingList weekPlan={weekPlan} recipes={recipes} />
@@ -961,7 +997,7 @@ export function VeckoplanPage() {
       <RecipePickerModal
         open={pickerDay != null}
         dayLabel={pickerDayLabel}
-        recipes={recipes ?? []}
+        recipes={dinnerRecipes}
         onClose={() => setPickerDay(null)}
         onPick={recipe => handlePickRecipe(recipe)}
       />

@@ -32,8 +32,15 @@ namespace _2Eat.Web.API
                 return TypedResults.Problem(detail: "dayOfWeek must be between 0 (Sunday) and 6 (Saturday).", statusCode: 400);
             var body = await context.Request.ReadFromJsonAsync<SetDaySlotRequest>();
             if (body == null) return TypedResults.Problem(detail: "Invalid request body.", statusCode: 400);
-            var day = await service.SetDaySlotAsync(userId.Value, date, dayOfWeek, body.RecipeId, body.Note ?? string.Empty);
-            return Results.Ok(day);
+            try
+            {
+                var day = await service.SetDaySlotAsync(userId.Value, date, dayOfWeek, body.RecipeId, body.Note ?? string.Empty);
+                return Results.Ok(day);
+            }
+            catch (ArgumentException ex)
+            {
+                return TypedResults.Problem(detail: ex.Message, statusCode: 400);
+            }
         }
 
         static async Task<IResult> ClearDaySlot(string weekStartDate, int dayOfWeek, IMealPlanService service, ClaimsPrincipal principal)
