@@ -440,10 +440,7 @@ export function RecipeFormPage() {
       </section>
 
       {/* Footer */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 14, padding: '20px 0', borderTop: '1px solid var(--line)' }}>
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--ink-50)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-          Sparas automatiskt
-        </span>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 14, padding: '20px 0', borderTop: '1px solid var(--line)' }}>
         <div style={{ display: 'flex', gap: 8 }}>
           <button
             onClick={() => navigate(isEdit ? `/recipes/${id}` : '/')}
