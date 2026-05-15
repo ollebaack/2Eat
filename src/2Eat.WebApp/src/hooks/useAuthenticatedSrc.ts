@@ -5,19 +5,26 @@ export function useAuthenticatedSrc(storedFileName?: string | null): string | un
   const [blobUrl, setBlobUrl] = useState<string | undefined>()
 
   useEffect(() => {
-    if (!storedFileName) {
-      setBlobUrl(undefined)
-      return
-    }
+    if (!storedFileName) return
+
     let url: string | undefined
+    let cancelled = false
+
     fetchFile(storedFileName)
       .then((blob) => {
-        url = URL.createObjectURL(blob)
-        setBlobUrl(url)
+        if (!cancelled) {
+          url = URL.createObjectURL(blob)
+          setBlobUrl(url)
+        }
       })
-      .catch(() => setBlobUrl(undefined))
+      .catch(() => {
+        if (!cancelled) setBlobUrl(undefined)
+      })
+
     return () => {
+      cancelled = true
       if (url) URL.revokeObjectURL(url)
+      setBlobUrl(undefined)
     }
   }, [storedFileName])
 
