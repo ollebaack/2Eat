@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Search, ArrowRight, Bookmark } from 'lucide-react'
 import type { Recipe } from '@/types'
-import { getFileUrl } from '@/lib/api'
+import { AuthImg } from '@/components/AuthImg'
 import { useAuth } from '@/context/AuthContext'
 import { PhotoSlot } from '@/components/PhotoSlot'
 import { StarRating } from '@/components/StarRating'
@@ -71,8 +71,8 @@ export function MobileListScreen({ recipes }: MobileListScreenProps) {
             </h1>
           </div>
           {user?.avatarUrl ? (
-            <img
-              src={getFileUrl(user.avatarUrl)}
+            <AuthImg
+              src={user.avatarUrl}
               alt={user.displayName}
               className="w-[38px] h-[38px] rounded-full object-cover shrink-0"
             />

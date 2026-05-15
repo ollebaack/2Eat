@@ -1,7 +1,7 @@
 import { ImageOff } from 'lucide-react'
-import { getFileUrl } from '@/lib/api'
 import { recipeSwatch } from '@/lib/recipeUtils'
 import { cn } from '@/lib/utils'
+import { useAuthenticatedSrc } from '@/hooks/useAuthenticatedSrc'
 
 interface PhotoSlotProps {
   imageUrl?: string
@@ -29,6 +29,8 @@ export function PhotoSlot({
   const resolvedSwatch =
     swatch ?? (recipeId != null ? recipeSwatch(recipeId) : 'oklch(0.65 0.08 60)')
 
+  const src = useAuthenticatedSrc(imageUrl)
+
   const containerStyle: React.CSSProperties = fill
     ? { position: 'absolute', inset: 0 }
     : {
@@ -40,29 +42,21 @@ export function PhotoSlot({
         borderRadius: 'inherit',
       }
 
-  if (imageUrl) {
-    return (
-      <div style={containerStyle} className={cn('overflow-hidden', className)}>
-        <img
-          src={getFileUrl(imageUrl)}
-          alt={label}
-          className="w-full h-full object-cover"
-        />
-      </div>
-    )
-  }
-
   return (
     <div
       style={{ ...containerStyle, background: resolvedSwatch }}
-      className={cn('overflow-hidden flex items-center justify-center', className)}
+      className={cn('overflow-hidden', !src && !imageUrl && 'flex items-center justify-center', className)}
     >
-      <div className="flex flex-col items-center gap-1.5 text-white/50 select-none">
-        <ImageOff size={28} strokeWidth={1.5} />
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
-          Ingen bild
-        </span>
-      </div>
+      {src ? (
+        <img src={src} alt={label} className="w-full h-full object-cover" />
+      ) : !imageUrl ? (
+        <div className="flex flex-col items-center gap-1.5 text-white/50 select-none">
+          <ImageOff size={28} strokeWidth={1.5} />
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+            Ingen bild
+          </span>
+        </div>
+      ) : null}
     </div>
   )
 }

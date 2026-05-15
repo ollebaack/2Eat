@@ -7,7 +7,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { getScanStatus, scanRecipeFromImage, scanRecipeFromUrl, getFileUrl } from '@/lib/api'
+import { getScanStatus, scanRecipeFromImage, scanRecipeFromUrl } from '@/lib/api'
+import { AuthImg } from '@/components/AuthImg'
 import type { ScannedRecipe } from '@/types'
 
 interface Props {
@@ -129,8 +130,8 @@ export function ScanRecipeDialog({ open, onOpenChange, onApply }: Props) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div style={{ background: 'var(--paper)', border: '1px solid var(--line)', borderRadius: 12, overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: 0 }}>
               {preview.imageUrl && (
-                <img
-                  src={getFileUrl(preview.imageUrl)}
+                <AuthImg
+                  src={preview.imageUrl}
                   alt=""
                   style={{ width: '100%', height: 160, objectFit: 'cover', display: 'block' }}
                 />

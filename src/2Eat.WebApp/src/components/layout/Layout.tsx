@@ -7,7 +7,8 @@ import { useIsMobile } from '@/hooks/useIsMobile'
 import { useTheme } from '@/hooks/useTheme'
 import { MobileTabBar } from '@/components/mobile/MobileTabBar'
 import { useAuth } from '@/context/AuthContext'
-import { getFileUrl, getSamlingar } from '@/lib/api'
+import { getSamlingar } from '@/lib/api'
+import { AuthImg } from '@/components/AuthImg'
 
 const navItems = [
   { to: '/',            label: 'Recept',       icon: BookOpen,       end: true  },
@@ -170,8 +171,8 @@ export function Layout() {
 
         <div className="mt-auto flex items-center gap-2 flex-wrap" style={{ padding: '14px 18px 18px', borderTop: '1px solid var(--line)' }}>
           {user?.avatarUrl ? (
-            <img
-              src={getFileUrl(user.avatarUrl)}
+            <AuthImg
+              src={user.avatarUrl}
               alt={user.displayName}
               className="shrink-0 rounded-full"
               style={{ width: 32, height: 32, objectFit: 'cover' }}

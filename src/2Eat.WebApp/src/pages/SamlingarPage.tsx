@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { getSamlingar, createSamling, deleteSamling } from '@/lib/api'
-import { getFileUrl } from '@/lib/api'
+import { AuthImg } from '@/components/AuthImg'
 import type { SamlingListItem } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -20,7 +20,7 @@ function CoverGrid({ images, id }: { images: (string | null)[]; id: number }) {
       {slots.map(i => (
         <div key={i} style={{ position: 'relative', overflow: 'hidden' }}>
           {images[i] ? (
-            <img src={getFileUrl(images[i]!)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+            <AuthImg src={images[i]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
           ) : (
             <div style={{ width: '100%', height: '100%', background: recipeSwatch(id + i * 7) }} />
           )}

@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog'
-import { updateMe, changePassword, deleteAccount, uploadFile, getFileUrl } from '@/lib/api'
+import { updateMe, changePassword, deleteAccount, uploadFile } from '@/lib/api'
+import { AuthImg } from '@/components/AuthImg'
 import { useAuth } from '@/context/AuthContext'
 
 const cardStyle: React.CSSProperties = {
@@ -142,8 +143,8 @@ export function ProfilePage() {
         <h2 style={sectionHeadingStyle}>Profilbild</h2>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           {user.avatarUrl ? (
-            <img
-              src={getFileUrl(user.avatarUrl)}
+            <AuthImg
+              src={user.avatarUrl}
               alt={user.displayName}
               style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover' }}
             />
