@@ -210,7 +210,7 @@ export function RecipeFormPage() {
 
         {/* Recipe name — spans all 4 columns */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6, gridColumn: 'span 4' }}>
-          <label style={labelStyle}>Receptnamn</label>
+          <label style={labelStyle}>Receptnamn <span style={{ color: 'var(--2eat-accent)', marginLeft: 1 }}>*</span></label>
           <input
             value={name} onChange={e => setName(e.target.value)}
             placeholder="t.ex. Mormors köttbullar"
@@ -249,13 +249,13 @@ export function RecipeFormPage() {
 
         {/* Förberedelsetid */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <label style={labelStyle}>Förb. (min)</label>
+          <label style={labelStyle}>Förberedelsetid (min)</label>
           <input type="number" value={prepTime} onChange={e => setPrepTime(Number(e.target.value))} style={inputStyle} />
         </div>
 
         {/* Tillagningstid */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <label style={labelStyle}>Tillagn. (min)</label>
+          <label style={labelStyle}>Tillagningstid (min)</label>
           <input type="number" value={cookTime} onChange={e => setCookTime(Number(e.target.value))} style={inputStyle} />
         </div>
 
@@ -441,6 +441,11 @@ export function RecipeFormPage() {
 
       {/* Footer */}
       <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 14, padding: '20px 0', borderTop: '1px solid var(--line)' }}>
+        {!name.trim() && !saveMutation.isPending && (
+          <span style={{ fontFamily: 'var(--font-sans)', fontSize: 12, color: 'var(--ink-50)' }}>
+            Ange ett receptnamn för att spara
+          </span>
+        )}
         <div style={{ display: 'flex', gap: 8 }}>
           <button
             onClick={() => navigate(isEdit ? `/recipes/${id}` : '/')}

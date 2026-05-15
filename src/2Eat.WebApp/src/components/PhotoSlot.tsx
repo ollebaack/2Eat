@@ -1,7 +1,7 @@
-import { ImageOff } from 'lucide-react'
 import { recipeSwatch } from '@/lib/recipeUtils'
 import { cn } from '@/lib/utils'
 import { useAuthenticatedSrc } from '@/hooks/useAuthenticatedSrc'
+import recipePlaceholder from '@/assets/recipe-placeholder.svg'
 
 interface PhotoSlotProps {
   imageUrl?: string
@@ -45,17 +45,12 @@ export function PhotoSlot({
   return (
     <div
       style={{ ...containerStyle, background: resolvedSwatch }}
-      className={cn('overflow-hidden', !src && !imageUrl && 'flex items-center justify-center', className)}
+      className={cn('overflow-hidden', className)}
     >
       {src ? (
         <img src={src} alt={label} className="w-full h-full object-cover" />
       ) : !imageUrl ? (
-        <div className="flex flex-col items-center gap-1.5 text-white/50 select-none">
-          <ImageOff size={28} strokeWidth={1.5} />
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
-            Ingen bild
-          </span>
-        </div>
+        <img src={recipePlaceholder} alt="" className="w-full h-full object-cover select-none" draggable={false} />
       ) : null}
     </div>
   )

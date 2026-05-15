@@ -3,7 +3,7 @@ import { useNavigate, useParams, Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, Pencil, Trash2, Bookmark, Check, Plus } from 'lucide-react'
 import { toast } from 'sonner'
-import { getRecipeById, deleteRecipe, getRecipes, addRecipeToShoppingList } from '@/lib/api'
+import { getRecipeById, deleteRecipe, getRecipes, addRecipeToShoppingList, getSamlingarForRecept } from '@/lib/api'
 import { AddToSamlingModal } from '@/components/AddToSamlingModal'
 import type { Recipe } from '@/types'
 import { Button } from '@/components/ui/button'
@@ -105,6 +105,12 @@ export function RecipeDetailPage() {
   })
 
   const { data: allRecipes } = useQuery({ queryKey: ['recipes'], queryFn: getRecipes })
+  const { data: receptSamlingar } = useQuery({
+    queryKey: ['samlingar-for-recept', Number(id)],
+    queryFn: () => getSamlingarForRecept(Number(id)),
+    enabled: !!id,
+  })
+  const isSaved = (receptSamlingar?.samlingIds?.length ?? 0) > 0
 
   const [servings, setServings] = useState<number | null>(null)
   const [checked, setChecked] = useState<Record<number, boolean>>({})
@@ -173,7 +179,7 @@ export function RecipeDetailPage() {
         <div style={{ display: 'flex', gap: 6 }}>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="outline" size="icon" className="h-9 w-9 rounded-full" aria-label="Lägg till i samling" onClick={() => setSamlingOpen(true)}><Bookmark size={15} strokeWidth={1.5} /></Button>
+              <Button variant="outline" size="icon" className="h-9 w-9 rounded-full" aria-label="Lägg till i samling" onClick={() => setSamlingOpen(true)}><Bookmark size={15} strokeWidth={1.5} fill={isSaved ? 'currentColor' : 'none'} /></Button>
             </TooltipTrigger>
             <TooltipContent>Lägg till i samling</TooltipContent>
           </Tooltip>
