@@ -12,7 +12,7 @@ namespace _2Eat.Domain
 
         private string name = string.Empty;
         [Required(ErrorMessage = "Please enter a name.")]
-        [MaxLength(64)]
+        [MaxLength(200)]
         public string Name
         {
             get => name;
