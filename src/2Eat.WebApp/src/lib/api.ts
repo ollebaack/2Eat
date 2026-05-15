@@ -145,6 +145,10 @@ export const updatePantryItem = (id: number, item: Omit<PantryItem, 'id'>) =>
   request<PantryItem>(`/pantry/${id}`, { method: 'PUT', body: JSON.stringify(item) })
 export const deletePantryItem = (id: number) =>
   request<void>(`/pantry/${id}`, { method: 'DELETE' })
+export const seedStarterItems = () =>
+  request<PantryItem[]>('/pantry/starter', { method: 'POST' })
+export const parseTextToPantryItems = (text: string) =>
+  request<ScannedItem[]>('/pantry/parse-text', { method: 'POST', body: JSON.stringify({ text }) })
 
 // Shopping list API
 export const getShoppingList = () => request<ShoppingListItem[]>('/shopping-list/')

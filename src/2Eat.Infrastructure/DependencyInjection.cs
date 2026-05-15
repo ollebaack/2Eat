@@ -48,6 +48,7 @@ namespace _2Eat.Infrastructure
             builder.Services.AddScoped<IUserRepository, EfUserRepository>();
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IReceiptScanService, ReceiptScanClient>();
+            builder.Services.AddScoped<ITextParsePantryService, TextParsePantryClient>();
             builder.Services.AddScoped<IShoppingListRepository, EfShoppingListRepository>();
             builder.Services.AddScoped<IShoppingListService, ShoppingListService>();
             builder.Services.AddScoped<ISamlingRepository, EfSamlingRepository>();

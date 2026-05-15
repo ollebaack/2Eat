@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -28,8 +28,12 @@ import {
   deletePantryItem,
   getRecipes,
   scanReceipt,
+  seedStarterItems,
+  parseTextToPantryItems,
+  getShoppingList,
   type ScannedItem,
 } from '@/lib/api'
+import { Textarea } from '@/components/ui/textarea'
 import { recipeSwatch } from '@/lib/recipeUtils'
 import type { PantryItem, Recipe, RecipeIngredient } from '@/types'
 import { AuthImg } from '@/components/AuthImg'
@@ -408,6 +412,277 @@ function ReceiptScanModal({ open, onClose, onItemsAdded }: ReceiptScanModalProps
               </Button>
             </DialogFooter>
           </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+// ── Shared review step used by text-parse and handlista-import modals ──────
+
+interface ReviewStepProps {
+  items: ScannedItem[]
+  checkedIds: Set<number>
+  onToggle: (i: number) => void
+  onConfirm: () => void
+  onCancel: () => void
+  isSaving: boolean
+}
+
+function ReviewStep({ items, checkedIds, onToggle, onConfirm, onCancel, isSaving }: ReviewStepProps) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      {items.length === 0 ? (
+        <p style={{ fontSize: 14, color: 'var(--ink-60)', textAlign: 'center', padding: '16px 0' }}>
+          Inga varor hittades.
+        </p>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 320, overflowY: 'auto' }}>
+          {items.map((item, i) => (
+            <label
+              key={i}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                padding: '8px 10px',
+                borderRadius: 8,
+                border: '1px solid var(--line)',
+                cursor: 'pointer',
+                fontSize: 14,
+              }}
+            >
+              <input type="checkbox" checked={checkedIds.has(i)} onChange={() => onToggle(i)} />
+              <span style={{ flex: 1 }}>{item.name}</span>
+              <span style={{ fontSize: 12, color: 'var(--ink-60)', whiteSpace: 'nowrap' }}>
+                {item.quantity} {item.unit}
+              </span>
+              <span style={{
+                fontSize: 11,
+                background: 'var(--ink)',
+                color: 'var(--paper)',
+                padding: '2px 7px',
+                borderRadius: 99,
+                whiteSpace: 'nowrap',
+              }}>
+                {item.category}
+              </span>
+            </label>
+          ))}
+        </div>
+      )}
+      <DialogFooter>
+        <Button variant="outline" onClick={onCancel}>Avbryt</Button>
+        <Button onClick={onConfirm} disabled={checkedIds.size === 0 || isSaving}>
+          {isSaving ? 'Sparar…' : `Lägg till ${checkedIds.size} varor`}
+        </Button>
+      </DialogFooter>
+    </div>
+  )
+}
+
+// ── Text Parse Modal ────────────────────────────────────────────────────────
+
+interface TextParseModalProps {
+  open: boolean
+  onClose: () => void
+  onItemsAdded: () => void
+}
+
+type TextParseStep = 'input' | 'parsing' | 'review'
+
+function TextParseModal({ open, onClose, onItemsAdded }: TextParseModalProps) {
+  const [step, setStep] = useState<TextParseStep>('input')
+  const [text, setText] = useState('')
+  const [items, setItems] = useState<ScannedItem[]>([])
+  const [checkedIds, setCheckedIds] = useState<Set<number>>(new Set())
+  const [isSaving, setIsSaving] = useState(false)
+
+  function handleClose() {
+    setStep('input')
+    setText('')
+    setItems([])
+    setCheckedIds(new Set())
+    setIsSaving(false)
+    onClose()
+  }
+
+  async function handleParse() {
+    if (!text.trim()) return
+    setStep('parsing')
+    try {
+      const parsed = await parseTextToPantryItems(text.trim())
+      setItems(parsed)
+      setCheckedIds(new Set(parsed.map((_, i) => i)))
+      setStep('review')
+    } catch {
+      toast.error('Kunde inte tolka texten')
+      setStep('input')
+    }
+  }
+
+  async function handleConfirm() {
+    setIsSaving(true)
+    try {
+      const selected = items.filter((_, i) => checkedIds.has(i))
+      await Promise.all(
+        selected.map((item) =>
+          createPantryItem({ name: item.name, category: item.category, quantity: item.quantity, unit: item.unit, expiresAt: null, isOpened: false, isLow: false })
+        )
+      )
+      toast.success(`${selected.length} varor tillagda`)
+      onItemsAdded()
+      handleClose()
+    } catch {
+      toast.error('Kunde inte lägga till varor')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => !v && handleClose()}>
+      <DialogContent style={{ maxWidth: 480 }}>
+        <DialogHeader>
+          <DialogTitle>Skriv vad du har hemma</DialogTitle>
+        </DialogHeader>
+
+        {(step === 'input' || step === 'parsing') && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <p style={{ fontSize: 13.5, color: 'var(--ink-60)', margin: 0 }}>
+              Skriv en lista på det du har hemma, separerat med komma eller radbrytning.
+            </p>
+            <Textarea
+              placeholder="t.ex. mjölk, ägg, pasta, ris, smör, lök…"
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              rows={6}
+            />
+            <DialogFooter>
+              <Button variant="outline" onClick={handleClose}>Avbryt</Button>
+              <Button onClick={handleParse} disabled={!text.trim() || step === 'parsing'}>
+                {step === 'parsing' ? 'Analyserar…' : 'Fortsätt'}
+              </Button>
+            </DialogFooter>
+          </div>
+        )}
+
+        {step === 'review' && (
+          <ReviewStep
+            items={items}
+            checkedIds={checkedIds}
+            onToggle={(i) => setCheckedIds((prev) => { const n = new Set(prev); n.has(i) ? n.delete(i) : n.add(i); return n })}
+            onConfirm={handleConfirm}
+            onCancel={handleClose}
+            isSaving={isSaving}
+          />
+        )}
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+// ── Handlista Import Modal ──────────────────────────────────────────────────
+
+interface HandlistaImportModalProps {
+  open: boolean
+  onClose: () => void
+  onItemsAdded: () => void
+}
+
+type HandlistaStep = 'loading' | 'review' | 'empty'
+
+function HandlistaImportModal({ open, onClose, onItemsAdded }: HandlistaImportModalProps) {
+  const [step, setStep] = useState<HandlistaStep>('loading')
+  const [items, setItems] = useState<ScannedItem[]>([])
+  const [checkedIds, setCheckedIds] = useState<Set<number>>(new Set())
+  const [isSaving, setIsSaving] = useState(false)
+
+  // Fetch and parse whenever the modal opens
+  const prevOpen = useRef(false)
+  useEffect(() => {
+    if (open && !prevOpen.current) {
+      setStep('loading')
+      setItems([])
+      setCheckedIds(new Set())
+      ;(async () => {
+        try {
+          const list = await getShoppingList()
+          if (list.length === 0) { setStep('empty'); return }
+          const text = list.map((i) => i.name).join(', ')
+          const parsed = await parseTextToPantryItems(text)
+          setItems(parsed)
+          setCheckedIds(new Set(parsed.map((_, i) => i)))
+          setStep('review')
+        } catch {
+          toast.error('Kunde inte hämta Handlistan')
+          onClose()
+        }
+      })()
+    }
+    prevOpen.current = open
+  }, [open, onClose])
+
+  function handleClose() {
+    setStep('loading')
+    setItems([])
+    setCheckedIds(new Set())
+    setIsSaving(false)
+    onClose()
+  }
+
+  async function handleConfirm() {
+    setIsSaving(true)
+    try {
+      const selected = items.filter((_, i) => checkedIds.has(i))
+      await Promise.all(
+        selected.map((item) =>
+          createPantryItem({ name: item.name, category: item.category, quantity: item.quantity, unit: item.unit, expiresAt: null, isOpened: false, isLow: false })
+        )
+      )
+      toast.success(`${selected.length} varor tillagda`)
+      onItemsAdded()
+      handleClose()
+    } catch {
+      toast.error('Kunde inte lägga till varor')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => !v && handleClose()}>
+      <DialogContent style={{ maxWidth: 480 }}>
+        <DialogHeader>
+          <DialogTitle>Importera från Handlistan</DialogTitle>
+        </DialogHeader>
+
+        {step === 'loading' && (
+          <p style={{ fontSize: 14, color: 'var(--ink-60)', textAlign: 'center', padding: '24px 0' }}>
+            Hämtar varor…
+          </p>
+        )}
+
+        {step === 'empty' && (
+          <>
+            <p style={{ fontSize: 14, color: 'var(--ink-60)', textAlign: 'center', padding: '16px 0' }}>
+              Handlistan är tom.
+            </p>
+            <DialogFooter>
+              <Button variant="outline" onClick={handleClose}>Stäng</Button>
+            </DialogFooter>
+          </>
+        )}
+
+        {step === 'review' && (
+          <ReviewStep
+            items={items}
+            checkedIds={checkedIds}
+            onToggle={(i) => setCheckedIds((prev) => { const n = new Set(prev); n.has(i) ? n.delete(i) : n.add(i); return n })}
+            onConfirm={handleConfirm}
+            onCancel={handleClose}
+            isSaving={isSaving}
+          />
         )}
       </DialogContent>
     </Dialog>
@@ -921,6 +1196,9 @@ export function SkafferiPage() {
   const [categoryFilter, setCategoryFilter] = useState('Alla')
   const [showAddModal, setShowAddModal] = useState(false)
   const [showScanModal, setShowScanModal] = useState(false)
+  const [showTextModal, setShowTextModal] = useState(false)
+  const [showHandlistaModal, setShowHandlistaModal] = useState(false)
+  const [isSeedingStarter, setIsSeedingStarter] = useState(false)
   const [editItem, setEditItem] = useState<PantryItem | null>(null)
 
   const { data: pantryItems = [] } = useQuery({
@@ -957,6 +1235,19 @@ export function SkafferiPage() {
       updateMutation.mutate({ id, item: payload })
     } else {
       createMutation.mutate(payload)
+    }
+  }
+
+  async function handleSeedStarter() {
+    setIsSeedingStarter(true)
+    try {
+      const added = await seedStarterItems()
+      queryClient.invalidateQueries({ queryKey: ['pantry'] })
+      toast.success(`${added.length} basvaror tillagda`)
+    } catch {
+      toast.error('Kunde inte lägga till basvaror')
+    } finally {
+      setIsSeedingStarter(false)
     }
   }
 
@@ -1088,6 +1379,36 @@ export function SkafferiPage() {
         </div>
 
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          <button
+            onClick={() => setShowHandlistaModal(true)}
+            style={{
+              padding: '9px 18px',
+              borderRadius: 999,
+              background: 'var(--paper)',
+              border: '1px solid var(--line)',
+              fontFamily: 'var(--font-sans)',
+              fontSize: 13.5,
+              color: 'var(--ink)',
+              cursor: 'pointer',
+            }}
+          >
+            Importera från Handlistan
+          </button>
+          <button
+            onClick={() => setShowTextModal(true)}
+            style={{
+              padding: '9px 18px',
+              borderRadius: 999,
+              background: 'var(--paper)',
+              border: '1px solid var(--line)',
+              fontFamily: 'var(--font-sans)',
+              fontSize: 13.5,
+              color: 'var(--ink)',
+              cursor: 'pointer',
+            }}
+          >
+            Skriv vad du har
+          </button>
           <button
             onClick={() => setShowScanModal(true)}
             style={{
@@ -1225,10 +1546,35 @@ export function SkafferiPage() {
               fontFamily: 'var(--font-sans)',
               fontSize: 14,
               color: 'var(--ink-50)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 16,
             }}>
               {search || categoryFilter !== 'Alla'
                 ? 'Inga varor matchade din sökning.'
-                : 'Skafferiet är tomt. Lägg till varor med knappen ovan.'}
+                : (
+                  <>
+                    <span>Skafferiet är tomt.</span>
+                    <button
+                      onClick={handleSeedStarter}
+                      disabled={isSeedingStarter}
+                      style={{
+                        padding: '10px 22px',
+                        borderRadius: 999,
+                        background: 'var(--ink)',
+                        border: 'none',
+                        fontFamily: 'var(--font-sans)',
+                        fontSize: 13.5,
+                        color: 'var(--paper)',
+                        cursor: isSeedingStarter ? 'default' : 'pointer',
+                        opacity: isSeedingStarter ? 0.6 : 1,
+                      }}
+                    >
+                      {isSeedingStarter ? 'Lägger till…' : 'Fyll på med vanliga basvaror'}
+                    </button>
+                  </>
+                )}
             </div>
           ) : (
             Object.entries(grouped).map(([cat, items]) => (
@@ -1383,6 +1729,20 @@ export function SkafferiPage() {
       <ReceiptScanModal
         open={showScanModal}
         onClose={() => setShowScanModal(false)}
+        onItemsAdded={() => queryClient.invalidateQueries({ queryKey: ['pantry'] })}
+      />
+
+      {/* ── Text Parse Modal ── */}
+      <TextParseModal
+        open={showTextModal}
+        onClose={() => setShowTextModal(false)}
+        onItemsAdded={() => queryClient.invalidateQueries({ queryKey: ['pantry'] })}
+      />
+
+      {/* ── Handlista Import Modal ── */}
+      <HandlistaImportModal
+        open={showHandlistaModal}
+        onClose={() => setShowHandlistaModal(false)}
         onItemsAdded={() => queryClient.invalidateQueries({ queryKey: ['pantry'] })}
       />
     </div>

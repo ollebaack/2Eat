@@ -15,6 +15,8 @@ namespace _2Eat.Web.API
             endpoints.MapPost("/api/pantry/scan-receipt", ScanReceipt)
                      .DisableAntiforgery()
                      .RequireAuthorization();
+            endpoints.MapPost("/api/pantry/starter", SeedStarter).RequireAuthorization();
+            endpoints.MapPost("/api/pantry/parse-text", ParseText).RequireAuthorization();
         }
 
         static async Task<IResult> GetAll(IPantryItemService service, ClaimsPrincipal principal)
@@ -63,5 +65,25 @@ namespace _2Eat.Web.API
             return Results.Ok(items);
         }
 
+        static async Task<IResult> SeedStarter(IPantryItemService service, ClaimsPrincipal principal)
+        {
+            var userId = principal.GetUserId();
+            if (userId is null) return Results.Unauthorized();
+            var items = await service.SeedStarterItemsAsync(userId.Value);
+            return Results.Ok(items);
+        }
+
+        static async Task<IResult> ParseText(ITextParsePantryService parseService, HttpContext context, ClaimsPrincipal principal)
+        {
+            var userId = principal.GetUserId();
+            if (userId is null) return Results.Unauthorized();
+            var body = await context.Request.ReadFromJsonAsync<ParseTextRequest>();
+            if (body is null || string.IsNullOrWhiteSpace(body.Text))
+                return TypedResults.Problem(detail: "text is required.", statusCode: 400);
+            var items = await parseService.ParseTextAsync(body.Text);
+            return Results.Ok(items);
+        }
+
+        record ParseTextRequest(string Text);
     }
 }
