@@ -84,6 +84,7 @@ public class RecipeService : IRecipeService
         recipeEntity.Description = recipe.Description;
         recipeEntity.Instructions = recipe.Instructions;
         recipeEntity.ImageUrl = recipe.ImageUrl;
+        recipeEntity.CategoryId = recipe.CategoryId;
         recipeEntity.LastModified = DateTimeOffset.UtcNow;
         recipeEntity.Calories = recipe.Calories;
         recipeEntity.Protein = recipe.Protein;
