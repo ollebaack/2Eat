@@ -865,11 +865,23 @@ export function VeckoplanPage() {
             style={{ fontFamily: 'var(--font-sans)', fontSize: 13, background: 'var(--paper)' }}
             onClick={() => {
               if (!recipes || recipes.length === 0) return
-              WEEKDAYS.forEach(day => {
-                const planDay = weekPlan?.days.find(d => d.dayOfWeek === day.key)
-                if (planDay?.recipeId) return
-                const idx = Math.floor(Math.random() * recipes.length)
-                setSlotMutation.mutate({ dayOfWeek: day.key, recipeId: recipes[idx].id, note: '' })
+
+              const emptyDays = WEEKDAYS.filter(day =>
+                !weekPlan?.days.find(d => d.dayOfWeek === day.key)?.recipeId
+              )
+              if (emptyDays.length === 0) return
+
+              const usedIds = new Set(
+                weekPlan?.days.filter(d => d.recipeId).map(d => d.recipeId) ?? []
+              )
+              const shuffle = (arr: Recipe[]) => [...arr].sort(() => Math.random() - 0.5)
+              const pool = [
+                ...shuffle(recipes.filter(r => !usedIds.has(r.id))),
+                ...shuffle(recipes.filter(r => usedIds.has(r.id))),
+              ]
+
+              emptyDays.forEach((day, i) => {
+                setSlotMutation.mutate({ dayOfWeek: day.key, recipeId: pool[i % pool.length].id, note: '' })
               })
               toast.success('Veckan auto-fylld!')
             }}
