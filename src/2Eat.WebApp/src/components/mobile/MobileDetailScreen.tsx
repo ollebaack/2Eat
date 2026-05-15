@@ -1,8 +1,11 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import { ArrowLeft, Bookmark, Shuffle, Flame, ArrowRight } from 'lucide-react'
 import type { Recipe } from '@/types'
 import { AuthImg } from '@/components/AuthImg'
+import { AddToSamlingModal } from '@/components/AddToSamlingModal'
+import { getSamlingarForRecept } from '@/lib/api'
 
 const SWATCHES = [
   'oklch(0.65 0.12 50)', 'oklch(0.6 0.1 145)', 'oklch(0.62 0.12 30)',
@@ -46,6 +49,13 @@ export function MobileDetailScreen({ recipe }: { recipe: Recipe }) {
   const navigate = useNavigate()
   const [tab, setTab] = useState<'ingredients' | 'method'>('ingredients')
   const [checked, setChecked] = useState<Record<number, boolean>>({})
+  const [samlingOpen, setSamlingOpen] = useState(false)
+
+  const { data: receptSamlingar } = useQuery({
+    queryKey: ['samlingar-for-recept', recipe.id],
+    queryFn: () => getSamlingarForRecept(recipe.id),
+  })
+  const isSaved = (receptSamlingar?.samlingIds?.length ?? 0) > 0
 
   const steps = recipe.instructions
     .split('\n')
@@ -99,8 +109,8 @@ export function MobileDetailScreen({ recipe }: { recipe: Recipe }) {
 
         {/* Action buttons */}
         <div style={{ position: 'absolute', top: 56, right: 16, display: 'flex', gap: 8 }}>
-          <button style={glassBtn}>
-            <Bookmark size={16} strokeWidth={1.5} />
+          <button aria-label="Lägg till i samling" style={glassBtn} onClick={() => setSamlingOpen(true)}>
+            <Bookmark size={16} strokeWidth={1.5} fill={isSaved ? 'currentColor' : 'none'} />
           </button>
           <button style={glassBtn}>
             <Shuffle size={16} strokeWidth={1.5} />
@@ -352,6 +362,8 @@ export function MobileDetailScreen({ recipe }: { recipe: Recipe }) {
           </ol>
         )}
       </div>
+
+      <AddToSamlingModal recipeId={recipe.id} open={samlingOpen} onOpenChange={setSamlingOpen} />
 
       {/* Sticky CTA */}
       <div style={{
