@@ -686,7 +686,7 @@ function PantryRecipeCard({ entry, onNavigate }: PantryRecipeCardProps) {
           borderRadius: 999,
           fontSize: 10.5,
           fontFamily: 'var(--font-mono)',
-          background: allPresent ? 'var(--2eat-accent)' : 'rgba(255,255,255,0.85)',
+          background: allPresent ? 'var(--2eat-accent)' : 'var(--paper)',
           color: allPresent ? 'white' : 'var(--ink)',
           display: 'flex',
           alignItems: 'center',
