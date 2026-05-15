@@ -10,6 +10,7 @@ We add Framer Motion as the single animation library for the React frontend. CSS
 ## Decisions within this ADR
 
 - **Character**: subtle/editorial — durations 150–250 ms, ease-out curves, ≤12 px displacements. No spring overshoots outside the existing ShuffleModal slot-machine.
-- **Scope**: Tier 1 (page transitions via `AnimatePresence` on `<Outlet>`, staggered card-grid entrance, skeleton→content cross-fade) + Tier 2 (dialogs/modals, `EmptyState`, chip-selection pulse). Tier 3 micro-polish (nav indicator slide, star picker) deferred.
-- **Mobile**: page fade transition applies; staggered grid entrance skipped (mobile shows a list, not a grid).
+- **Scope**: staggered card-grid entrance, skeleton→content cross-fade, dialogs/modals (`ShuffleModal`), `EmptyState` fade+slide-up, chip-selection tap pulse. Tier 3 micro-polish (nav indicator slide, star picker) deferred.
+- **Page transitions deliberately omitted**: `AnimatePresence` on `<Outlet>` was implemented and then removed. Every `AnimatePresence` mode conflicts with Playwright strict-mode E2E tests — `mode="wait"` keeps the new page out of the DOM during exit (heading not found), while `mode="sync"/"popLayout"` puts both pages in the DOM simultaneously (2 headings found, strict-mode violation). Per-component animations deliver sufficient motion without breaking tests.
+- **Mobile**: staggered grid entrance skipped (mobile shows a list, not a grid). All other animations apply.
 - **Accessibility**: `<MotionConfig reducedMotion="user">` wraps the app root so all animations collapse to instant for users who have reduced-motion enabled at the OS level.
