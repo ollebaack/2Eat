@@ -8,4 +8,5 @@ public interface IPantryItemService
     Task<PantryItem> CreateAsync(int userId, PantryItem item);
     Task<PantryItem> UpdateAsync(int userId, int id, PantryItem item);
     Task DeleteAsync(int userId, int id);
+    Task<List<PantryItem>> SeedStarterItemsAsync(int userId);
 }
