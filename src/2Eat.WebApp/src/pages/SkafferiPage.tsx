@@ -31,6 +31,7 @@ import {
   seedStarterItems,
   parseTextToPantryItems,
   getShoppingList,
+  addShoppingListItem,
   type ScannedItem,
 } from '@/lib/api'
 import { Textarea } from '@/components/ui/textarea'
@@ -1200,6 +1201,7 @@ export function SkafferiPage() {
   const [showHandlistaModal, setShowHandlistaModal] = useState(false)
   const [isSeedingStarter, setIsSeedingStarter] = useState(false)
   const [editItem, setEditItem] = useState<PantryItem | null>(null)
+  const [isAddingLowItems, setIsAddingLowItems] = useState(false)
 
   const { data: pantryItems = [] } = useQuery({
     queryKey: ['pantry'],
@@ -1281,7 +1283,23 @@ export function SkafferiPage() {
     () => pantryItems.filter((i) => { const d = daysMap.get(i.id) ?? null; return d !== null && d <= 3 }).length,
     [pantryItems, daysMap],
   )
-  const lowItems = useMemo(() => pantryItems.filter((i) => i.isLow).length, [pantryItems])
+  const lowItems = useMemo(() => pantryItems.filter((i) => i.isLow), [pantryItems])
+
+  async function handleAddLowItemsToHandlista() {
+    if (lowItems.length === 0) return
+    setIsAddingLowItems(true)
+    try {
+      await Promise.all(
+        lowItems.map((item) => addShoppingListItem(item.name, item.quantity, item.unit))
+      )
+      queryClient.invalidateQueries({ queryKey: ['shopping-list'] })
+      toast.success(`${lowItems.length} ${lowItems.length === 1 ? 'vara tillagd' : 'varor tillagda'} på Handlistan`)
+    } catch {
+      toast.error('Kunde inte lägga till på Handlistan')
+    } finally {
+      setIsAddingLowItems(false)
+    }
+  }
 
   // Suggestions computation — includes derived cookableNow / almostThere to avoid re-filtering on unrelated state
   const { cookableNow, almostThere } = useMemo(() => {
@@ -1475,7 +1493,7 @@ export function SkafferiPage() {
         <StatCard
           label="Går ut snart"
           value={urgentCount}
-          subtitle={`${lowItems} låga`}
+          subtitle={`${lowItems.length} låga`}
           icon={<Clock size={20} />}
           active={tab === 'expiring'}
           tab="expiring"
@@ -1487,6 +1505,44 @@ export function SkafferiPage() {
       {/* ── Tab: Items ── */}
       {tab === 'items' && (
         <div>
+          {/* Low-stock banner */}
+          {lowItems.length > 0 && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 12,
+              padding: '12px 16px',
+              marginBottom: 20,
+              borderRadius: 12,
+              background: 'color-mix(in oklch, oklch(0.7 0.14 30) 12%, var(--paper))',
+              border: '1px solid oklch(0.75 0.12 30)',
+            }}>
+              <span style={{ fontFamily: 'var(--font-sans)', fontSize: 13.5, color: 'var(--ink)' }}>
+                {lowItems.length} {lowItems.length === 1 ? 'vara har' : 'varor har'} låg nivå
+              </span>
+              <button
+                onClick={handleAddLowItemsToHandlista}
+                disabled={isAddingLowItems}
+                style={{
+                  padding: '7px 16px',
+                  borderRadius: 999,
+                  background: 'oklch(0.5 0.15 30)',
+                  border: 'none',
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: 13,
+                  color: 'white',
+                  cursor: isAddingLowItems ? 'default' : 'pointer',
+                  opacity: isAddingLowItems ? 0.6 : 1,
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0,
+                }}
+              >
+                {isAddingLowItems ? 'Lägger till…' : 'Lägg till på Handlistan'}
+              </button>
+            </div>
+          )}
+
           {/* Search + filter */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 28 }}>
             <div style={{
