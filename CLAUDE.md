@@ -8,6 +8,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 When starting work on a Linear issue, assign yourself to it before beginning implementation. Use the Linear MCP tools (`save_issue`) to set yourself as the assignee.
 
+## Domain Context & Decisions
+
+Before designing a new feature, introducing a domain concept, or making an architectural decision, read:
+
+- **[CONTEXT.md](CONTEXT.md)** — glossary, product vision, domain language, and feature map. Use the terminology defined here; don't invent synonyms.
+- **[docs/adr/](docs/adr/)** — Architecture Decision Records. Glob `docs/adr/*.md` and read any ADR relevant to the area you're working in. New decisions that future agents should know about belong here too.
+
+Skip this for narrow tasks (search, rename, style tweak) where no domain or architectural judgment is needed.
+
 ## What This Is
 
 2Eat is a full-stack recipe management application. Backend is ASP.NET Core (.NET 10) Minimal APIs with PostgreSQL via EF Core. Frontend is React 19 + TypeScript + Vite + Tailwind CSS.
