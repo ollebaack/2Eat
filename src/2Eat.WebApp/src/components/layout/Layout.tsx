@@ -22,7 +22,7 @@ function AnimatedOutlet() {
   return (
     <AnimatePresence mode="wait" initial={false}>
       <motion.div key={location.pathname} variants={pageVariants} initial="initial" animate="animate" exit="exit" style={{ height: '100%' }}>
-        <AnimatedOutlet />
+        <Outlet />
       </motion.div>
     </AnimatePresence>
   )
