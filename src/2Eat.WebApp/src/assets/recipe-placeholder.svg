@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <!-- Plate fill -->
+  <circle cx="100" cy="106" r="62" fill="white" fill-opacity="0.07"/>
+  <!-- Plate outer rim -->
+  <circle cx="100" cy="106" r="62" stroke="white" stroke-opacity="0.4" stroke-width="2.5"/>
+  <!-- Plate inner rim -->
+  <circle cx="100" cy="106" r="50" stroke="white" stroke-opacity="0.18" stroke-width="1.5"/>
+
+  <!-- Fork (left of plate) -->
+  <!-- Handle -->
+  <line x1="37" y1="162" x2="37" y2="92" stroke="white" stroke-opacity="0.5" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Tines -->
+  <line x1="29" y1="92" x2="29" y2="73" stroke="white" stroke-opacity="0.5" stroke-width="1.8" stroke-linecap="round"/>
+  <line x1="33" y1="92" x2="33" y2="67" stroke="white" stroke-opacity="0.5" stroke-width="1.8" stroke-linecap="round"/>
+  <line x1="39" y1="92" x2="39" y2="67" stroke="white" stroke-opacity="0.5" stroke-width="1.8" stroke-linecap="round"/>
+  <line x1="43" y1="92" x2="43" y2="73" stroke="white" stroke-opacity="0.5" stroke-width="1.8" stroke-linecap="round"/>
+
+  <!-- Knife (right of plate) -->
+  <!-- Handle -->
+  <line x1="163" y1="162" x2="163" y2="108" stroke="white" stroke-opacity="0.5" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Blade (tapers to point) -->
+  <path d="M161 108 L161 70 Q161 54 164 50 Q167 54 167 70 L167 108 Z"
+        fill="white" fill-opacity="0.2"
+        stroke="white" stroke-opacity="0.4"
+        stroke-width="1.5" stroke-linejoin="round"/>
+
+  <!-- Herb garnish on plate -->
+  <g fill="white" fill-opacity="0.22">
+    <ellipse cx="92" cy="102" rx="6" ry="13" transform="rotate(-22 92 102)"/>
+    <ellipse cx="100" cy="96" rx="6" ry="13"/>
+    <ellipse cx="108" cy="102" rx="6" ry="13" transform="rotate(22 108 102)"/>
+  </g>
+  <!-- Stem -->
+  <line x1="100" y1="116" x2="100" y2="96"
+        stroke="white" stroke-opacity="0.28" stroke-width="1.5" stroke-linecap="round"/>
+</svg>
