@@ -44,8 +44,6 @@ services:
     build:
       context: src/2Eat.WebApp
       dockerfile: Dockerfile
-    ports:
-      - "80:80"
     depends_on:
       api:
         condition: service_healthy
