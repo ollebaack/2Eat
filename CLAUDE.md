@@ -8,6 +8,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 When starting work on a Linear issue, assign yourself to it before beginning implementation. Use the Linear MCP tools (`save_issue`) to set yourself as the assignee.
 
+If the issue is labeled **Feature**, run `/grill-with-docs` before writing any code. This stress-tests the plan against the domain model in `CONTEXT.md` and any relevant ADRs, sharpens terminology, and surfaces conflicts early. Only proceed to implementation once the grill session has concluded.
+
 ## Domain Context & Decisions
 
 Before designing a new feature, introducing a domain concept, or making an architectural decision, read:
