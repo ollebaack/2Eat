@@ -571,7 +571,7 @@ function TextParseModal({ open, onClose, onItemsAdded }: TextParseModalProps) {
           <ReviewStep
             items={items}
             checkedIds={checkedIds}
-            onToggle={(i) => setCheckedIds((prev) => { const n = new Set(prev); n.has(i) ? n.delete(i) : n.add(i); return n })}
+            onToggle={(i) => setCheckedIds((prev) => { const n = new Set(prev); if (n.has(i)) n.delete(i); else n.add(i); return n })}
             onConfirm={handleConfirm}
             onCancel={handleClose}
             isSaving={isSaving}
@@ -678,7 +678,7 @@ function HandlistaImportModal({ open, onClose, onItemsAdded }: HandlistaImportMo
           <ReviewStep
             items={items}
             checkedIds={checkedIds}
-            onToggle={(i) => setCheckedIds((prev) => { const n = new Set(prev); n.has(i) ? n.delete(i) : n.add(i); return n })}
+            onToggle={(i) => setCheckedIds((prev) => { const n = new Set(prev); if (n.has(i)) n.delete(i); else n.add(i); return n })}
             onConfirm={handleConfirm}
             onCancel={handleClose}
             isSaving={isSaving}
