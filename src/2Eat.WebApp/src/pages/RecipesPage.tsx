@@ -4,8 +4,9 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Plus, Shuffle, Clock, Users, Trash2, Bookmark, Search, X, LayoutGrid, List } from 'lucide-react'
 import { toast } from 'sonner'
-import { getRecipes, getRandomRecipes, deleteRecipe, ALLERGEN_OPTIONS } from '@/lib/api'
+import { getRecipes, getRandomRecipes, deleteRecipe, getIngredients, ALLERGEN_OPTIONS } from '@/lib/api'
 import type { Recipe, AllergenId } from '@/types'
+import { IngredientCombobox } from '@/components/IngredientCombobox'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -82,8 +83,10 @@ function HeroFeature({ recipe }: { recipe: Recipe; onOpen?: (id: number) => void
   )
 }
 
+type MatchInfo = { matched: number; total: number; missingSingle?: string }
+
 // ── Recipe card (grid view) ───────────────────────────────────────────────
-function RecipeCard({ recipe, onDelete }: { recipe: Recipe; onDelete: (r: Recipe) => void }) {
+function RecipeCard({ recipe, onDelete, matchInfo }: { recipe: Recipe; onDelete: (r: Recipe) => void; matchInfo?: MatchInfo }) {
   const [hovered, setHovered] = useState(false)
   return (
     <article
@@ -116,13 +119,24 @@ function RecipeCard({ recipe, onDelete }: { recipe: Recipe; onDelete: (r: Recipe
               {recipe.name}
             </h3>
           </Link>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10.5, color: 'var(--ink-50)', whiteSpace: 'nowrap', paddingTop: 6 }}>
-            №{String(recipe.id).padStart(3, '0')}
-          </span>
+          {matchInfo ? (
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10.5, color: 'var(--2eat-accent-deep)', whiteSpace: 'nowrap', padding: '2px 8px', background: 'color-mix(in oklch, var(--2eat-accent) 12%, transparent)', borderRadius: 999, letterSpacing: '0.04em' }}>
+              {matchInfo.matched}/{matchInfo.total}
+            </span>
+          ) : (
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10.5, color: 'var(--ink-50)', whiteSpace: 'nowrap', paddingTop: 6 }}>
+              №{String(recipe.id).padStart(3, '0')}
+            </span>
+          )}
         </div>
         <p style={{ fontFamily: 'var(--font-sans)', fontSize: 13, lineHeight: 1.45, color: 'var(--ink-60)', margin: 0, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
           {recipe.description}
         </p>
+        {matchInfo?.missingSingle && (
+          <p style={{ fontFamily: 'var(--font-mono)', fontSize: 10.5, color: 'var(--ink-50)', margin: 0, letterSpacing: '0.04em' }}>
+            saknar {matchInfo.missingSingle}
+          </p>
+        )}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto', paddingTop: 12, borderTop: '1px dashed var(--line)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontFamily: 'var(--font-mono)', fontSize: 10.5, color: 'var(--ink-50)', letterSpacing: '0.04em' }}>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Users size={12} strokeWidth={1.5} style={{ color: 'var(--ink-40)' }} />{recipe.servings}</span>
@@ -142,7 +156,7 @@ function RecipeCard({ recipe, onDelete }: { recipe: Recipe; onDelete: (r: Recipe
 }
 
 // ── Recipe row (list view) ────────────────────────────────────────────────
-function RecipeRow({ recipe, onDelete }: { recipe: Recipe; onDelete: (r: Recipe) => void }) {
+function RecipeRow({ recipe, onDelete, matchInfo }: { recipe: Recipe; onDelete: (r: Recipe) => void; matchInfo?: MatchInfo }) {
   const [hovered, setHovered] = useState(false)
   return (
     <article
@@ -164,6 +178,11 @@ function RecipeRow({ recipe, onDelete }: { recipe: Recipe; onDelete: (r: Recipe)
           <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: 22, letterSpacing: '-0.02em', color: 'var(--ink)', margin: 0, fontWeight: 400, lineHeight: 1.1 }}>{recipe.name}</h3>
         </Link>
         <p style={{ fontFamily: 'var(--font-sans)', fontSize: 12.5, color: 'var(--ink-60)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{recipe.description}</p>
+        {matchInfo && (
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10.5, color: 'var(--2eat-accent-deep)', letterSpacing: '0.04em' }}>
+            {matchInfo.matched}/{matchInfo.total}{matchInfo.missingSingle ? ` — saknar ${matchInfo.missingSingle}` : ''}
+          </span>
+        )}
       </div>
       {recipe.category && <Pill tone="default" size="sm">{recipe.category.name}</Pill>}
       <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--ink-50)', letterSpacing: '0.06em', textAlign: 'right' }}>
@@ -296,6 +315,7 @@ export function RecipesPage() {
   const [view, setView] = useState<'grid' | 'list'>('grid')
   const [activeAllergens, setActiveAllergens] = useState<AllergenId[]>([])
   const toggleAllergen = useCallback((a: AllergenId) => setActiveAllergens(prev => prev.includes(a) ? prev.filter(x => x !== a) : [...prev, a]), [])
+  const [selectedIngredientIds, setSelectedIngredientIds] = useState<number[]>([])
 
   const urlCategory = searchParams.get('category') ?? ''
   const urlFilter = searchParams.get('filter') ?? ''
@@ -305,6 +325,7 @@ export function RecipesPage() {
 
   const { data: allRecipes, isLoading } = useQuery({ queryKey: ['recipes'], queryFn: getRecipes, enabled: !showRandom })
   const { data: randomRecipes, isLoading: randomLoading, refetch: refetchRandom } = useQuery({ queryKey: ['recipes', 'random', 6], queryFn: () => getRandomRecipes(6), enabled: showRandom })
+  const { data: allIngredients } = useQuery({ queryKey: ['ingredients'], queryFn: getIngredients })
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => deleteRecipe(id),
@@ -320,9 +341,9 @@ export function RecipesPage() {
     return ['Alla', ...cats]
   }, [allRecipes])
 
-  const filtered = useMemo(() => {
+  const filteredWithMatch = useMemo(() => {
     if (!recipes) return []
-    return recipes.filter(r => {
+    const base = recipes.filter(r => {
       if (urlFilter === 'favorites' && !r.isFavorite) return false
       if (filterCat !== 'Alla' && r.category?.name !== filterCat) return false
       if (query) {
@@ -337,9 +358,30 @@ export function RecipesPage() {
       }
       return true
     })
-  }, [recipes, filterCat, urlFilter, query, activeAllergens])
 
-  const featured = filtered[0]
+    if (selectedIngredientIds.length === 0) {
+      return base.map(r => ({ recipe: r, matchInfo: undefined as MatchInfo | undefined }))
+    }
+
+    const withMatch = base
+      .map(r => {
+        const recipeIngIds = new Set(r.ingredients.map(ri => ri.ingredientId))
+        const matched = selectedIngredientIds.filter(id => recipeIngIds.has(id)).length
+        if (matched === 0) return null
+        const total = selectedIngredientIds.length
+        const missingIds = selectedIngredientIds.filter(id => !recipeIngIds.has(id))
+        const missingSingle = missingIds.length === 1
+          ? (allIngredients ?? []).find(i => i.id === missingIds[0])?.name
+          : undefined
+        return { recipe: r, matchInfo: { matched, total, missingSingle } as MatchInfo }
+      })
+      .filter((x): x is { recipe: Recipe; matchInfo: MatchInfo } => x !== null)
+
+    withMatch.sort((a, b) => b.matchInfo.matched / b.matchInfo.total - a.matchInfo.matched / a.matchInfo.total)
+    return withMatch
+  }, [recipes, filterCat, urlFilter, query, activeAllergens, selectedIngredientIds, allIngredients])
+
+  const featured = filteredWithMatch[0]?.recipe
   const now = new Date()
   const monthName = now.toLocaleDateString('sv-SE', { month: 'long', year: 'numeric' })
 
@@ -403,7 +445,7 @@ export function RecipesPage() {
           </div>
           <div style={{ display: 'flex', gap: 6, marginLeft: 'auto', alignItems: 'center' }}>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--ink-50)', letterSpacing: '0.08em', textTransform: 'uppercase', marginRight: 4 }}>
-              {String(filtered.length).padStart(2, '0')} recept
+              {String(filteredWithMatch.length).padStart(2, '0')} recept
             </span>
             {/* View toggle */}
             <div style={{ display: 'inline-flex', padding: 3, background: 'var(--surface-1)', border: '1px solid var(--line)', borderRadius: 999 }}>
@@ -474,6 +516,12 @@ export function RecipesPage() {
             )
           })}
         </div>
+        {/* Ingrediensfilter */}
+        <IngredientCombobox
+          ingredients={allIngredients ?? []}
+          selectedIds={selectedIngredientIds}
+          onChange={setSelectedIngredientIds}
+        />
       </div>
 
       {/* ── Content ────────────────────────────────────────────── */}
@@ -483,14 +531,14 @@ export function RecipesPage() {
             style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 18 }}>
             {Array.from({ length: 6 }).map((_, i) => <CardSkeleton key={i} />)}
           </motion.div>
-        ) : filtered.length === 0 ? (
+        ) : filteredWithMatch.length === 0 ? (
           <motion.div key="empty" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: 'easeOut' as const }}
             style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: '60px 0', background: 'var(--surface-1)', borderRadius: 18, border: '1px dashed var(--line)', color: 'var(--ink-50)' }}>
             <Search size={28} strokeWidth={1.5} style={{ color: 'var(--ink-40)' }} />
             {(() => {
               const hasTextSearch = !!query
               const hasCategoryFilter = filterCat !== 'Alla'
-              const hasOtherFilter = urlFilter === 'favorites' || activeAllergens.length > 0
+              const hasOtherFilter = urlFilter === 'favorites' || activeAllergens.length > 0 || selectedIngredientIds.length > 0
               const hasAnyFilter = hasCategoryFilter || hasOtherFilter
 
               if (!hasTextSearch && !hasAnyFilter) {
@@ -528,18 +576,18 @@ export function RecipesPage() {
         ) : view === 'grid' ? (
           <motion.div key="grid" variants={gridVariants} initial="initial" animate="animate"
             style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 18 }}>
-            {filtered.map(r => (
+            {filteredWithMatch.map(({ recipe: r, matchInfo }) => (
               <motion.div key={r.id} variants={cardVariants}>
-                <RecipeCard recipe={r} onDelete={setToDelete} />
+                <RecipeCard recipe={r} onDelete={setToDelete} matchInfo={matchInfo} />
               </motion.div>
             ))}
           </motion.div>
         ) : (
           <motion.div key="list" variants={gridVariants} initial="initial" animate="animate"
             style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {filtered.map(r => (
+            {filteredWithMatch.map(({ recipe: r, matchInfo }) => (
               <motion.div key={r.id} variants={cardVariants}>
-                <RecipeRow recipe={r} onDelete={setToDelete} />
+                <RecipeRow recipe={r} onDelete={setToDelete} matchInfo={matchInfo} />
               </motion.div>
             ))}
           </motion.div>

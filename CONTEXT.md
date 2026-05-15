@@ -36,6 +36,10 @@ _Avoid_: Pantry, inventory, stock
 A user's shopping list of free-text items, optionally with quantity and unit.
 _Avoid_: Shopping list, grocery list
 
+**Ingrediensfilter**:
+A transient, session-scoped selection of one or more Ingredienser used to filter the Recept catalog — surfacing Recept that match those Ingredienser. Not persisted; not tied to the user's Skafferi.
+_Avoid_: Ingredient search, pantry filter, recipe search
+
 ## Relationships
 
 - A **User** owns zero or more **Samlingar**
