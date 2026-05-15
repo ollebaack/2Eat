@@ -1,0 +1,4 @@
+services:
+  webapp:
+    ports:
+      - "80:80"

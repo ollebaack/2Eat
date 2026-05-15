@@ -85,7 +85,7 @@ jobs:
           echo 'ASPNETCORE_ENVIRONMENT=Production' >> .env
 
       - name: Start stack
-        run: docker compose up --build --wait --timeout 600
+        run: docker compose -f docker-compose.yml -f docker-compose.ci.yml up --build --wait --timeout 600
 
       - name: Show API startup logs
         if: always()
