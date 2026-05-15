@@ -80,7 +80,7 @@
   --destructive-foreground: oklch(0.985 0 0);
   --border:      var(--line);
   --input:       var(--line);
-  --ring:        var(--ink-30);
+  --ring:        var(--2eat-accent);
   --radius:      0.625rem;
 }
 
