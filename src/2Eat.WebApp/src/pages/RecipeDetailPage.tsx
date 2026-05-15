@@ -9,6 +9,7 @@ import type { Recipe } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import { MobileDetailScreen } from '@/components/mobile/MobileDetailScreen'
@@ -176,11 +177,26 @@ export function RecipeDetailPage() {
           <ArrowLeft size={14} strokeWidth={1.5} /> Tillbaka till alla recept
         </Button>
         <div style={{ display: 'flex', gap: 6 }}>
-          <Button variant="outline" size="icon" className="h-9 w-9 rounded-full" title="Lägg till i samling" onClick={() => setSamlingOpen(true)}><Bookmark size={15} strokeWidth={1.5} fill={isSaved ? 'currentColor' : 'none'} /></Button>
-          <Button variant="outline" size="icon" className="h-9 w-9 rounded-full" title="Redigera" asChild>
-            <Link to={`/recipes/${recipe.id}/edit`}><Pencil size={15} strokeWidth={1.5} /></Link>
-          </Button>
-          <Button variant="outline" size="icon" className="h-9 w-9 rounded-full" title="Ta bort recept" onClick={() => setDeleteOpen(true)}><Trash2 size={15} strokeWidth={1.5} /></Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="outline" size="icon" className="h-9 w-9 rounded-full" aria-label="Lägg till i samling" onClick={() => setSamlingOpen(true)}><Bookmark size={15} strokeWidth={1.5} fill={isSaved ? 'currentColor' : 'none'} /></Button>
+            </TooltipTrigger>
+            <TooltipContent>Lägg till i samling</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="outline" size="icon" className="h-9 w-9 rounded-full" aria-label="Redigera recept" asChild>
+                <Link to={`/recipes/${recipe.id}/edit`}><Pencil size={15} strokeWidth={1.5} /></Link>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Redigera recept</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="outline" size="icon" className="h-9 w-9 rounded-full" aria-label="Ta bort recept" onClick={() => setDeleteOpen(true)}><Trash2 size={15} strokeWidth={1.5} /></Button>
+            </TooltipTrigger>
+            <TooltipContent>Ta bort recept</TooltipContent>
+          </Tooltip>
           <DeleteConfirmDialog
             open={deleteOpen}
             onOpenChange={setDeleteOpen}

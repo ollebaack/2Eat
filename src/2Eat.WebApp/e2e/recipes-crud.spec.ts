@@ -109,7 +109,7 @@ test.describe('Edit Recipe', () => {
     const recipeId = await createRecipeViaApi(page, originalName)
 
     await page.goto(`/recipes/${recipeId}`)
-    await page.locator('a[title="Redigera"]').click()
+    await page.locator('[aria-label="Redigera recept"]').click()
 
     await expect(page).toHaveURL(`/recipes/${recipeId}/edit`, { timeout: 10_000 })
 
@@ -152,7 +152,7 @@ test.describe('Delete Recipe', () => {
     const recipeId = await createRecipeViaApi(page, recipeName)
 
     await page.goto(`/recipes/${recipeId}`)
-    await page.locator('[title="Ta bort recept"]').click()
+    await page.locator('[aria-label="Ta bort recept"]').click()
 
     await expect(page.getByRole('heading', { name: 'Ta bort recept?' })).toBeVisible({ timeout: 8_000 })
 
@@ -170,7 +170,7 @@ test.describe('Delete Recipe', () => {
     const recipeId = await createRecipeViaApi(page, recipeName)
 
     await page.goto(`/recipes/${recipeId}`)
-    await page.locator('[title="Ta bort recept"]').click()
+    await page.locator('[aria-label="Ta bort recept"]').click()
 
     await expect(page.getByRole('heading', { name: 'Ta bort recept?' })).toBeVisible({ timeout: 8_000 })
 
@@ -179,6 +179,6 @@ test.describe('Delete Recipe', () => {
 
     await expect(page).toHaveURL(`/recipes/${recipeId}`, { timeout: 8_000 })
     // Dialog dismissed — delete button back in view confirms the page is loaded and nothing was deleted
-    await expect(page.locator('[title="Ta bort recept"]')).toBeVisible({ timeout: 8_000 })
+    await expect(page.locator('[aria-label="Ta bort recept"]')).toBeVisible({ timeout: 8_000 })
   })
 })
