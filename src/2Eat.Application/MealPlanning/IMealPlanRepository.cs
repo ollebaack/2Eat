@@ -10,4 +10,5 @@ public interface IMealPlanRepository
     Task<MealPlanDay> AddDayAsync(MealPlanDay day);
     Task RemoveDayAsync(MealPlanDay day);
     Task SaveAsync();
+    Task<bool> IsRecipeDinnerEligibleAsync(int recipeId);
 }

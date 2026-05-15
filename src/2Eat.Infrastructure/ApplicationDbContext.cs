@@ -149,11 +149,11 @@ namespace _2Eat.Infrastructure
         public static void SeedData(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Category>().HasData(
-                new Category { Id = 1, Name = "Bakverk" },
-                new Category { Id = 2, Name = "Smörgåsar" },
-                new Category { Id = 3, Name = "Kött" },
-                new Category { Id = 4, Name = "Fisk" },
-                new Category { Id = 5, Name = "Övrigt" }
+                new Category { Id = 1, Name = "Bakverk",   IsDinnerEligible = false },
+                new Category { Id = 2, Name = "Smörgåsar", IsDinnerEligible = true },
+                new Category { Id = 3, Name = "Kött",      IsDinnerEligible = true },
+                new Category { Id = 4, Name = "Fisk",      IsDinnerEligible = true },
+                new Category { Id = 5, Name = "Övrigt",    IsDinnerEligible = true }
             );
 
             modelBuilder.Entity<Ingredient>().HasData(

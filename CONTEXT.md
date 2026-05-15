@@ -25,7 +25,7 @@ A named food item that belongs to a category and may carry allergen tags.
 _Avoid_: Item, food, product
 
 **Veckoplan**:
-A user's week-scoped meal plan mapping each day to an optional Recept and optional note.
+A user's week-scoped **dinner** planner mapping each day to an optional Recept (main course / middag) and optional note. One slot per day; always represents the evening meal. Non-dinner Recept (desserts, beverages, baked goods) are out of scope.
 _Avoid_: Meal plan, schedule, calendar
 
 **Skafferi**:
