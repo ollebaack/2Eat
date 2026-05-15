@@ -249,13 +249,13 @@ export function RecipeFormPage() {
 
         {/* Förberedelsetid */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <label style={labelStyle}>Förb. (min)</label>
+          <label style={labelStyle}>Förberedelsetid (min)</label>
           <input type="number" value={prepTime} onChange={e => setPrepTime(Number(e.target.value))} style={inputStyle} />
         </div>
 
         {/* Tillagningstid */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <label style={labelStyle}>Tillagn. (min)</label>
+          <label style={labelStyle}>Tillagningstid (min)</label>
           <input type="number" value={cookTime} onChange={e => setCookTime(Number(e.target.value))} style={inputStyle} />
         </div>
 
