@@ -20,8 +20,8 @@ const pageVariants = {
 function AnimatedOutlet() {
   const location = useLocation()
   return (
-    <AnimatePresence mode="wait" initial={false}>
-      <motion.div key={location.pathname} variants={pageVariants} initial="initial" animate="animate" exit="exit" style={{ height: '100%' }}>
+    <AnimatePresence mode="popLayout" initial={false}>
+      <motion.div key={location.pathname} variants={pageVariants} initial="initial" animate="animate" exit="exit">
         <Outlet />
       </motion.div>
     </AnimatePresence>
