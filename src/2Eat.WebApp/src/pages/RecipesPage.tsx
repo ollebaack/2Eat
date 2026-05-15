@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Plus, Shuffle, Clock, Users, Trash2, Bookmark, Search, X, LayoutGrid, List } from 'lucide-react'
@@ -177,6 +178,15 @@ function RecipeRow({ recipe, onDelete }: { recipe: Recipe; onDelete: (r: Recipe)
   )
 }
 
+// ── Animation variants ────────────────────────────────────────────────────
+const gridVariants = {
+  animate: { transition: { staggerChildren: 0.04 } },
+}
+const cardVariants = {
+  initial: { opacity: 0, y: 10 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.22, ease: 'easeOut' as const } },
+}
+
 // ── Skeleton ──────────────────────────────────────────────────────────────
 function CardSkeleton() {
   return (
@@ -223,12 +233,16 @@ function ShuffleModal({ open, recipes, onClose, onPick }: {
   }
 
   return (
-    <div
+    <motion.div
       onClick={onClose}
-      style={{ position: 'fixed', inset: 0, background: 'rgba(20,18,14,0.55)', backdropFilter: 'blur(6px)', display: 'grid', placeItems: 'center', zIndex: 100, padding: 24, animation: 'fadeIn 0.2s ease' }}
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      transition={{ duration: 0.2, ease: 'easeOut' as const }}
+      style={{ position: 'fixed', inset: 0, background: 'rgba(20,18,14,0.55)', backdropFilter: 'blur(6px)', display: 'grid', placeItems: 'center', zIndex: 100, padding: 24 }}
     >
-      <div
+      <motion.div
         onClick={e => e.stopPropagation()}
+        initial={{ opacity: 0, scale: 0.96, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.96, y: 8 }}
+        transition={{ duration: 0.2, ease: 'easeOut' as const }}
         style={{ width: '100%', maxWidth: 520, background: 'var(--paper)', border: '1px solid var(--line)', borderRadius: 24, overflow: 'hidden', boxShadow: '0 30px 60px -20px rgba(0,0,0,0.3)' }}
       >
         <div style={{ position: 'relative', height: 220 }}>
@@ -264,8 +278,8 @@ function ShuffleModal({ open, recipes, onClose, onPick }: {
             </Button>
           </div>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   )
 }
 
@@ -422,19 +436,20 @@ export function RecipesPage() {
           {categories.map(c => {
             const active = filterCat === c
             return (
-              <Button
-                key={c}
-                variant={active ? 'default' : 'outline'}
-                size="sm"
-                className="rounded-full"
-                onClick={() => setLocalCat(c)}
-                style={{
-                  background: active ? 'var(--ink)' : 'transparent',
-                  color: active ? 'var(--paper)' : 'var(--ink-70)',
-                  borderColor: active ? 'var(--ink)' : 'var(--line)',
-                  fontFamily: 'var(--font-sans)', fontSize: 12.5,
-                }}
-              >{c}</Button>
+              <motion.div key={c} whileTap={{ scale: 0.93 }}>
+                <Button
+                  variant={active ? 'default' : 'outline'}
+                  size="sm"
+                  className="rounded-full"
+                  onClick={() => setLocalCat(c)}
+                  style={{
+                    background: active ? 'var(--ink)' : 'transparent',
+                    color: active ? 'var(--paper)' : 'var(--ink-70)',
+                    borderColor: active ? 'var(--ink)' : 'var(--line)',
+                    fontFamily: 'var(--font-sans)', fontSize: 12.5,
+                  }}
+                >{c}</Button>
+              </motion.div>
             )
           })}
         </div>
@@ -443,8 +458,9 @@ export function RecipesPage() {
           {ALLERGEN_OPTIONS.map(a => {
             const active = activeAllergens.includes(a)
             return (
-              <button
+              <motion.button
                 key={a}
+                whileTap={{ scale: 0.93 }}
                 onClick={() => toggleAllergen(a)}
                 style={{
                   padding: '6px 12px', borderRadius: 999,
@@ -454,71 +470,86 @@ export function RecipesPage() {
                   fontFamily: 'var(--font-mono)', fontSize: 10.5, letterSpacing: '0.06em', textTransform: 'uppercase',
                   cursor: 'pointer', transition: 'all 0.15s',
                 }}
-              >{a}</button>
+              >{a}</motion.button>
             )
           })}
         </div>
       </div>
 
       {/* ── Content ────────────────────────────────────────────── */}
-      {loading ? (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 18 }}>
-          {Array.from({ length: 6 }).map((_, i) => <CardSkeleton key={i} />)}
-        </div>
-      ) : filtered.length === 0 ? (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: '60px 0', background: 'var(--surface-1)', borderRadius: 18, border: '1px dashed var(--line)', color: 'var(--ink-50)' }}>
-          <Search size={28} strokeWidth={1.5} style={{ color: 'var(--ink-40)' }} />
-          {(() => {
-            const hasTextSearch = !!query
-            const hasCategoryFilter = filterCat !== 'Alla'
-            const hasOtherFilter = urlFilter === 'favorites' || activeAllergens.length > 0
-            const hasAnyFilter = hasCategoryFilter || hasOtherFilter
+      <AnimatePresence mode="wait" initial={false}>
+        {loading ? (
+          <motion.div key="skeleton" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}
+            style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 18 }}>
+            {Array.from({ length: 6 }).map((_, i) => <CardSkeleton key={i} />)}
+          </motion.div>
+        ) : filtered.length === 0 ? (
+          <motion.div key="empty" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: 'easeOut' as const }}
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: '60px 0', background: 'var(--surface-1)', borderRadius: 18, border: '1px dashed var(--line)', color: 'var(--ink-50)' }}>
+            <Search size={28} strokeWidth={1.5} style={{ color: 'var(--ink-40)' }} />
+            {(() => {
+              const hasTextSearch = !!query
+              const hasCategoryFilter = filterCat !== 'Alla'
+              const hasOtherFilter = urlFilter === 'favorites' || activeAllergens.length > 0
+              const hasAnyFilter = hasCategoryFilter || hasOtherFilter
 
-            if (!hasTextSearch && !hasAnyFilter) {
+              if (!hasTextSearch && !hasAnyFilter) {
+                return (
+                  <>
+                    <p style={{ fontFamily: 'var(--font-serif)', fontSize: 22, color: 'var(--ink)', margin: 0 }}>Inga recept ännu.</p>
+                    <Button className="rounded-full mt-2" onClick={() => navigate('/recipes/new')}>Lägg till recept</Button>
+                  </>
+                )
+              }
+              if (hasTextSearch && !hasAnyFilter) {
+                return (
+                  <>
+                    <p style={{ fontFamily: 'var(--font-serif)', fontSize: 22, color: 'var(--ink)', margin: 0 }}>Inga recept matchar sökningen «{query}».</p>
+                    <p style={{ fontFamily: 'var(--font-sans)', fontSize: 13, margin: 0 }}>Prova ett annat sökord.</p>
+                  </>
+                )
+              }
+              if (!hasTextSearch && hasAnyFilter) {
+                return (
+                  <>
+                    <p style={{ fontFamily: 'var(--font-serif)', fontSize: 22, color: 'var(--ink)', margin: 0 }}>Inga recept i den här kategorin.</p>
+                    <p style={{ fontFamily: 'var(--font-sans)', fontSize: 13, margin: 0 }}>Prova att rensa filtren.</p>
+                  </>
+                )
+              }
               return (
                 <>
-                  <p style={{ fontFamily: 'var(--font-serif)', fontSize: 22, color: 'var(--ink)', margin: 0 }}>Inga recept ännu.</p>
-                  <Button className="rounded-full mt-2" onClick={() => navigate('/recipes/new')}>Lägg till recept</Button>
+                  <p style={{ fontFamily: 'var(--font-serif)', fontSize: 22, color: 'var(--ink)', margin: 0 }}>Inga recept matchar.</p>
+                  <p style={{ fontFamily: 'var(--font-sans)', fontSize: 13, margin: 0 }}>Prova ett annat sökord eller rensa filtren.</p>
                 </>
               )
-            }
-            if (hasTextSearch && !hasAnyFilter) {
-              return (
-                <>
-                  <p style={{ fontFamily: 'var(--font-serif)', fontSize: 22, color: 'var(--ink)', margin: 0 }}>Inga recept matchar sökningen «{query}».</p>
-                  <p style={{ fontFamily: 'var(--font-sans)', fontSize: 13, margin: 0 }}>Prova ett annat sökord.</p>
-                </>
-              )
-            }
-            if (!hasTextSearch && hasAnyFilter) {
-              return (
-                <>
-                  <p style={{ fontFamily: 'var(--font-serif)', fontSize: 22, color: 'var(--ink)', margin: 0 }}>Inga recept i den här kategorin.</p>
-                  <p style={{ fontFamily: 'var(--font-sans)', fontSize: 13, margin: 0 }}>Prova att rensa filtren.</p>
-                </>
-              )
-            }
-            // Both text search and filter active
-            return (
-              <>
-                <p style={{ fontFamily: 'var(--font-serif)', fontSize: 22, color: 'var(--ink)', margin: 0 }}>Inga recept matchar.</p>
-                <p style={{ fontFamily: 'var(--font-sans)', fontSize: 13, margin: 0 }}>Prova ett annat sökord eller rensa filtren.</p>
-              </>
-            )
-          })()}
-        </div>
-      ) : view === 'grid' ? (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 18 }}>
-          {filtered.map(r => <RecipeCard key={r.id} recipe={r} onDelete={setToDelete} />)}
-        </div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {filtered.map(r => <RecipeRow key={r.id} recipe={r} onDelete={setToDelete} />)}
-        </div>
-      )}
+            })()}
+          </motion.div>
+        ) : view === 'grid' ? (
+          <motion.div key="grid" variants={gridVariants} initial="initial" animate="animate"
+            style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 18 }}>
+            {filtered.map(r => (
+              <motion.div key={r.id} variants={cardVariants}>
+                <RecipeCard recipe={r} onDelete={setToDelete} />
+              </motion.div>
+            ))}
+          </motion.div>
+        ) : (
+          <motion.div key="list" variants={gridVariants} initial="initial" animate="animate"
+            style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {filtered.map(r => (
+              <motion.div key={r.id} variants={cardVariants}>
+                <RecipeRow recipe={r} onDelete={setToDelete} />
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── Shuffle modal ───────────────────────────────────────── */}
-      <ShuffleModal open={shuffleOpen} recipes={allRecipes ?? []} onClose={() => setShuffleOpen(false)} onPick={id => { setShuffleOpen(false); navigate(`/recipes/${id}`) }} />
+      <AnimatePresence>
+        {shuffleOpen && <ShuffleModal open={shuffleOpen} recipes={allRecipes ?? []} onClose={() => setShuffleOpen(false)} onPick={id => { setShuffleOpen(false); navigate(`/recipes/${id}`) }} />}
+      </AnimatePresence>
 
       {/* ── Delete dialog ───────────────────────────────────────── */}
       <Dialog open={!!toDelete} onOpenChange={o => !o && setToDelete(null)}>

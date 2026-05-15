@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Plus, Trash2 } from 'lucide-react'
@@ -128,25 +129,34 @@ export function SamlingarPage() {
         </Button>
       </div>
 
-      {isLoading ? (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 20 }}>
-          {[1, 2, 3, 4].map(i => <Skeleton key={i} className="rounded-[18px]" style={{ aspectRatio: '1', height: 280 }} />)}
-        </div>
-      ) : !samlingar?.length ? (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, padding: '80px 48px', color: 'var(--ink-50)' }}>
-          <p style={{ fontFamily: 'var(--font-serif)', fontSize: 22, color: 'var(--ink)', margin: 0 }}>Inga samlingar ännu</p>
-          <p style={{ fontFamily: 'var(--font-sans)', fontSize: 14, color: 'var(--ink-50)', margin: 0 }}>Skapa din första samling för att börja organisera dina recept.</p>
-          <Button className="rounded-full gap-2 mt-2" onClick={() => setCreateOpen(true)}>
-            <Plus size={15} /> Skapa samling
-          </Button>
-        </div>
-      ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 20 }}>
-          {samlingar.map(s => (
-            <SamlingCard key={s.id} samling={s} onDelete={() => setDeleteId(s.id)} />
-          ))}
-        </div>
-      )}
+      <AnimatePresence mode="wait" initial={false}>
+        {isLoading ? (
+          <motion.div key="skeleton" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}
+            style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 20 }}>
+            {[1, 2, 3, 4].map(i => <Skeleton key={i} className="rounded-[18px]" style={{ aspectRatio: '1', height: 280 }} />)}
+          </motion.div>
+        ) : !samlingar?.length ? (
+          <motion.div key="empty" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: 'easeOut' as const }}
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, padding: '80px 48px', color: 'var(--ink-50)' }}>
+            <p style={{ fontFamily: 'var(--font-serif)', fontSize: 22, color: 'var(--ink)', margin: 0 }}>Inga samlingar ännu</p>
+            <p style={{ fontFamily: 'var(--font-sans)', fontSize: 14, color: 'var(--ink-50)', margin: 0 }}>Skapa din första samling för att börja organisera dina recept.</p>
+            <Button className="rounded-full gap-2 mt-2" onClick={() => setCreateOpen(true)}>
+              <Plus size={15} /> Skapa samling
+            </Button>
+          </motion.div>
+        ) : (
+          <motion.div key="grid"
+            variants={{ animate: { transition: { staggerChildren: 0.05 } } }}
+            initial="initial" animate="animate"
+            style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 20 }}>
+            {samlingar.map(s => (
+              <motion.div key={s.id} variants={{ initial: { opacity: 0, y: 10 }, animate: { opacity: 1, y: 0, transition: { duration: 0.22, ease: 'easeOut' as const } } }}>
+                <SamlingCard samling={s} onDelete={() => setDeleteId(s.id)} />
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <Dialog open={createOpen} onOpenChange={o => { setCreateOpen(o); if (!o) setNewName('') }}>
         <DialogContent style={{ background: 'var(--paper)', borderRadius: 18, maxWidth: 420 }}>

@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { MotionConfig } from 'framer-motion'
 import { Toaster } from '@/components/ui/sonner'
 import { AuthProvider } from '@/context/AuthContext'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
@@ -23,6 +24,7 @@ const queryClient = new QueryClient({
 
 export default function App() {
   return (
+    <MotionConfig reducedMotion="user">
     <AuthProvider>
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
@@ -49,5 +51,6 @@ export default function App() {
         <Toaster />
       </QueryClientProvider>
     </AuthProvider>
+    </MotionConfig>
   )
 }
