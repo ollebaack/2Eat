@@ -97,7 +97,7 @@ export function MobileListScreen({ recipes }: MobileListScreenProps) {
           <input
             value={q}
             onChange={e => setQ(e.target.value)}
-            placeholder="Sök recept eller ingrediens…"
+            placeholder="Sök bland recept…"
             className="flex-1 border-0 outline-none bg-transparent text-ink"
             style={{ fontFamily: 'var(--font-sans)', fontSize: 14 }}
           />
