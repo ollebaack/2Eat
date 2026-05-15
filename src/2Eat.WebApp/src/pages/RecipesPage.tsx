@@ -184,7 +184,7 @@ const gridVariants = {
 }
 const cardVariants = {
   initial: { opacity: 0, y: 10 },
-  animate: { opacity: 1, y: 0, transition: { duration: 0.22, ease: 'easeOut' } },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.22, ease: 'easeOut' as const } },
 }
 
 // ── Skeleton ──────────────────────────────────────────────────────────────
@@ -236,13 +236,13 @@ function ShuffleModal({ open, recipes, onClose, onPick }: {
     <motion.div
       onClick={onClose}
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      transition={{ duration: 0.2, ease: 'easeOut' }}
+      transition={{ duration: 0.2, ease: 'easeOut' as const }}
       style={{ position: 'fixed', inset: 0, background: 'rgba(20,18,14,0.55)', backdropFilter: 'blur(6px)', display: 'grid', placeItems: 'center', zIndex: 100, padding: 24 }}
     >
       <motion.div
         onClick={e => e.stopPropagation()}
         initial={{ opacity: 0, scale: 0.96, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.96, y: 8 }}
-        transition={{ duration: 0.2, ease: 'easeOut' }}
+        transition={{ duration: 0.2, ease: 'easeOut' as const }}
         style={{ width: '100%', maxWidth: 520, background: 'var(--paper)', border: '1px solid var(--line)', borderRadius: 24, overflow: 'hidden', boxShadow: '0 30px 60px -20px rgba(0,0,0,0.3)' }}
       >
         <div style={{ position: 'relative', height: 220 }}>
@@ -484,7 +484,7 @@ export function RecipesPage() {
             {Array.from({ length: 6 }).map((_, i) => <CardSkeleton key={i} />)}
           </motion.div>
         ) : filtered.length === 0 ? (
-          <motion.div key="empty" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: 'easeOut' }}
+          <motion.div key="empty" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: 'easeOut' as const }}
             style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: '60px 0', background: 'var(--surface-1)', borderRadius: 18, border: '1px dashed var(--line)', color: 'var(--ink-50)' }}>
             <Search size={28} strokeWidth={1.5} style={{ color: 'var(--ink-40)' }} />
             {(() => {

@@ -13,8 +13,8 @@ import { AuthImg } from '@/components/AuthImg'
 
 const pageVariants = {
   initial: { opacity: 0, y: 8 },
-  animate: { opacity: 1, y: 0, transition: { duration: 0.2, ease: 'easeOut' } },
-  exit:    { opacity: 0, y: -4, transition: { duration: 0.15, ease: 'easeIn' } },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.2, ease: 'easeOut' as const } },
+  exit:    { opacity: 0, y: -4, transition: { duration: 0.15, ease: 'easeIn' as const } },
 }
 
 function AnimatedOutlet() {

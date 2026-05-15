@@ -136,7 +136,7 @@ export function SamlingarPage() {
             {[1, 2, 3, 4].map(i => <Skeleton key={i} className="rounded-[18px]" style={{ aspectRatio: '1', height: 280 }} />)}
           </motion.div>
         ) : !samlingar?.length ? (
-          <motion.div key="empty" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: 'easeOut' }}
+          <motion.div key="empty" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: 'easeOut' as const }}
             style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, padding: '80px 48px', color: 'var(--ink-50)' }}>
             <p style={{ fontFamily: 'var(--font-serif)', fontSize: 22, color: 'var(--ink)', margin: 0 }}>Inga samlingar ännu</p>
             <p style={{ fontFamily: 'var(--font-sans)', fontSize: 14, color: 'var(--ink-50)', margin: 0 }}>Skapa din första samling för att börja organisera dina recept.</p>
@@ -150,7 +150,7 @@ export function SamlingarPage() {
             initial="initial" animate="animate"
             style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 20 }}>
             {samlingar.map(s => (
-              <motion.div key={s.id} variants={{ initial: { opacity: 0, y: 10 }, animate: { opacity: 1, y: 0, transition: { duration: 0.22, ease: 'easeOut' } } }}>
+              <motion.div key={s.id} variants={{ initial: { opacity: 0, y: 10 }, animate: { opacity: 1, y: 0, transition: { duration: 0.22, ease: 'easeOut' as const } } }}>
                 <SamlingCard samling={s} onDelete={() => setDeleteId(s.id)} />
               </motion.div>
             ))}

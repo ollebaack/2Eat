@@ -14,7 +14,7 @@ export function EmptyState({ icon, title, description, action, className }: Empt
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.22, ease: 'easeOut' }}
+      transition={{ duration: 0.22, ease: 'easeOut' as const }}
       className={cn(
         'flex flex-col items-center gap-3 py-[60px] bg-surface-1 rounded-[18px] border border-dashed border-line text-ink-50',
         className,
