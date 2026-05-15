@@ -1,5 +1,6 @@
-import { NavLink, Outlet, Link, useNavigate, useMatch } from 'react-router-dom'
+import { NavLink, Outlet, Link, useNavigate, useMatch, useLocation } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
+import { AnimatePresence, motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Plus, BookOpen, Settings, Calendar, ShoppingBasket, Moon, Sun, LogOut, Library } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
@@ -9,6 +10,23 @@ import { MobileTabBar } from '@/components/mobile/MobileTabBar'
 import { useAuth } from '@/context/AuthContext'
 import { getSamlingar } from '@/lib/api'
 import { AuthImg } from '@/components/AuthImg'
+
+const pageVariants = {
+  initial: { opacity: 0, y: 8 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.2, ease: 'easeOut' } },
+  exit:    { opacity: 0, y: -4, transition: { duration: 0.15, ease: 'easeIn' } },
+}
+
+function AnimatedOutlet() {
+  const location = useLocation()
+  return (
+    <AnimatePresence mode="wait" initial={false}>
+      <motion.div key={location.pathname} variants={pageVariants} initial="initial" animate="animate" exit="exit" style={{ height: '100%' }}>
+        <AnimatedOutlet />
+      </motion.div>
+    </AnimatePresence>
+  )
+}
 
 const navItems = [
   { to: '/',            label: 'Recept',       icon: BookOpen,       end: true  },
@@ -73,7 +91,7 @@ export function Layout() {
     return (
       <div style={{ background: 'var(--paper)', minHeight: '100vh' }}>
         <main style={{ paddingBottom: 100 }}>
-          <Outlet />
+          <AnimatedOutlet />
         </main>
         {!isRecipeForm && (
           <button
@@ -217,7 +235,7 @@ export function Layout() {
       </aside>
 
       <main className="flex-1 min-w-0 overflow-y-auto">
-        <Outlet />
+        <AnimatedOutlet />
       </main>
     </div>
   )

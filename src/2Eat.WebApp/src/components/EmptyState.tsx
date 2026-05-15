@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
 interface EmptyStateProps {
@@ -10,7 +11,10 @@ interface EmptyStateProps {
 
 export function EmptyState({ icon, title, description, action, className }: EmptyStateProps) {
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.22, ease: 'easeOut' }}
       className={cn(
         'flex flex-col items-center gap-3 py-[60px] bg-surface-1 rounded-[18px] border border-dashed border-line text-ink-50',
         className,
@@ -29,6 +33,6 @@ export function EmptyState({ icon, title, description, action, className }: Empt
         </p>
       )}
       {action && <div className="mt-2">{action}</div>}
-    </div>
+    </motion.div>
   )
 }
