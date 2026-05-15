@@ -82,7 +82,17 @@ export function uploadFile(file: File): Promise<FileUpload> {
   }).then((r) => handleResponse<FileUpload>(r))
 }
 
-export const getFileUrl = (storedFileName: string) => `${BASE}/files/${storedFileName}`
+export async function fetchFile(storedFileName: string): Promise<Blob> {
+  const res = await fetch(`${BASE}/files/${storedFileName}`, { headers: authHeaders() })
+  if (res.status === 401) {
+    localStorage.removeItem(TOKEN_KEY)
+    localStorage.removeItem(USER_KEY)
+    window.location.href = '/login'
+    throw new Error('401 Unauthorized')
+  }
+  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
+  return res.blob()
+}
 
 export const getScanStatus = () => request<ScanStatus>('/recipes/scan/status')
 

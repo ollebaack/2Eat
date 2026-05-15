@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Bookmark, Shuffle, Flame, ArrowRight } from 'lucide-react'
 import type { Recipe } from '@/types'
-import { getFileUrl } from '@/lib/api'
+import { AuthImg } from '@/components/AuthImg'
 
 const SWATCHES = [
   'oklch(0.65 0.12 50)', 'oklch(0.6 0.1 145)', 'oklch(0.62 0.12 30)',
@@ -15,8 +15,8 @@ function HeroPhoto({ recipe }: { recipe: Recipe }) {
   if (recipe.imageUrl) {
     return (
       <div style={{ position: 'absolute', inset: 0 }}>
-        <img
-          src={getFileUrl(recipe.imageUrl)}
+        <AuthImg
+          src={recipe.imageUrl}
           alt={recipe.name}
           style={{ width: '100%', height: '100%', objectFit: 'cover' }}
         />

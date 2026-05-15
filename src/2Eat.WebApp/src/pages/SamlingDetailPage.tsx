@@ -8,7 +8,7 @@ import {
   addReceptToSamling, removeReceptFromSamling,
   updateSamlingOrder, getRecipes,
 } from '@/lib/api'
-import { getFileUrl } from '@/lib/api'
+import { AuthImg } from '@/components/AuthImg'
 import type { SamlingReceptItem, Recipe } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -64,7 +64,7 @@ function ReorderList({
           <GripVertical size={16} style={{ color: 'var(--ink-30)' }} />
           <div style={{ width: 44, height: 44, borderRadius: 8, overflow: 'hidden', flexShrink: 0 }}>
             {item.imageUrl ? (
-              <img src={getFileUrl(item.imageUrl)} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <AuthImg src={item.imageUrl} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             ) : (
               <div style={{ width: '100%', height: '100%', background: recipeSwatch(item.receptId) }} />
             )}

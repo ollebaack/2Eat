@@ -32,6 +32,7 @@ import {
 } from '@/lib/api'
 import { recipeSwatch } from '@/lib/recipeUtils'
 import type { PantryItem, Recipe, RecipeIngredient } from '@/types'
+import { AuthImg } from '@/components/AuthImg'
 
 const PANTRY_CATEGORIES = ['Skafferi', 'Kyl', 'Frys', 'Grönsaker', 'Krydda', 'Mejeri', 'Frukt']
 const FILTER_CATEGORIES = ['Alla', ...PANTRY_CATEGORIES]
@@ -668,7 +669,7 @@ function PantryRecipeCard({ entry, onNavigate }: PantryRecipeCardProps) {
       {/* Photo */}
       <div style={{ position: 'relative', aspectRatio: '16/9', overflow: 'hidden' }}>
         {recipe.imageUrl ? (
-          <img
+          <AuthImg
             src={recipe.imageUrl}
             alt={recipe.name}
             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
