@@ -72,7 +72,7 @@ export function Layout() {
   if (isMobile) {
     return (
       <div style={{ background: 'var(--paper)', minHeight: '100vh' }}>
-        <main style={{ paddingBottom: 100 }}>
+        <main style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 80px)' }}>
           <Outlet />
         </main>
         {!isRecipeForm && (
@@ -80,7 +80,7 @@ export function Layout() {
             onClick={() => navigate('/recipes/new')}
             aria-label="Nytt recept"
             style={{
-              position: 'fixed', bottom: 90, right: 20, zIndex: 40,
+              position: 'fixed', bottom: 'calc(env(safe-area-inset-bottom) + 76px)', right: 20, zIndex: 40,
               width: 52, height: 52, borderRadius: '50%',
               background: 'var(--2eat-accent)', color: 'var(--paper)',
               border: 'none', cursor: 'pointer',
