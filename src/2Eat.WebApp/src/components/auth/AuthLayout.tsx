@@ -22,37 +22,39 @@ export function AuthLayout({ title, children }: { title: string; children: React
           padding: '36px 32px',
         }}
       >
-        <div className="flex items-center gap-2.5 justify-center mb-6">
+        <div className="flex items-center gap-3 justify-center mb-6">
           <div
             style={{
-              width: 30,
-              height: 30,
-              background: 'var(--ink)',
-              color: 'var(--paper)',
-              fontFamily: 'var(--font-serif)',
-              fontSize: 19,
-              letterSpacing: '-0.04em',
+              width: 48,
+              height: 48,
+              background: 'linear-gradient(135deg, #FF6B35 0%, #FF8956 100%)',
+              borderRadius: 12,
               display: 'grid',
               placeItems: 'center',
-              borderRadius: 8,
+              fontFamily: '"Manrope", sans-serif',
+              fontSize: 28,
+              fontWeight: 800,
+              color: 'white',
+              flexShrink: 0,
             }}
           >
             2
           </div>
           <div style={{ lineHeight: 1.05 }}>
-            <div style={{ fontFamily: 'var(--font-serif)', fontSize: 22, letterSpacing: '-0.03em', color: 'var(--ink)' }}>
-              2Eat
+            <div style={{ fontFamily: '"Manrope", sans-serif', fontSize: 32, fontWeight: 800, letterSpacing: '-0.5px', color: 'var(--ink)' }}>
+              Eat
             </div>
             <div
               style={{
-                fontFamily: 'var(--font-mono)',
-                fontSize: 9.5,
-                letterSpacing: '0.14em',
+                fontFamily: '"Manrope", sans-serif',
+                fontSize: 11,
+                fontWeight: 600,
+                letterSpacing: '1.5px',
                 color: 'var(--ink-50)',
                 textTransform: 'uppercase',
               }}
             >
-              Hemkokboken
+              Hemmakoken
             </div>
           </div>
         </div>

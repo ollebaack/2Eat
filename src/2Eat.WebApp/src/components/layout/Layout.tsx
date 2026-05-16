@@ -104,16 +104,19 @@ export function Layout() {
       >
         <Link to="/" className="flex items-center gap-2.5 no-underline" style={{ padding: '22px 22px 16px' }}>
           <div
-            className="grid place-items-center rounded-lg shrink-0"
+            className="grid place-items-center shrink-0"
             style={{
-              width: 30, height: 30, background: 'var(--ink)', color: 'var(--paper)',
-              fontFamily: 'var(--font-serif)', fontSize: 19, letterSpacing: '-0.04em',
+              width: 34, height: 34,
+              background: 'linear-gradient(135deg, #FF6B35 0%, #FF8956 100%)',
+              borderRadius: 9,
+              fontFamily: '"Manrope", sans-serif', fontSize: 20, fontWeight: 800,
+              color: 'white',
             }}
           >2</div>
           <div className="flex flex-col" style={{ lineHeight: 1.05 }}>
-            <span style={{ fontFamily: 'var(--font-serif)', fontSize: 22, letterSpacing: '-0.03em', color: 'var(--ink)' }}>2Eat</span>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9.5, letterSpacing: '0.14em', color: 'var(--ink-50)', textTransform: 'uppercase', marginTop: 2 }}>
-              Hemkokboken
+            <span style={{ fontFamily: '"Manrope", sans-serif', fontSize: 22, fontWeight: 800, letterSpacing: '-0.5px', color: 'var(--ink)' }}>Eat</span>
+            <span style={{ fontFamily: '"Manrope", sans-serif', fontSize: 9, fontWeight: 600, letterSpacing: '1.5px', color: 'var(--ink-50)', textTransform: 'uppercase', marginTop: 2 }}>
+              Hemmakoken
             </span>
           </div>
         </Link>
