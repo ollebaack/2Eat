@@ -123,6 +123,7 @@ Domain entities never reference Application or Infrastructure. Application defin
 - **Responsive design**: all UI must support phone screens. Use Tailwind responsive prefixes (`sm:`, `md:`) and verify mobile layouts when making frontend changes.
 - **Notifications**: Sonner for toasts.
 - **Styling**: Tailwind CSS v4 (Vite plugin, no separate config file needed).
+- **Shadcn components only**: All interactive elements (`<button>`, `<input>`, `<select>`, `<textarea>`, `<label>`, checkboxes) must use the corresponding Shadcn component from `src/components/ui/`. Install new ones with `npx shadcn@latest add <name>` inside `src/2Eat.WebApp`. Raw HTML for interactive elements is not permitted. Inline `style` is allowed only for values Tailwind cannot express (CSS variables like `var(--ink)`, `backdropFilter`, `safe-area-inset`).
 
 ### Key Domain Models
 
