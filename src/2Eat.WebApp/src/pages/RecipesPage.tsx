@@ -1,10 +1,10 @@
-import { useState, useMemo, useEffect, useCallback } from 'react'
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Shuffle, Clock, Users, Trash2, Bookmark, Search, X, LayoutGrid, List } from 'lucide-react'
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { Plus, Shuffle, Clock, Users, Trash2, Bookmark, Search, X } from 'lucide-react'
 import { toast } from 'sonner'
-import { getRecipes, getRandomRecipes, deleteRecipe, getIngredients, ALLERGEN_OPTIONS } from '@/lib/api'
+import { getRecipesPage, getRandomRecipes, deleteRecipe, getCategories, getIngredients, ALLERGEN_OPTIONS } from '@/lib/api'
 import type { Recipe, AllergenId } from '@/types'
 import { IngredientCombobox } from '@/components/IngredientCombobox'
 import { Button } from '@/components/ui/button'
@@ -18,92 +18,32 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { useIsMobile } from '@/hooks/useIsMobile'
-import { MobileListScreen } from '@/components/mobile/MobileListScreen'
 import { PhotoSlot } from '@/components/PhotoSlot'
 import { StarRating } from '@/components/StarRating'
 import { Pill } from '@/components/Pill'
 import { recipeSwatch } from '@/lib/recipeUtils'
 
-// ── Hero feature ──────────────────────────────────────────────────────────
-const currentWeek = Math.ceil((Date.now() - +new Date(new Date().getFullYear(), 0, 1)) / (7 * 86400000))
-function HeroFeature({ recipe }: { recipe: Recipe; onOpen?: (id: number) => void }) {
-  const week = currentWeek
-  return (
-    <div style={{
-      display: 'grid', gridTemplateColumns: '1.1fr 1fr',
-      background: 'var(--paper)', border: '1px solid var(--line)',
-      borderRadius: 24, overflow: 'hidden', minHeight: 300,
-    }}>
-      <div style={{ padding: '36px 40px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 24 }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Pill tone="accent" size="sm">★ Veckans recept</Pill>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10.5, letterSpacing: '0.12em', color: 'var(--ink-50)', textTransform: 'uppercase' }}>
-              v.{week} · {recipe.category?.name}
-            </span>
-          </div>
-          <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(32px, 4vw, 52px)', lineHeight: 1.04, letterSpacing: '-0.035em', color: 'var(--ink)', margin: 0, fontWeight: 400 }}>
-            {recipe.name}
-          </h2>
-          <p style={{ fontFamily: 'var(--font-sans)', fontSize: 15, lineHeight: 1.55, color: 'var(--ink-70)', maxWidth: 440, margin: 0 }}>
-            {recipe.description}
-          </p>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', borderTop: '1px solid var(--line)', paddingTop: 18 }}>
-            {[
-              { k: 'Tid',       v: recipe.totalTime, u: 'min' },
-              { k: 'Portioner', v: recipe.servings,  u: 'st'  },
-              { k: 'Betyg',     v: recipe.rating,    u: '/ 5' },
-              { k: 'Förbered.', v: recipe.prepTime,  u: 'min' },
-            ].map(s => (
-              <div key={s.k} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9.5, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--ink-50)' }}>{s.k}</span>
-                <span style={{ fontFamily: 'var(--font-serif)', fontSize: 26, lineHeight: 1, color: 'var(--ink)', letterSpacing: '-0.02em' }}>
-                  {s.v}<span style={{ fontFamily: 'var(--font-sans)', fontSize: 12, color: 'var(--ink-50)', marginLeft: 4 }}>{s.u}</span>
-                </span>
-              </div>
-            ))}
-          </div>
-          <div style={{ display: 'flex', gap: 10 }}>
-            <Button asChild className="rounded-full" style={{ background: 'var(--ink)', color: 'var(--paper)', fontFamily: 'var(--font-sans)', fontSize: 13, border: 'none' }}>
-              <Link to={`/recipes/${recipe.id}`}>Öppna receptet →</Link>
-            </Button>
-            <Button variant="outline" className="rounded-full gap-2" style={{ fontFamily: 'var(--font-sans)', fontSize: 13 }}>
-              <Bookmark size={14} /> Spara
-            </Button>
-          </div>
-        </div>
-      </div>
-      <div style={{ position: 'relative', minHeight: 280 }}>
-        <PhotoSlot imageUrl={recipe.imageUrl} swatch={recipeSwatch(recipe.id)} label={recipe.name} height="100%" />
-      </div>
-    </div>
-  )
-}
+const PAGE_SIZE = 8
 
-type MatchInfo = { matched: number; total: number; missingSingle?: string }
-
-// ── Recipe card (grid view) ───────────────────────────────────────────────
-function RecipeCard({ recipe, onDelete, matchInfo }: { recipe: Recipe; onDelete: (r: Recipe) => void; matchInfo?: MatchInfo }) {
+// ── Feed card (Instagram-style) ───────────────────────────────────────────
+function FeedCard({ recipe, onDelete }: { recipe: Recipe; onDelete: (r: Recipe) => void }) {
   const [hovered, setHovered] = useState(false)
   return (
-    <article
+    <motion.article
+      variants={{ initial: { opacity: 0, y: 14 }, animate: { opacity: 1, y: 0, transition: { duration: 0.25, ease: 'easeOut' } } }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        display: 'flex', flexDirection: 'column',
         background: 'var(--paper)',
         border: `1px solid ${hovered ? 'var(--ink-30)' : 'var(--line)'}`,
-        borderRadius: 18, overflow: 'hidden', cursor: 'pointer',
-        transform: hovered ? 'translateY(-2px)' : 'none',
-        boxShadow: hovered ? '0 8px 24px -16px rgba(0,0,0,0.18)' : 'none',
-        transition: 'transform 0.2s, border-color 0.15s, box-shadow 0.2s',
+        borderRadius: 20,
+        overflow: 'hidden',
+        transition: 'border-color 0.15s, box-shadow 0.2s',
+        boxShadow: hovered ? '0 8px 28px -12px rgba(0,0,0,0.16)' : 'none',
       }}
     >
       <Link to={`/recipes/${recipe.id}`} style={{ display: 'block', position: 'relative', textDecoration: 'none' }}>
-        <PhotoSlot imageUrl={recipe.imageUrl} swatch={recipeSwatch(recipe.id)} label={recipe.category?.name} aspect="5/4" />
+        <PhotoSlot imageUrl={recipe.imageUrl} swatch={recipeSwatch(recipe.id)} label={recipe.category?.name} aspect="3/2" />
         <div style={{ position: 'absolute', top: 12, left: 12 }}>
           <Pill tone="ink" size="sm">{recipe.totalTime} MIN</Pill>
         </div>
@@ -112,37 +52,24 @@ function RecipeCard({ recipe, onDelete, matchInfo }: { recipe: Recipe; onDelete:
           onClick={e => { e.preventDefault(); e.stopPropagation() }}
         ><Bookmark size={14} strokeWidth={1.5} /></button>
       </Link>
-      <div style={{ padding: 18, display: 'flex', flexDirection: 'column', gap: 12, flex: 1 }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
-          <Link to={`/recipes/${recipe.id}`} style={{ textDecoration: 'none', flex: 1 }}>
-            <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: 22, lineHeight: 1.15, letterSpacing: '-0.025em', color: 'var(--ink)', margin: 0, fontWeight: 400 }}>
-              {recipe.name}
-            </h3>
-          </Link>
-          {matchInfo ? (
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10.5, color: 'var(--2eat-accent-deep)', whiteSpace: 'nowrap', padding: '2px 8px', background: 'color-mix(in oklch, var(--2eat-accent) 12%, transparent)', borderRadius: 999, letterSpacing: '0.04em' }}>
-              {matchInfo.matched}/{matchInfo.total}
-            </span>
-          ) : (
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10.5, color: 'var(--ink-50)', whiteSpace: 'nowrap', paddingTop: 6 }}>
-              №{String(recipe.id).padStart(3, '0')}
-            </span>
-          )}
-        </div>
-        <p style={{ fontFamily: 'var(--font-sans)', fontSize: 13, lineHeight: 1.45, color: 'var(--ink-60)', margin: 0, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-          {recipe.description}
-        </p>
-        {matchInfo?.missingSingle && (
-          <p style={{ fontFamily: 'var(--font-mono)', fontSize: 10.5, color: 'var(--ink-50)', margin: 0, letterSpacing: '0.04em' }}>
-            saknar {matchInfo.missingSingle}
+      <div style={{ padding: '18px 20px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <Link to={`/recipes/${recipe.id}`} style={{ textDecoration: 'none' }}>
+          <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: 26, lineHeight: 1.1, letterSpacing: '-0.025em', color: 'var(--ink)', margin: 0, fontWeight: 400 }}>
+            {recipe.name}
+          </h3>
+        </Link>
+        {recipe.description && (
+          <p style={{ fontFamily: 'var(--font-sans)', fontSize: 13.5, lineHeight: 1.5, color: 'var(--ink-60)', margin: 0, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+            {recipe.description}
           </p>
         )}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto', paddingTop: 12, borderTop: '1px dashed var(--line)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontFamily: 'var(--font-mono)', fontSize: 10.5, color: 'var(--ink-50)', letterSpacing: '0.04em' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 8, borderTop: '1px dashed var(--line)', marginTop: 2 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: 'var(--font-mono)', fontSize: 10.5, color: 'var(--ink-50)', letterSpacing: '0.04em' }}>
+            {recipe.category && <span>{recipe.category.name}</span>}
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Users size={12} strokeWidth={1.5} style={{ color: 'var(--ink-40)' }} />{recipe.servings}</span>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Clock size={12} strokeWidth={1.5} style={{ color: 'var(--ink-40)' }} />{recipe.totalTime}m</span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <StarRating value={recipe.rating} size={11} />
             <button
               onClick={e => { e.preventDefault(); e.stopPropagation(); onDelete(recipe) }}
@@ -151,70 +78,19 @@ function RecipeCard({ recipe, onDelete, matchInfo }: { recipe: Recipe; onDelete:
           </div>
         </div>
       </div>
-    </article>
+    </motion.article>
   )
-}
-
-// ── Recipe row (list view) ────────────────────────────────────────────────
-function RecipeRow({ recipe, onDelete, matchInfo }: { recipe: Recipe; onDelete: (r: Recipe) => void; matchInfo?: MatchInfo }) {
-  const [hovered, setHovered] = useState(false)
-  return (
-    <article
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        display: 'grid', gridTemplateColumns: '120px 1fr auto auto auto auto',
-        gap: 20, alignItems: 'center', padding: '14px 18px',
-        background: 'var(--paper)',
-        border: `1px solid ${hovered ? 'var(--ink-30)' : 'var(--line)'}`,
-        borderRadius: 14, transition: 'border-color 0.15s',
-      }}
-    >
-      <div style={{ borderRadius: 10, overflow: 'hidden', height: 70 }}>
-        <PhotoSlot imageUrl={recipe.imageUrl} swatch={recipeSwatch(recipe.id)} height="70px" />
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}>
-        <Link to={`/recipes/${recipe.id}`} style={{ textDecoration: 'none' }}>
-          <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: 22, letterSpacing: '-0.02em', color: 'var(--ink)', margin: 0, fontWeight: 400, lineHeight: 1.1 }}>{recipe.name}</h3>
-        </Link>
-        <p style={{ fontFamily: 'var(--font-sans)', fontSize: 12.5, color: 'var(--ink-60)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{recipe.description}</p>
-        {matchInfo && (
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10.5, color: 'var(--2eat-accent-deep)', letterSpacing: '0.04em' }}>
-            {matchInfo.matched}/{matchInfo.total}{matchInfo.missingSingle ? ` — saknar ${matchInfo.missingSingle}` : ''}
-          </span>
-        )}
-      </div>
-      {recipe.category && <Pill tone="default" size="sm">{recipe.category.name}</Pill>}
-      <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--ink-50)', letterSpacing: '0.06em', textAlign: 'right' }}>
-        <div>{recipe.totalTime} MIN</div>
-        <div>{recipe.servings} PERS</div>
-      </div>
-      <StarRating value={recipe.rating} size={12} />
-      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onDelete(recipe)}>
-        <Trash2 size={14} className="text-destructive" />
-      </Button>
-    </article>
-  )
-}
-
-// ── Animation variants ────────────────────────────────────────────────────
-const gridVariants = {
-  animate: { transition: { staggerChildren: 0.04 } },
-}
-const cardVariants = {
-  initial: { opacity: 0, y: 10 },
-  animate: { opacity: 1, y: 0, transition: { duration: 0.22, ease: 'easeOut' as const } },
 }
 
 // ── Skeleton ──────────────────────────────────────────────────────────────
-function CardSkeleton() {
+function FeedCardSkeleton() {
   return (
-    <div style={{ background: 'var(--paper)', border: '1px solid var(--line)', borderRadius: 18, overflow: 'hidden' }}>
-      <Skeleton style={{ height: 200 }} className="rounded-none w-full" />
-      <div style={{ padding: 18, display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <Skeleton className="h-5 w-3/4" />
+    <div style={{ background: 'var(--paper)', border: '1px solid var(--line)', borderRadius: 20, overflow: 'hidden' }}>
+      <Skeleton style={{ aspectRatio: '3/2', width: '100%' }} className="rounded-none" />
+      <div style={{ padding: '18px 20px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <Skeleton className="h-6 w-4/5" />
         <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-4 w-1/2" />
+        <Skeleton className="h-4 w-2/3" />
       </div>
     </div>
   )
@@ -307,98 +183,93 @@ export function RecipesPage() {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const isMobile = useIsMobile()
-  const [showRandom, setShowRandom] = useState(false)
   const [shuffleOpen, setShuffleOpen] = useState(false)
   const [toDelete, setToDelete] = useState<Recipe | null>(null)
-  const [query, setQuery] = useState('')
-  const [view, setView] = useState<'grid' | 'list'>('grid')
+  const [searchText, setSearchText] = useState('')
   const [activeAllergens, setActiveAllergens] = useState<AllergenId[]>([])
   const toggleAllergen = useCallback((a: AllergenId) => setActiveAllergens(prev => prev.includes(a) ? prev.filter(x => x !== a) : [...prev, a]), [])
   const [selectedIngredientIds, setSelectedIngredientIds] = useState<number[]>([])
+  const [activeCategoryId, setActiveCategoryId] = useState<number | undefined>(undefined)
 
-  const urlCategory = searchParams.get('category') ?? ''
   const urlFilter = searchParams.get('filter') ?? ''
-  const [localCat, setLocalCat] = useState('Alla')
-  // URL param takes priority; local chip selection applies when no URL param is present
-  const filterCat = urlCategory || localCat
 
-  const { data: allRecipes, isLoading } = useQuery({ queryKey: ['recipes'], queryFn: getRecipes, enabled: !showRandom })
-  const { data: randomRecipes, isLoading: randomLoading, refetch: refetchRandom } = useQuery({ queryKey: ['recipes', 'random', 6], queryFn: () => getRandomRecipes(6), enabled: showRandom })
+  // Stable seed for this browsing session — regenerates on page mount (navigation away + back)
+  const seed = useMemo(() => Math.floor(Math.random() * 900000) + 100000, [])
+
+  const sentinelRef = useRef<HTMLDivElement>(null)
+
+  const queryKey = ['recipes', 'feed', seed, searchText, activeCategoryId, activeAllergens, selectedIngredientIds]
+
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+  } = useInfiniteQuery({
+    queryKey,
+    queryFn: ({ pageParam }) => getRecipesPage({
+      seed,
+      page: pageParam as number,
+      pageSize: PAGE_SIZE,
+      search: searchText || undefined,
+      categoryId: activeCategoryId,
+      allergens: activeAllergens.length > 0 ? activeAllergens : undefined,
+      ingredientIds: selectedIngredientIds.length > 0 ? selectedIngredientIds : undefined,
+    }),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => lastPage.hasMore ? lastPage.page + 1 : undefined,
+    staleTime: 30_000,
+  })
+
+  const allRecipes = useMemo(() => data?.pages.flatMap(p => p.items) ?? [], [data])
+
+  // IntersectionObserver sentinel to auto-fetch next page
+  useEffect(() => {
+    const el = sentinelRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      entries => { if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) fetchNextPage() },
+      { rootMargin: '200px' }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage])
+
+  const { data: randomRecipesForShuffle } = useQuery({
+    queryKey: ['recipes', 'random', 6],
+    queryFn: () => getRandomRecipes(6),
+    enabled: shuffleOpen,
+  })
+
+  const { data: categories } = useQuery({ queryKey: ['categories'], queryFn: getCategories })
   const { data: allIngredients } = useQuery({ queryKey: ['ingredients'], queryFn: getIngredients })
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => deleteRecipe(id),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['recipes'] }); toast.success('Recept borttaget'); setToDelete(null) },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['recipes'] })
+      toast.success('Recept borttaget')
+      setToDelete(null)
+    },
     onError: () => toast.error('Kunde inte ta bort receptet'),
   })
 
-  const recipes = showRandom ? randomRecipes : allRecipes
-  const loading = showRandom ? randomLoading : isLoading
-
-  const categories = useMemo(() => {
-    const cats = [...new Set((allRecipes ?? []).map(r => r.category?.name).filter(Boolean) as string[])]
-    return ['Alla', ...cats]
-  }, [allRecipes])
-
-  const filteredWithMatch = useMemo(() => {
-    if (!recipes) return []
-    const base = recipes.filter(r => {
-      if (urlFilter === 'favorites' && !r.isFavorite) return false
-      if (filterCat !== 'Alla' && r.category?.name !== filterCat) return false
-      if (query) {
-        const q = query.toLowerCase()
-        if (!r.name.toLowerCase().includes(q) && !(r.description ?? '').toLowerCase().includes(q)) return false
-      }
-      if (activeAllergens.length > 0) {
-        const recipeAllergens = new Set(
-          r.ingredients.flatMap(ri => ri.ingredient?.allergens?.map(a => a.id) ?? [])
-        )
-        if (!activeAllergens.every(a => recipeAllergens.has(a))) return false
-      }
-      return true
-    })
-
-    if (selectedIngredientIds.length === 0) {
-      return base.map(r => ({ recipe: r, matchInfo: undefined as MatchInfo | undefined }))
-    }
-
-    const withMatch = base
-      .map(r => {
-        const recipeIngIds = new Set(r.ingredients.map(ri => ri.ingredientId))
-        const matched = selectedIngredientIds.filter(id => recipeIngIds.has(id)).length
-        if (matched === 0) return null
-        const total = selectedIngredientIds.length
-        const missingIds = selectedIngredientIds.filter(id => !recipeIngIds.has(id))
-        const missingSingle = missingIds.length === 1
-          ? (allIngredients ?? []).find(i => i.id === missingIds[0])?.name
-          : undefined
-        return { recipe: r, matchInfo: { matched, total, missingSingle } as MatchInfo }
-      })
-      .filter((x): x is { recipe: Recipe; matchInfo: MatchInfo } => x !== null)
-
-    withMatch.sort((a, b) => b.matchInfo.matched / b.matchInfo.total - a.matchInfo.matched / a.matchInfo.total)
-    return withMatch
-  }, [recipes, filterCat, urlFilter, query, activeAllergens, selectedIngredientIds, allIngredients])
-
-  const featured = filteredWithMatch[0]?.recipe
   const now = new Date()
   const monthName = now.toLocaleDateString('sv-SE', { month: 'long', year: 'numeric' })
 
-  if (isMobile) {
-    return <MobileListScreen recipes={allRecipes ?? []} />
-  }
+  const hasActiveFilters = !!searchText || activeCategoryId !== undefined || activeAllergens.length > 0 || selectedIngredientIds.length > 0 || urlFilter === 'favorites'
 
   return (
-    <div style={{ maxWidth: 1320, margin: '0 auto', padding: '36px 40px 60px', width: '100%' }}>
+    <div style={{ maxWidth: 1100, margin: '0 auto', padding: '36px 24px 80px', width: '100%' }}>
 
       {/* ── Header ─────────────────────────────────────────────── */}
       <header style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 24, flexWrap: 'wrap', marginBottom: 32 }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0, flex: '1 1 420px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0, flex: '1 1 300px' }}>
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.16em', color: 'var(--2eat-accent-deep)', textTransform: 'uppercase' }}>
             Hemkokboken · {monthName}
           </span>
-          <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(40px, 5.4vw, 60px)', letterSpacing: '-0.035em', lineHeight: 0.98, color: 'var(--ink)', margin: 0, fontWeight: 400 }}>
+          <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(36px, 5vw, 56px)', letterSpacing: '-0.035em', lineHeight: 0.98, color: 'var(--ink)', margin: 0, fontWeight: 400 }}>
             Vad ska vi <em style={{ fontStyle: 'italic', color: 'var(--2eat-accent-deep)' }}>äta</em> ikväll?
           </h1>
         </div>
@@ -421,80 +292,64 @@ export function RecipesPage() {
         </div>
       </header>
 
-      {/* ── Hero ───────────────────────────────────────────────── */}
-      {!loading && featured && <div style={{ marginBottom: 32 }}><HeroFeature recipe={featured} onOpen={id => navigate(`/recipes/${id}`)} /></div>}
-
       {/* ── Filter bar ─────────────────────────────────────────── */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 32 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          {/* Search */}
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 10, padding: '0 16px', background: 'var(--surface-1)', border: '1px solid var(--line)', borderRadius: 999, maxWidth: 460 }}>
-            <Search size={15} strokeWidth={1.5} style={{ color: 'var(--ink-50)', flexShrink: 0 }} />
-            <Input
-              value={query}
-              onChange={e => setQuery(e.target.value)}
-              placeholder="Sök bland recept…"
-              className="border-0 bg-transparent shadow-none focus-visible:ring-0 px-0"
-              style={{ fontFamily: 'var(--font-sans)', fontSize: 13.5, color: 'var(--ink)' }}
-            />
-            {query && (
-              <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0" style={{ color: 'var(--ink-50)' }} onClick={() => setQuery('')}>
-                <X size={14} />
-              </Button>
-            )}
-          </div>
-          <div style={{ display: 'flex', gap: 6, marginLeft: 'auto', alignItems: 'center' }}>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--ink-50)', letterSpacing: '0.08em', textTransform: 'uppercase', marginRight: 4 }}>
-              {String(filteredWithMatch.length).padStart(2, '0')} recept
-            </span>
-            {/* View toggle */}
-            <div style={{ display: 'inline-flex', padding: 3, background: 'var(--surface-1)', border: '1px solid var(--line)', borderRadius: 999 }}>
-              {([['grid', LayoutGrid], ['list', List]] as const).map(([k, Ic]) => (
-                <Button
-                  key={k}
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-8 rounded-full"
-                  onClick={() => setView(k)}
-                  style={{ background: view === k ? 'var(--paper)' : 'transparent', color: view === k ? 'var(--ink)' : 'var(--ink-50)', boxShadow: view === k ? '0 1px 2px rgba(0,0,0,0.06)' : 'none' }}
-                >
-                  <Ic size={14} strokeWidth={1.5} />
-                </Button>
-              ))}
-            </div>
-            <Button
-              variant={showRandom ? 'default' : 'outline'}
-              size="sm"
-              className="rounded-full gap-1.5 text-xs"
-              style={{ fontFamily: 'var(--font-sans)' }}
-              onClick={() => { setShowRandom(v => !v); if (showRandom) void refetchRandom() }}
-            >
-              <Shuffle size={12} /> {showRandom ? 'Alla' : 'Slumpa'}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 28 }}>
+        {/* Search */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 16px', background: 'var(--surface-1)', border: '1px solid var(--line)', borderRadius: 999, maxWidth: 500 }}>
+          <Search size={15} strokeWidth={1.5} style={{ color: 'var(--ink-50)', flexShrink: 0 }} />
+          <Input
+            value={searchText}
+            onChange={e => setSearchText(e.target.value)}
+            placeholder="Sök bland recept…"
+            className="border-0 bg-transparent shadow-none focus-visible:ring-0 px-0"
+            style={{ fontFamily: 'var(--font-sans)', fontSize: 13.5, color: 'var(--ink)' }}
+          />
+          {searchText && (
+            <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0" style={{ color: 'var(--ink-50)' }} onClick={() => setSearchText('')}>
+              <X size={14} />
             </Button>
-          </div>
+          )}
         </div>
+
         {/* Category chips */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-          {categories.map(c => {
-            const active = filterCat === c
-            return (
-              <motion.div key={c} whileTap={{ scale: 0.93 }}>
-                <Button
-                  variant={active ? 'default' : 'outline'}
-                  size="sm"
-                  className="rounded-full"
-                  onClick={() => setLocalCat(c)}
-                  style={{
-                    background: active ? 'var(--ink)' : 'transparent',
-                    color: active ? 'var(--paper)' : 'var(--ink-70)',
-                    borderColor: active ? 'var(--ink)' : 'var(--line)',
-                    fontFamily: 'var(--font-sans)', fontSize: 12.5,
-                  }}
-                >{c}</Button>
-              </motion.div>
-            )
-          })}
-        </div>
+        {categories && categories.length > 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+            <motion.div whileTap={{ scale: 0.93 }}>
+              <Button
+                variant={activeCategoryId === undefined ? 'default' : 'outline'}
+                size="sm"
+                className="rounded-full"
+                onClick={() => setActiveCategoryId(undefined)}
+                style={{
+                  background: activeCategoryId === undefined ? 'var(--ink)' : 'transparent',
+                  color: activeCategoryId === undefined ? 'var(--paper)' : 'var(--ink-70)',
+                  borderColor: activeCategoryId === undefined ? 'var(--ink)' : 'var(--line)',
+                  fontFamily: 'var(--font-sans)', fontSize: 12.5,
+                }}
+              >Alla</Button>
+            </motion.div>
+            {categories.map(c => {
+              const active = activeCategoryId === c.id
+              return (
+                <motion.div key={c.id} whileTap={{ scale: 0.93 }}>
+                  <Button
+                    variant={active ? 'default' : 'outline'}
+                    size="sm"
+                    className="rounded-full"
+                    onClick={() => setActiveCategoryId(active ? undefined : c.id)}
+                    style={{
+                      background: active ? 'var(--ink)' : 'transparent',
+                      color: active ? 'var(--paper)' : 'var(--ink-70)',
+                      borderColor: active ? 'var(--ink)' : 'var(--line)',
+                      fontFamily: 'var(--font-sans)', fontSize: 12.5,
+                    }}
+                  >{c.name}</Button>
+                </motion.div>
+              )
+            })}
+          </div>
+        )}
+
         {/* Allergen chips */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
           {ALLERGEN_OPTIONS.map(a => {
@@ -509,13 +364,14 @@ export function RecipesPage() {
                   border: '1px dashed ' + (active ? 'var(--2eat-accent)' : 'var(--ink-30)'),
                   background: active ? 'color-mix(in oklch, var(--2eat-accent) 12%, transparent)' : 'transparent',
                   color: active ? 'var(--2eat-accent-deep)' : 'var(--ink-50)',
-                  fontFamily: 'var(--font-mono)', fontSize: 10.5, letterSpacing: '0.06em', textTransform: 'uppercase',
+                  fontFamily: 'var(--font-mono)', fontSize: 10.5, letterSpacing: '0.06em', textTransform: 'uppercase' as const,
                   cursor: 'pointer', transition: 'all 0.15s',
                 }}
               >{a}</motion.button>
             )
           })}
         </div>
+
         {/* Ingrediensfilter */}
         <IngredientCombobox
           ingredients={allIngredients ?? []}
@@ -524,79 +380,65 @@ export function RecipesPage() {
         />
       </div>
 
-      {/* ── Content ────────────────────────────────────────────── */}
+      {/* ── Feed ───────────────────────────────────────────────── */}
       <AnimatePresence mode="wait" initial={false}>
-        {loading ? (
+        {isLoading ? (
           <motion.div key="skeleton" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}
-            style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 18 }}>
-            {Array.from({ length: 6 }).map((_, i) => <CardSkeleton key={i} />)}
+            style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 20 }}>
+            {Array.from({ length: PAGE_SIZE }).map((_, i) => <FeedCardSkeleton key={i} />)}
           </motion.div>
-        ) : filteredWithMatch.length === 0 ? (
-          <motion.div key="empty" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: 'easeOut' as const }}
+        ) : allRecipes.length === 0 ? (
+          <motion.div key="empty" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}
             style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: '60px 0', background: 'var(--surface-1)', borderRadius: 18, border: '1px dashed var(--line)', color: 'var(--ink-50)' }}>
             <Search size={28} strokeWidth={1.5} style={{ color: 'var(--ink-40)' }} />
-            {(() => {
-              const hasTextSearch = !!query
-              const hasCategoryFilter = filterCat !== 'Alla'
-              const hasOtherFilter = urlFilter === 'favorites' || activeAllergens.length > 0 || selectedIngredientIds.length > 0
-              const hasAnyFilter = hasCategoryFilter || hasOtherFilter
-
-              if (!hasTextSearch && !hasAnyFilter) {
-                return (
-                  <>
-                    <p style={{ fontFamily: 'var(--font-serif)', fontSize: 22, color: 'var(--ink)', margin: 0 }}>Inga recept ännu.</p>
-                    <Button className="rounded-full mt-2" onClick={() => navigate('/recipes/new')}>Lägg till recept</Button>
-                  </>
-                )
-              }
-              if (hasTextSearch && !hasAnyFilter) {
-                return (
-                  <>
-                    <p style={{ fontFamily: 'var(--font-serif)', fontSize: 22, color: 'var(--ink)', margin: 0 }}>Inga recept matchar sökningen «{query}».</p>
-                    <p style={{ fontFamily: 'var(--font-sans)', fontSize: 13, margin: 0 }}>Prova ett annat sökord.</p>
-                  </>
-                )
-              }
-              if (!hasTextSearch && hasAnyFilter) {
-                return (
-                  <>
-                    <p style={{ fontFamily: 'var(--font-serif)', fontSize: 22, color: 'var(--ink)', margin: 0 }}>Inga recept i den här kategorin.</p>
-                    <p style={{ fontFamily: 'var(--font-sans)', fontSize: 13, margin: 0 }}>Prova att rensa filtren.</p>
-                  </>
-                )
-              }
-              return (
-                <>
-                  <p style={{ fontFamily: 'var(--font-serif)', fontSize: 22, color: 'var(--ink)', margin: 0 }}>Inga recept matchar.</p>
-                  <p style={{ fontFamily: 'var(--font-sans)', fontSize: 13, margin: 0 }}>Prova ett annat sökord eller rensa filtren.</p>
-                </>
-              )
-            })()}
-          </motion.div>
-        ) : view === 'grid' ? (
-          <motion.div key="grid" variants={gridVariants} initial="initial" animate="animate"
-            style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 18 }}>
-            {filteredWithMatch.map(({ recipe: r, matchInfo }) => (
-              <motion.div key={r.id} variants={cardVariants}>
-                <RecipeCard recipe={r} onDelete={setToDelete} matchInfo={matchInfo} />
-              </motion.div>
-            ))}
+            {hasActiveFilters ? (
+              <>
+                <p style={{ fontFamily: 'var(--font-serif)', fontSize: 22, color: 'var(--ink)', margin: 0 }}>Inga recept matchar.</p>
+                <p style={{ fontFamily: 'var(--font-sans)', fontSize: 13, margin: 0 }}>Prova ett annat sökord eller rensa filtren.</p>
+              </>
+            ) : (
+              <>
+                <p style={{ fontFamily: 'var(--font-serif)', fontSize: 22, color: 'var(--ink)', margin: 0 }}>Inga recept ännu.</p>
+                <Button className="rounded-full mt-2" onClick={() => navigate('/recipes/new')}>Lägg till recept</Button>
+              </>
+            )}
           </motion.div>
         ) : (
-          <motion.div key="list" variants={gridVariants} initial="initial" animate="animate"
-            style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {filteredWithMatch.map(({ recipe: r, matchInfo }) => (
-              <motion.div key={r.id} variants={cardVariants}>
-                <RecipeRow recipe={r} onDelete={setToDelete} matchInfo={matchInfo} />
-              </motion.div>
+          <motion.div key="feed" initial="initial" animate="animate"
+            variants={{ animate: { transition: { staggerChildren: 0.05 } } }}
+            style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 20 }}>
+            {allRecipes.map(r => (
+              <FeedCard key={r.id} recipe={r} onDelete={setToDelete} />
             ))}
           </motion.div>
         )}
       </AnimatePresence>
 
+      {/* ── Infinite scroll sentinel ────────────────────────────── */}
+      <div ref={sentinelRef} style={{ height: 1, marginTop: 32 }} />
+
+      {isFetchingNextPage && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 20, marginTop: 0 }}>
+          {Array.from({ length: PAGE_SIZE }).map((_, i) => <FeedCardSkeleton key={i} />)}
+        </div>
+      )}
+
+      {!hasNextPage && allRecipes.length > 0 && (
+        <p style={{ textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--ink-40)', letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: 40 }}>
+          — {allRecipes.length} recept —
+        </p>
+      )}
+
       {/* ── Shuffle modal ───────────────────────────────────────── */}
       <AnimatePresence>
-        {shuffleOpen && <ShuffleModal open={shuffleOpen} recipes={allRecipes ?? []} onClose={() => setShuffleOpen(false)} onPick={id => { setShuffleOpen(false); navigate(`/recipes/${id}`) }} />}
+        {shuffleOpen && (
+          <ShuffleModal
+            open={shuffleOpen}
+            recipes={randomRecipesForShuffle ?? allRecipes.slice(0, 6)}
+            onClose={() => setShuffleOpen(false)}
+            onPick={id => { setShuffleOpen(false); navigate(`/recipes/${id}`) }}
+          />
+        )}
       </AnimatePresence>
 
       {/* ── Delete dialog ───────────────────────────────────────── */}

@@ -1,3 +1,4 @@
+using _2Eat.Application;
 using _2Eat.Domain;
 
 namespace _2Eat.Application.Recipes;
@@ -5,6 +6,7 @@ namespace _2Eat.Application.Recipes;
 public interface IRecipeService
 {
     Task<List<Recipe>> GetRecipesAsync();
+    Task<PagedResult<Recipe>> GetRecipesPageAsync(RecipeQuery query);
     Task<List<Recipe>> GetRandomRecipesAsync(int count);
     Task<Recipe?> GetRecipeByIdAsync(int id);
     Task<Recipe> AddRecipeAsync(Recipe recipe);

@@ -1,3 +1,4 @@
+using _2Eat.Application;
 using _2Eat.Domain;
 using _2Eat.Domain.Enums;
 
@@ -6,6 +7,7 @@ namespace _2Eat.Application.Recipes;
 public interface IRecipeRepository
 {
     Task<List<Recipe>> GetAllAsync();
+    Task<PagedResult<Recipe>> GetPageAsync(RecipeQuery query);
     Task<List<Recipe>> GetRandomAsync(int count);
     Task<Recipe?> GetByIdAsync(int id);
     Task<Recipe?> GetWithIngredientsAsync(int id);

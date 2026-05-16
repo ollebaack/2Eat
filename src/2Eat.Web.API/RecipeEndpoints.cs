@@ -1,4 +1,5 @@
-﻿using _2Eat.Domain;
+﻿using _2Eat.Application;
+using _2Eat.Domain;
 using _2Eat.Application.Recipes;
 using Microsoft.AspNetCore.Http.HttpResults;
 
@@ -11,6 +12,8 @@ namespace _2Eat.Web.API
             endpoints.MapGet("/api/categories", GetCategories).RequireAuthorization();
 
             endpoints.MapGet("/api/recipes", GetRecipes).RequireAuthorization();
+
+            endpoints.MapGet("/api/recipes/feed", GetRecipesFeed).RequireAuthorization();
 
             endpoints.MapGet("/api/recipes/random/{count}", GetRandomRecipes).RequireAuthorization();
 
@@ -38,6 +41,34 @@ namespace _2Eat.Web.API
             }
 
             return TypedResults.Ok(recipes);
+        }
+
+        public static async Task<Ok<PagedResult<Recipe>>> GetRecipesFeed(
+            IRecipeService _service,
+            string? search = null,
+            int? categoryId = null,
+            string? allergens = null,
+            string? ingredientIds = null,
+            int page = 0,
+            int pageSize = 8,
+            int seed = 1)
+        {
+            var query = new RecipeQuery
+            {
+                Search = search,
+                CategoryId = categoryId,
+                Allergens = string.IsNullOrWhiteSpace(allergens)
+                    ? []
+                    : allergens.Split(',').Where(s => !string.IsNullOrWhiteSpace(s)).ToList(),
+                IngredientIds = string.IsNullOrWhiteSpace(ingredientIds)
+                    ? []
+                    : ingredientIds.Split(',').Select(int.Parse).ToList(),
+                Page = page,
+                PageSize = pageSize,
+                Seed = seed,
+            };
+            var result = await _service.GetRecipesPageAsync(query);
+            return TypedResults.Ok(result);
         }
 
         public static async Task<Results<Ok<List<Recipe>>, NotFound>> GetRandomRecipes(int count, IRecipeService _service)
