@@ -30,13 +30,13 @@ export function MobileTabBar() {
     <nav
       aria-label="Huvudnavigation"
       style={{
-        position: 'fixed', left: 12, right: 12, bottom: 18, zIndex: 50,
-        borderRadius: 28, padding: '8px 6px',
-        background: 'color-mix(in oklch, var(--paper) 80%, transparent)',
+        position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 50,
+        padding: '8px 6px',
+        paddingBottom: 'max(env(safe-area-inset-bottom), 8px)',
+        background: 'color-mix(in oklch, var(--paper) 92%, transparent)',
         backdropFilter: 'blur(20px) saturate(180%)',
         WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-        border: '0.5px solid var(--line)',
-        boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
+        borderTop: '0.5px solid var(--line)',
         display: 'flex', justifyContent: 'space-around',
       }}
     >
