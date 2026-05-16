@@ -1,0 +1,89 @@
+name: Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+
+concurrency:
+  group: code-review-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ai-review:
+    name: AI Code Review
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Claude Code Review
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          claude_args: --model claude-sonnet-4-6
+          direct_prompt: |
+            You are a code reviewer for the 2Eat project. Review only the changed files in this pull request.
+            Run `gh pr diff ${{ github.event.pull_request.number }}` to get the diff, then review it.
+
+            Apply these two rule sets:
+
+            ## Frontend rules (files under src/2Eat.WebApp/src/)
+
+            Shadcn-first: the project has pre-built Shadcn/Radix UI components in
+            src/2Eat.WebApp/src/components/ui/. Before using a raw HTML element or writing
+            a custom component, check if a Shadcn equivalent already exists.
+
+            Available components: Badge, Button, Card, Dialog, Input, Label, Select,
+            Separator, Skeleton, Sonner (toast/notifications), Textarea, Tooltip.
+
+            Flag when you see:
+            - Raw <button>, <input>, <select>, <textarea>, <dialog>, or <label> elements
+              that should use the Shadcn equivalent from components/ui/
+            - New reusable UI components defined inline in page/feature files that belong
+              in src/components/ui/ instead
+            - Custom implementations of loading states, toasts, or tooltips that duplicate
+              Skeleton, Sonner, or Tooltip
+
+            Do NOT flag:
+            - HTML elements inside the components/ui/ files themselves (those are the implementations)
+            - Semantic structural elements (<main>, <section>, <header>, <nav>, <ul>, <li>, etc.)
+            - SVG or icon elements
+
+            ## Backend rules (files under src/ and tests/, excluding WebApp)
+
+            Flag when you see:
+            - Blocking async calls: .Result, .Wait(), .GetAwaiter().GetResult() on Tasks
+            - Services instantiated with `new` instead of injected via constructor DI
+            - MVC-style controllers or [ApiController] attributes — project uses Minimal APIs only
+            - Application layer code that depends directly on EF Core types (DbContext, DbSet)
+              instead of repository interfaces
+            - Raw SQL strings — use EF Core LINQ queries
+            - Read-only EF Core queries missing AsNoTracking()
+            - Non-nullable return types returning null without ? annotation
+
+            Do NOT flag:
+            - Test files using `new` for test doubles or value objects — that is expected
+            - Infrastructure layer (EfXxxRepository) using DbContext — that is its job
+
+            ## Output format
+
+            Post exactly one PR review using `gh pr review ${{ github.event.pull_request.number }} --comment --body "..."`.
+
+            Structure the body as:
+
+            ### Frontend
+            <findings or "No issues found.">
+
+            ### Backend
+            <findings or "No issues found.">
+
+            For each finding: file path, line number(s), what the issue is, and a
+            one-line suggested fix. Group multiple findings under the same rule together.
+            Be concise — no summaries, no praise, just actionable findings.
