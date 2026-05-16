@@ -7,6 +7,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { getScanStatus, scanRecipeFromImage, scanRecipeFromUrl } from '@/lib/api'
 import { AuthImg } from '@/components/AuthImg'
 import type { ScannedRecipe } from '@/types'
@@ -90,18 +92,6 @@ export function ScanRecipeDialog({ open, onOpenChange, onApply }: Props) {
     onOpenChange(false)
   }
 
-  const tabBtn = (t: Tab): React.CSSProperties => ({
-    padding: '7px 18px',
-    borderRadius: 999,
-    border: tab === t ? 'none' : '1px solid var(--line)',
-    background: tab === t ? 'var(--2eat-accent)' : 'transparent',
-    color: tab === t ? 'var(--paper)' : 'var(--ink)',
-    cursor: 'pointer',
-    fontFamily: 'var(--font-sans)',
-    fontSize: 13,
-    fontWeight: tab === t ? 500 : 400,
-  })
-
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent style={{ maxWidth: 480 }}>
@@ -165,18 +155,19 @@ export function ScanRecipeDialog({ open, onOpenChange, onApply }: Props) {
             </div>
 
             <div style={{ display: 'flex', gap: 8 }}>
-              <button
+              <Button
+                variant="outline"
                 onClick={handleReset}
-                style={{ flex: 1, padding: '10px 0', borderRadius: 999, border: '1px solid var(--line)', background: 'transparent', cursor: 'pointer', fontFamily: 'var(--font-sans)', fontSize: 13, color: 'var(--ink)' }}
+                className="flex-1 rounded-full"
               >
                 Skanna igen
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={handleApply}
-                style={{ flex: 2, padding: '10px 0', borderRadius: 999, border: 'none', background: 'var(--2eat-accent)', color: 'var(--paper)', cursor: 'pointer', fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 500 }}
+                className="flex-[2] rounded-full"
               >
                 Använd recept ✓
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -185,8 +176,8 @@ export function ScanRecipeDialog({ open, onOpenChange, onApply }: Props) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             {/* Tabs */}
             <div style={{ display: 'flex', gap: 8 }}>
-              <button style={tabBtn('image')} onClick={() => setTab('image')}>Bild</button>
-              <button style={tabBtn('url')} onClick={() => setTab('url')}>URL</button>
+              <Button variant={tab === 'image' ? 'default' : 'ghost'} size="sm" onClick={() => setTab('image')}>Bild</Button>
+              <Button variant={tab === 'url' ? 'default' : 'ghost'} size="sm" onClick={() => setTab('url')}>URL</Button>
             </div>
 
             {tab === 'image' && (
@@ -194,30 +185,23 @@ export function ScanRecipeDialog({ open, onOpenChange, onApply }: Props) {
                 <p style={{ margin: 0, fontFamily: 'var(--font-sans)', fontSize: 13, color: 'var(--ink-60)', lineHeight: 1.5 }}>
                   Fotografera eller ladda upp en bild av ett recept — från en kokbok, ett receptkort eller en utskrift.
                 </p>
-                <button
+                <Button
                   type="button"
+                  variant="outline"
                   disabled={!scanEnabled}
-                  title={!scanEnabled ? 'Konfigurera Anthropic API-nyckel för att aktivera skanning' : undefined}
                   onClick={() => fileRef.current?.click()}
-                  style={{
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                    gap: 10, padding: '32px 24px',
-                    border: '1.5px dashed var(--line)', borderRadius: 12,
-                    background: scanEnabled ? 'transparent' : 'var(--paper)',
-                    cursor: scanEnabled ? 'pointer' : 'not-allowed',
-                    opacity: scanEnabled ? 1 : 0.5,
-                  }}
+                  className="w-full h-auto flex-col gap-2 py-8 border-dashed"
                 >
-                  <span style={{ fontSize: 28 }}>📷</span>
-                  <span style={{ fontFamily: 'var(--font-sans)', fontSize: 13, color: 'var(--ink-60)' }}>
+                  <span className="text-[28px]">📷</span>
+                  <span className="text-sm text-[var(--ink-60)]">
                     {scanEnabled ? 'Välj eller ta en bild' : 'API-nyckel krävs'}
                   </span>
                   {!scanEnabled && (
-                    <span style={{ ...monoLabel, fontSize: 10, textAlign: 'center' }}>
+                    <span className="font-mono text-[10px] text-center text-[var(--ink-50)] tracking-[0.12em] uppercase">
                       Sätt Anthropic:ApiKey i appsettings eller miljövariabel
                     </span>
                   )}
-                </button>
+                </Button>
                 <input
                   ref={fileRef}
                   type="file"
@@ -234,35 +218,22 @@ export function ScanRecipeDialog({ open, onOpenChange, onApply }: Props) {
                 <p style={{ margin: 0, fontFamily: 'var(--font-sans)', fontSize: 13, color: 'var(--ink-60)', lineHeight: 1.5 }}>
                   Klistra in en länk till en receptsida eller ett Instagram-inlägg så hämtar vi receptet automatiskt.
                 </p>
-                <input
+                <Input
                   type="url"
                   value={url}
                   onChange={e => setUrl(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && scanEnabled && handleUrlScan()}
                   placeholder="https://…"
                   disabled={!scanEnabled}
-                  style={{
-                    width: '100%', padding: '11px 14px',
-                    background: 'var(--paper)', border: '1px solid var(--line)', borderRadius: 10,
-                    fontFamily: 'var(--font-sans)', fontSize: 14, color: 'var(--ink)',
-                    outline: 'none', boxSizing: 'border-box' as const,
-                    opacity: scanEnabled ? 1 : 0.5,
-                  }}
                 />
-                <button
-                  onClick={handleUrlScan}
+                <Button
+                  className="w-full rounded-full"
                   disabled={!scanEnabled || !url.trim()}
+                  onClick={handleUrlScan}
                   title={!scanEnabled ? 'Konfigurera Anthropic API-nyckel för att aktivera skanning' : undefined}
-                  style={{
-                    padding: '10px 0', borderRadius: 999, border: 'none',
-                    background: (scanEnabled && url.trim()) ? 'var(--2eat-accent)' : 'var(--ink-50)',
-                    color: 'var(--paper)',
-                    cursor: (scanEnabled && url.trim()) ? 'pointer' : 'not-allowed',
-                    fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 500,
-                  }}
                 >
                   Skanna recept
-                </button>
+                </Button>
                 {!scanEnabled && (
                   <span style={{ ...monoLabel, fontSize: 10 }}>
                     Sätt Anthropic:ApiKey i appsettings eller miljövariabel för att aktivera
