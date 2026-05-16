@@ -10,12 +10,12 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  ai-review:
-    name: AI Code Review
+  frontend-review:
+    name: Frontend Review
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: write
+      pull-requests: read
       id-token: write
 
     steps:
@@ -23,18 +23,17 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Run Claude Code Review
+      - name: Run Frontend Review
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           claude_args: --model claude-sonnet-4-6
           direct_prompt: |
-            You are a code reviewer for the 2Eat project. Review only the changed files in this pull request.
-            Run `gh pr diff ${{ github.event.pull_request.number }}` to get the diff, then review it.
+            You are a code reviewer for the 2Eat project. Review only the frontend changes in this pull request.
+            Run `gh pr diff ${{ github.event.pull_request.number }}` to get the diff, then review only files
+            under src/2Eat.WebApp/src/.
 
-            Apply these two rule sets:
-
-            ## Frontend rules (files under src/2Eat.WebApp/src/)
+            ## Frontend rules
 
             Shadcn-first: the project has pre-built Shadcn/Radix UI components in
             src/2Eat.WebApp/src/components/ui/. Before using a raw HTML element or writing
@@ -56,7 +55,44 @@ jobs:
             - Semantic structural elements (<main>, <section>, <header>, <nav>, <ul>, <li>, etc.)
             - SVG or icon elements
 
-            ## Backend rules (files under src/ and tests/, excluding WebApp)
+            ## Output format
+
+            Write your findings to /tmp/frontend-findings.txt. Do NOT post a PR comment.
+
+            Content of the file should be just the findings (or "No issues found." if nothing to flag).
+            For each finding: file path, line number(s), what the issue is, and a one-line suggested fix.
+            Group multiple findings under the same rule together.
+            Be concise — no summaries, no praise, just actionable findings.
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: frontend-findings
+          path: /tmp/frontend-findings.txt
+
+  backend-review:
+    name: Backend Review
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Backend Review
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          claude_args: --model claude-sonnet-4-6
+          direct_prompt: |
+            You are a code reviewer for the 2Eat project. Review only the backend changes in this pull request.
+            Run `gh pr diff ${{ github.event.pull_request.number }}` to get the diff, then review only files
+            under src/ and tests/, excluding src/2Eat.WebApp/.
+
+            ## Backend rules
 
             Flag when you see:
             - Blocking async calls: .Result, .Wait(), .GetAwaiter().GetResult() on Tasks
@@ -74,16 +110,44 @@ jobs:
 
             ## Output format
 
-            Post exactly one PR review using `gh pr review ${{ github.event.pull_request.number }} --comment --body "..."`.
+            Write your findings to /tmp/backend-findings.txt. Do NOT post a PR comment.
 
-            Structure the body as:
-
-            ### Frontend
-            <findings or "No issues found.">
-
-            ### Backend
-            <findings or "No issues found.">
-
-            For each finding: file path, line number(s), what the issue is, and a
-            one-line suggested fix. Group multiple findings under the same rule together.
+            Content of the file should be just the findings (or "No issues found." if nothing to flag).
+            For each finding: file path, line number(s), what the issue is, and a one-line suggested fix.
+            Group multiple findings under the same rule together.
             Be concise — no summaries, no praise, just actionable findings.
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: backend-findings
+          path: /tmp/backend-findings.txt
+
+  post-review:
+    name: Post Combined Review
+    runs-on: ubuntu-latest
+    needs: [frontend-review, backend-review]
+    permissions:
+      pull-requests: write
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: frontend-findings
+          path: /tmp/frontend
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: backend-findings
+          path: /tmp/backend
+
+      - name: Post PR review comment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          FRONTEND=$(cat /tmp/frontend/frontend-findings.txt)
+          BACKEND=$(cat /tmp/backend/backend-findings.txt)
+          gh pr review ${{ github.event.pull_request.number }} --comment --body "### Frontend
+          ${FRONTEND}
+
+          ### Backend
+          ${BACKEND}"
