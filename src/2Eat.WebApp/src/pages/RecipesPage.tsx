@@ -194,7 +194,7 @@ export function RecipesPage() {
   const urlFilter = searchParams.get('filter') ?? ''
 
   // Stable seed for this browsing session — regenerates on page mount (navigation away + back)
-  const seed = useMemo(() => Math.floor(Math.random() * 900000) + 100000, [])
+  const [seed] = useState(() => Math.floor(Math.random() * 900000) + 100000)
 
   const sentinelRef = useRef<HTMLDivElement>(null)
 
