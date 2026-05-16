@@ -139,6 +139,12 @@ export interface SamlingListItem {
   createdAt: string
 }
 
+export interface RecipePage {
+  items: Recipe[]
+  hasMore: boolean
+  page: number
+}
+
 export interface SamlingReceptItem {
   receptId: number
   order: number

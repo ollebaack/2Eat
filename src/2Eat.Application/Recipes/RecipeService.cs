@@ -1,3 +1,4 @@
+using _2Eat.Application;
 using _2Eat.Domain;
 
 namespace _2Eat.Application.Recipes;
@@ -12,6 +13,8 @@ public class RecipeService : IRecipeService
     }
 
     public Task<List<Recipe>> GetRecipesAsync() => _repository.GetAllAsync();
+
+    public Task<PagedResult<Recipe>> GetRecipesPageAsync(RecipeQuery query) => _repository.GetPageAsync(query);
 
     public Task<List<Category>> GetCategoriesAsync() => _repository.GetCategoriesAsync();
 

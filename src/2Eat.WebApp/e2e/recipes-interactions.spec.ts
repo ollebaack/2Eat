@@ -41,30 +41,18 @@ test.describe('Recipe Page Interactions', () => {
     await expect(page.locator('article').first()).toBeVisible({ timeout: 5_000 })
   })
 
-  test('view toggle switches between grid and list', async ({ page, isMobile }) => {
+  test('recipe feed renders cards linking to detail pages', async ({ page, isMobile }) => {
     if (isMobile) {
       test.skip()
       return
     }
 
-    // Icon-only buttons inside the pill-shaped toggle container
-    const toggleContainer = page.locator(
-      'div[style*="inline-flex"][style*="border-radius: 999"]',
-    ).filter({ has: page.locator('button').nth(0) }).first()
+    // Feed cards are articles with a link to the recipe detail
+    const firstCard = page.locator('article').first()
+    await expect(firstCard).toBeVisible({ timeout: 5_000 })
 
-    const gridBtn = toggleContainer.locator('button').nth(0)
-    const listBtn = toggleContainer.locator('button').nth(1)
-
-    await expect(gridBtn).toBeVisible({ timeout: 5_000 })
-    await expect(listBtn).toBeVisible()
-
-    await expect(page.locator('article').first()).toBeVisible({ timeout: 5_000 })
-
-    await listBtn.click()
-    await expect(page.locator('article').first()).toBeVisible({ timeout: 5_000 })
-
-    await gridBtn.click()
-    await expect(page.locator('article').first()).toBeVisible({ timeout: 5_000 })
+    const detailLink = firstCard.locator('a[href^="/recipes/"]').first()
+    await expect(detailLink).toBeVisible()
   })
 
   test('Slumpa middag button opens shuffle overlay', async ({ page, isMobile }) => {

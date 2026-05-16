@@ -1,4 +1,4 @@
-import type { Category, FileUpload, Ingredient, PantryItem, Recipe, AllergenId, WeekPlan, WeekPlanDay, ScannedRecipe, ScanStatus, ShoppingListItem, SamlingListItem, SamlingDetail } from '@/types'
+import type { Category, FileUpload, Ingredient, PantryItem, Recipe, RecipePage, AllergenId, WeekPlan, WeekPlanDay, ScannedRecipe, ScanStatus, ShoppingListItem, SamlingListItem, SamlingDetail } from '@/types'
 
 export const ALLERGEN_OPTIONS: AllergenId[] = [
   'Gluten',
@@ -54,6 +54,28 @@ async function request<T>(path: string, init?: RequestOptions): Promise<T> {
 
 export const getCategories = () => request<Category[]>('/categories')
 export const getRecipes = () => request<Recipe[]>('/recipes')
+
+export interface RecipePageQuery {
+  seed: number
+  page: number
+  pageSize?: number
+  search?: string
+  categoryId?: number
+  allergens?: AllergenId[]
+  ingredientIds?: number[]
+}
+
+export const getRecipesPage = (q: RecipePageQuery): Promise<RecipePage> => {
+  const params = new URLSearchParams()
+  params.set('seed', String(q.seed))
+  params.set('page', String(q.page))
+  if (q.pageSize) params.set('pageSize', String(q.pageSize))
+  if (q.search) params.set('search', q.search)
+  if (q.categoryId) params.set('categoryId', String(q.categoryId))
+  if (q.allergens?.length) params.set('allergens', q.allergens.join(','))
+  if (q.ingredientIds?.length) params.set('ingredientIds', q.ingredientIds.join(','))
+  return request<RecipePage>(`/recipes/feed?${params}`)
+}
 export const getRandomRecipes = (count: number) => request<Recipe[]>(`/recipes/random/${count}`)
 export const getRecipeById = (id: number) => request<Recipe>(`/recipes/${id}`)
 export const createRecipe = (data: unknown) =>
