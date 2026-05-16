@@ -6,11 +6,19 @@ import type { Recipe } from '@/types'
 import { AuthImg } from '@/components/AuthImg'
 import { AddToSamlingModal } from '@/components/AddToSamlingModal'
 import { getSamlingarForRecept } from '@/lib/api'
+import { Button } from '@/components/ui/button'
 
 const SWATCHES = [
   'oklch(0.65 0.12 50)', 'oklch(0.6 0.1 145)', 'oklch(0.62 0.12 30)',
   'oklch(0.6 0.08 210)', 'oklch(0.58 0.1 330)', 'oklch(0.65 0.1 90)',
 ]
+
+const glassStyle: React.CSSProperties = {
+  background: 'rgba(255,255,255,0.92)',
+  backdropFilter: 'blur(12px)',
+  WebkitBackdropFilter: 'blur(12px)',
+  boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
+}
 
 function HeroPhoto({ recipe }: { recipe: Recipe }) {
   const swatch = SWATCHES[recipe.id % SWATCHES.length]
@@ -70,16 +78,6 @@ export function MobileDetailScreen({ recipe }: { recipe: Recipe }) {
   }, 0)
   const hasCost = pricedIngredients.length > 0
 
-  const glassBtn: React.CSSProperties = {
-    width: 40, height: 40, borderRadius: '50%',
-    background: 'rgba(255,255,255,0.92)',
-    backdropFilter: 'blur(12px)',
-    WebkitBackdropFilter: 'blur(12px)',
-    border: 'none', cursor: 'pointer',
-    display: 'grid', placeItems: 'center',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
-  }
-
   return (
     <div style={{
       background: 'var(--paper)',
@@ -99,22 +97,37 @@ export function MobileDetailScreen({ recipe }: { recipe: Recipe }) {
         }} />
 
         {/* Back button */}
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           aria-label="Tillbaka"
           onClick={() => navigate('/')}
-          style={{ ...glassBtn, position: 'absolute', top: 56, left: 16 }}
+          className="absolute top-14 left-4 rounded-full h-10 w-10 border-0"
+          style={glassStyle}
         >
           <ArrowLeft size={16} strokeWidth={1.5} />
-        </button>
+        </Button>
 
         {/* Action buttons */}
         <div style={{ position: 'absolute', top: 56, right: 16, display: 'flex', gap: 8 }}>
-          <button aria-label="Lägg till i samling" style={glassBtn} onClick={() => setSamlingOpen(true)}>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Lägg till i samling"
+            onClick={() => setSamlingOpen(true)}
+            className="rounded-full h-10 w-10 border-0"
+            style={glassStyle}
+          >
             <Bookmark size={16} strokeWidth={1.5} fill={isSaved ? 'currentColor' : 'none'} />
-          </button>
-          <button style={glassBtn}>
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="rounded-full h-10 w-10 border-0"
+            style={glassStyle}
+          >
             <Shuffle size={16} strokeWidth={1.5} />
-          </button>
+          </Button>
         </div>
 
         {/* Category pill + title overlay */}
@@ -232,26 +245,22 @@ export function MobileDetailScreen({ recipe }: { recipe: Recipe }) {
         <div style={{
           display: 'flex', background: 'var(--surface-2)', borderRadius: 999, padding: 3,
         }}>
-          {(['ingredients', 'method'] as const).map(t => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              style={{
-                flex: 1, padding: '8px 12px', borderRadius: 999,
-                border: 'none', cursor: 'pointer',
-                background: tab === t ? 'var(--paper)' : 'transparent',
-                color: tab === t ? 'var(--ink)' : 'var(--ink-60)',
-                fontFamily: 'var(--font-sans)', fontSize: 13,
-                fontWeight: tab === t ? 500 : 400,
-                boxShadow: tab === t ? '0 1px 3px rgba(0,0,0,0.06)' : 'none',
-                transition: 'all 0.15s',
-              }}
-            >
-              {t === 'ingredients'
-                ? `Ingredienser · ${recipe.ingredients.length}`
-                : `Metod · ${steps.length} steg`}
-            </button>
-          ))}
+          <Button
+            variant={tab === 'ingredients' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => setTab('ingredients')}
+            className="flex-1 rounded-full"
+          >
+            Ingredienser · {recipe.ingredients.length}
+          </Button>
+          <Button
+            variant={tab === 'method' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => setTab('method')}
+            className="flex-1 rounded-full"
+          >
+            Metod · {steps.length} steg
+          </Button>
         </div>
       </div>
 
@@ -372,19 +381,23 @@ export function MobileDetailScreen({ recipe }: { recipe: Recipe }) {
         background: 'linear-gradient(to top, var(--paper) 60%, transparent)',
         zIndex: 40,
       }}>
-        <button style={{
-          width: '100%', padding: '14px 20px', borderRadius: 999,
-          border: 'none', background: 'var(--ink)', color: 'var(--paper)',
-          fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: 500,
-          cursor: 'pointer', boxShadow: '0 8px 20px rgba(0,0,0,0.15)',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        }}>
+        <Button
+          className="w-full rounded-full px-5 justify-between"
+          style={{
+            background: 'var(--ink)',
+            color: 'var(--paper)',
+            boxShadow: '0 8px 20px rgba(0,0,0,0.15)',
+            height: 'auto',
+            paddingTop: 14,
+            paddingBottom: 14,
+          }}
+        >
           <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <Flame size={16} strokeWidth={1.5} />
             Sätt igång &amp; laga
           </span>
           <ArrowRight size={16} strokeWidth={1.5} />
-        </button>
+        </Button>
       </div>
     </div>
   )
