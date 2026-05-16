@@ -10,9 +10,30 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  changes:
+    name: Detect Changed Paths
+    runs-on: ubuntu-latest
+    outputs:
+      frontend: ${{ steps.filter.outputs.frontend }}
+      backend: ${{ steps.filter.outputs.backend }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            frontend:
+              - 'src/2Eat.WebApp/src/**'
+            backend:
+              - 'src/**'
+              - 'tests/**'
+              - '!src/2Eat.WebApp/**'
+
   frontend-review:
     name: Frontend Review
     runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
     permissions:
       contents: read
       pull-requests: read
@@ -28,7 +49,7 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           claude_args: --model claude-sonnet-4-6
-          direct_prompt: |
+          prompt: |
             You are a code reviewer for the 2Eat project. Review only the frontend changes in this pull request.
             Run `gh pr diff ${{ github.event.pull_request.number }}` to get the diff, then review only files
             under src/2Eat.WebApp/src/.
@@ -72,6 +93,8 @@ jobs:
   backend-review:
     name: Backend Review
     runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
     permissions:
       contents: read
       pull-requests: read
@@ -87,7 +110,7 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           claude_args: --model claude-sonnet-4-6
-          direct_prompt: |
+          prompt: |
             You are a code reviewer for the 2Eat project. Review only the backend changes in this pull request.
             Run `gh pr diff ${{ github.event.pull_request.number }}` to get the diff, then review only files
             under src/ and tests/, excluding src/2Eat.WebApp/.
@@ -125,17 +148,22 @@ jobs:
   post-review:
     name: Post Combined Review
     runs-on: ubuntu-latest
-    needs: [frontend-review, backend-review]
+    needs: [changes, frontend-review, backend-review]
+    if: |
+      always() &&
+      (needs.frontend-review.result == 'success' || needs.backend-review.result == 'success')
     permissions:
       pull-requests: write
 
     steps:
-      - uses: actions/download-artifact@v4
+      - if: needs.frontend-review.result == 'success'
+        uses: actions/download-artifact@v4
         with:
           name: frontend-findings
           path: /tmp/frontend
 
-      - uses: actions/download-artifact@v4
+      - if: needs.backend-review.result == 'success'
+        uses: actions/download-artifact@v4
         with:
           name: backend-findings
           path: /tmp/backend
@@ -144,10 +172,12 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          FRONTEND=$(cat /tmp/frontend/frontend-findings.txt)
-          BACKEND=$(cat /tmp/backend/backend-findings.txt)
-          gh pr review ${{ github.event.pull_request.number }} --comment --body "### Frontend
-          ${FRONTEND}
-
-          ### Backend
-          ${BACKEND}"
+          BODY=""
+          if [ -f /tmp/frontend/frontend-findings.txt ]; then
+            BODY="### Frontend\n$(cat /tmp/frontend/frontend-findings.txt)"
+          fi
+          if [ -f /tmp/backend/backend-findings.txt ]; then
+            if [ -n "$BODY" ]; then BODY="${BODY}\n\n"; fi
+            BODY="${BODY}### Backend\n$(cat /tmp/backend/backend-findings.txt)"
+          fi
+          gh pr review ${{ github.event.pull_request.number }} --comment --body "$(printf "$BODY")"
