@@ -15,6 +15,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from '@/components/ui/dialog'
 
 // ── Week helpers ─────────────────────────────────────────────────────────────
@@ -78,40 +79,16 @@ function RecipePickerModal({
     )
   }, [recipes, query])
 
-  if (!open) return null
-
   return (
-    <div
-      onClick={onClose}
-      style={{
-        position: 'fixed', inset: 0,
-        background: 'rgba(20,18,14,0.55)',
-        backdropFilter: 'blur(6px)',
-        display: 'grid', placeItems: 'center',
-        zIndex: 200, padding: 24,
-      }}
-    >
-      <div
-        onClick={e => e.stopPropagation()}
-        style={{
-          width: '100%', maxWidth: 620,
-          maxHeight: '80vh',
-          background: 'var(--paper)',
-          border: '1px solid var(--line)',
-          borderRadius: 24,
-          overflow: 'hidden',
-          display: 'flex', flexDirection: 'column',
-          boxShadow: '0 30px 60px -20px rgba(0,0,0,0.3)',
-        }}
-      >
-        {/* Header */}
-        <div style={{ padding: '24px 24px 16px', borderBottom: '1px solid var(--line)', flexShrink: 0 }}>
+    <Dialog open={open} onOpenChange={v => { if (!v) onClose() }}>
+      <DialogContent className="max-w-[620px] max-h-[80vh] flex flex-col p-0 gap-0" style={{ background: 'var(--paper)', border: '1px solid var(--line)', borderRadius: 24 }}>
+        <DialogHeader className="px-6 py-5 border-b border-[var(--line)] shrink-0 space-y-0">
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--accent-deep)' }}>
             Välj till {dayLabel}
           </span>
-          <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 32, letterSpacing: '-0.03em', lineHeight: 1.05, color: 'var(--ink)', margin: '4px 0 16px', fontWeight: 400 }}>
+          <DialogTitle className="font-normal mt-1 mb-3" style={{ fontFamily: 'var(--font-serif)', fontSize: 32, letterSpacing: '-0.03em', lineHeight: 1.05, color: 'var(--ink)' }}>
             Vad ska vi äta?
-          </h2>
+          </DialogTitle>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 14px', background: 'var(--surface-1)', borderRadius: 999, border: '1px solid var(--line)' }}>
             <Search size={14} strokeWidth={1.5} style={{ color: 'var(--ink-50)', flexShrink: 0 }} />
             <Input
@@ -128,10 +105,10 @@ function RecipePickerModal({
               </Button>
             )}
           </div>
-        </div>
+        </DialogHeader>
 
         {/* Recipe list */}
-        <div style={{ overflowY: 'auto', flex: 1 }}>
+        <div className="overflow-y-auto flex-1">
           {recipes.length === 0 ? (
             <div style={{ padding: '40px 24px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
               <div style={{ fontFamily: 'var(--font-serif)', fontSize: 18, color: 'var(--ink)' }}>Inga middagsrecept än</div>
@@ -148,21 +125,12 @@ function RecipePickerModal({
             </div>
           ) : (
             filtered.map(r => (
-              <button
+              <Button
                 key={r.id}
+                variant="ghost"
+                className="w-full h-auto grid items-center px-4 py-2.5 text-left rounded-none border-b border-[var(--line)] justify-start"
+                style={{ gridTemplateColumns: '56px 1fr auto', gap: 14 }}
                 onClick={() => { onPick(r); onClose() }}
-                style={{
-                  display: 'grid', gridTemplateColumns: '56px 1fr auto',
-                  gap: 14, alignItems: 'center',
-                  padding: '10px 16px',
-                  width: '100%', textAlign: 'left',
-                  background: 'none', border: 'none',
-                  borderBottom: '1px solid var(--line)',
-                  cursor: 'pointer',
-                  transition: 'background 0.12s',
-                }}
-                onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-1)')}
-                onMouseLeave={e => (e.currentTarget.style.background = 'none')}
               >
                 <div style={{ borderRadius: 8, overflow: 'hidden', height: 48 }}>
                   <PhotoSlot imageUrl={r.imageUrl} recipeId={r.id} label={r.name} height="48px" />
@@ -176,19 +144,18 @@ function RecipePickerModal({
                 <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--ink-50)', whiteSpace: 'nowrap' }}>
                   {r.totalTime} MIN
                 </div>
-              </button>
+              </Button>
             ))
           )}
         </div>
 
-        {/* Footer */}
-        <div style={{ padding: '12px 24px', borderTop: '1px solid var(--line)', flexShrink: 0 }}>
+        <DialogFooter className="px-6 py-3 border-t border-[var(--line)] shrink-0">
           <Button variant="outline" className="rounded-full" onClick={onClose} style={{ fontFamily: 'var(--font-sans)', fontSize: 13 }}>
             Avbryt
           </Button>
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
 
@@ -264,20 +231,15 @@ function DayCell({
           {/* Photo */}
           <div style={{ position: 'relative', flexShrink: 0 }}>
             <PhotoSlot imageUrl={recipe.imageUrl} recipeId={recipe.id} label={recipe.name} height="86px" />
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={onRemove}
-              style={{
-                position: 'absolute', top: 6, right: 6,
-                width: 24, height: 24, borderRadius: '50%',
-                background: 'rgba(255,255,255,0.9)',
-                backdropFilter: 'blur(4px)',
-                border: 'none', cursor: 'pointer',
-                display: 'grid', placeItems: 'center',
-                color: 'var(--ink)',
-              }}
+              className="absolute top-1.5 right-1.5 h-6 w-6 rounded-full border-0"
+              style={{ background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(4px)', color: 'var(--ink)' }}
             >
               <X size={12} strokeWidth={2} />
-            </button>
+            </Button>
           </div>
 
           {/* Recipe info */}
@@ -301,18 +263,10 @@ function DayCell({
           </div>
         </div>
       ) : (
-        <button
+        <Button
+          variant="ghost"
           onClick={onAdd}
-          style={{
-            flex: 1, display: 'flex', flexDirection: 'column',
-            alignItems: 'center', justifyContent: 'center',
-            gap: 8, background: 'none', border: 'none',
-            cursor: 'pointer', padding: '16px 14px',
-            transition: 'background 0.12s',
-            borderRadius: '0 0 16px 16px',
-          }}
-          onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-1)')}
-          onMouseLeave={e => (e.currentTarget.style.background = 'none')}
+          className="flex-1 flex-col h-auto items-center justify-center gap-2 rounded-none rounded-b-2xl px-3.5 py-4"
         >
           <div style={{
             width: 32, height: 32, borderRadius: '50%',
@@ -325,7 +279,7 @@ function DayCell({
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--ink-40)' }}>
             Lägg till
           </span>
-        </button>
+        </Button>
       )}
     </div>
   )
@@ -867,31 +821,37 @@ export function VeckoplanPage() {
         <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
           {/* Week nav */}
           <div style={{ display: 'inline-flex', alignItems: 'center', background: 'var(--paper)', border: '1px solid var(--line)', borderRadius: 999, overflow: 'hidden' }}>
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => setWeekOffset(w => w - 1)}
-              style={{ padding: '8px 12px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink-60)', display: 'flex', alignItems: 'center' }}
+              className="rounded-none h-9 w-9"
+              style={{ color: 'var(--ink-60)' }}
             >
               <ArrowLeft size={15} strokeWidth={1.5} />
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="ghost"
               onClick={() => setWeekOffset(0)}
+              className="rounded-none px-4"
               style={{
-                padding: '8px 16px',
-                background: weekOffset === 0 ? 'var(--ink)' : 'none',
+                background: weekOffset === 0 ? 'var(--ink)' : undefined,
                 color: weekOffset === 0 ? 'var(--paper)' : 'var(--ink)',
-                border: 'none', cursor: 'pointer',
                 fontFamily: 'var(--font-sans)', fontSize: 13,
                 transition: 'background 0.15s, color 0.15s',
               }}
             >
               Den här veckan
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => setWeekOffset(w => w + 1)}
-              style={{ padding: '8px 12px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink-60)', display: 'flex', alignItems: 'center' }}
+              className="rounded-none h-9 w-9"
+              style={{ color: 'var(--ink-60)' }}
             >
               <ArrowRight size={15} strokeWidth={1.5} />
-            </button>
+            </Button>
           </div>
 
           {/* Auto-fill button */}
