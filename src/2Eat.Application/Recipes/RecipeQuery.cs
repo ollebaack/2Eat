@@ -2,6 +2,7 @@ namespace _2Eat.Application.Recipes;
 
 public class RecipeQuery
 {
+    public int UserId { get; init; }
     public string? Search { get; init; }
     public int? CategoryId { get; init; }
     public List<string> Allergens { get; init; } = [];

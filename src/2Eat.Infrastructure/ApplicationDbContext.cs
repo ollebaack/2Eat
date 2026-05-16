@@ -59,9 +59,18 @@ namespace _2Eat.Infrastructure
                 .HasIndex(i => i.Name)
                 .IsUnique();
 
-            // Ensure the Name property of Ingredient is unique
             modelBuilder.Entity<Recipe>()
-                .HasIndex(i => i.Name)
+                .HasOne<User>()
+                .WithMany()
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Recipe>()
+                .HasIndex(x => x.UserId);
+
+            // Name must be unique per user, not globally
+            modelBuilder.Entity<Recipe>()
+                .HasIndex(i => new { i.UserId, i.Name })
                 .IsUnique();
 
             modelBuilder.Entity<ShoppingList>()
@@ -189,50 +198,6 @@ namespace _2Eat.Infrastructure
             modelBuilder.Entity("AllergenIngredient").HasData(
                 new { AllergensId = AllergenEnum.Gluten, IngredientsId = 1 }
             );
-
-            // Seed Recipes
-            modelBuilder.Entity<Recipe>().HasData(
-                new Recipe { Id = 1, Name = "Kanelbullar", Description = "Traditionella svenska kanelbullar", CategoryId = 1, Instructions = "Blanda ingredienser och baka i 180°C i 15 minuter.", Servings = 4, Rating = 5, CookTime = 15, PrepTime = 45, LastModified = new DateTimeOffset(2021, 10, 10, 10, 30, 0, TimeSpan.Zero) },
-                new Recipe { Id = 2, Name = "Räkmacka", Description = "En klassisk svensk räkmacka", CategoryId = 2, Instructions = "Montera mackan med bröd, räkor, majonnäs och dill.", Servings = 2, Rating = 4, CookTime = 0, PrepTime = 10, LastModified = new DateTimeOffset(2021, 10, 10, 12, 0, 0, TimeSpan.Zero) },
-                new Recipe { Id = 3, Name = "Älgstek", Description = "Älgstek med enbär", CategoryId = 3, Instructions = "Rosta älgköttet med enbär och servera med potatis och lingon.", Servings = 6, Rating = 5, CookTime = 120, PrepTime = 30, LastModified = new DateTimeOffset(2023, 10, 10, 15, 45, 0, TimeSpan.Zero) },
-                new Recipe { Id = 4, Name = "Lax med grädde", Description = "Lax i en krämig sås", CategoryId = 4, Instructions = "Laga laxen i en gräddig sås med dill och servera med kokt potatis.", Servings = 4, Rating = 4, CookTime = 30, PrepTime = 20, LastModified = new DateTimeOffset(2024, 10, 10, 9, 15, 0, TimeSpan.Zero) }
-            );
-
-            modelBuilder.Entity<IngredientMeasurement>().HasData(
-                new IngredientMeasurement { Id = 1, Quantity = 500, Unit = UnitOfMeasurement.g }, // För Vetemjöl
-                new IngredientMeasurement { Id = 2, Quantity = 250, Unit = UnitOfMeasurement.g }, // För Kanel
-                new IngredientMeasurement { Id = 3, Quantity = 200, Unit = UnitOfMeasurement.g }, // För Strösocker
-                new IngredientMeasurement { Id = 4, Quantity = 3, Unit = UnitOfMeasurement.st },   // För Ägg
-                new IngredientMeasurement { Id = 5, Quantity = 100, Unit = UnitOfMeasurement.g },  // För Smör
-                new IngredientMeasurement { Id = 6, Quantity = 250, Unit = UnitOfMeasurement.ml }, // För Mjölk
-                new IngredientMeasurement { Id = 7, Quantity = 200, Unit = UnitOfMeasurement.g },  // För Räkor
-                new IngredientMeasurement { Id = 8, Quantity = 2, Unit = UnitOfMeasurement.st },   // För Kavring
-                new IngredientMeasurement { Id = 9, Quantity = 50, Unit = UnitOfMeasurement.g },   // För Dill
-                new IngredientMeasurement { Id = 10, Quantity = 1, Unit = UnitOfMeasurement.kg },  // För Älgkött
-                new IngredientMeasurement { Id = 11, Quantity = 500, Unit = UnitOfMeasurement.g }, // För Potatis
-                new IngredientMeasurement { Id = 12, Quantity = 100, Unit = UnitOfMeasurement.g }, // För Lingon
-                new IngredientMeasurement { Id = 13, Quantity = 400, Unit = UnitOfMeasurement.g }, // För Lax
-                new IngredientMeasurement { Id = 14, Quantity = 200, Unit = UnitOfMeasurement.ml }  // För Grädde
-            );
-
-            // Seed RecipeIngredients with IngredientMeasurementId
-            modelBuilder.Entity<RecipeIngredient>().HasData(
-                new RecipeIngredient { Id = 1, Order = 0, IngredientId = 1, RecipeId = 1, IngredientMeasurementId = 1 },
-                new RecipeIngredient { Id = 2, Order = 1, IngredientId = 17, RecipeId = 1, IngredientMeasurementId = 2 },
-                new RecipeIngredient { Id = 3, Order = 2, IngredientId = 2, RecipeId = 1, IngredientMeasurementId = 3 },
-                new RecipeIngredient { Id = 4, Order = 3, IngredientId = 3, RecipeId = 1, IngredientMeasurementId = 4 },
-                new RecipeIngredient { Id = 5, Order = 4, IngredientId = 4, RecipeId = 1, IngredientMeasurementId = 5 },
-                new RecipeIngredient { Id = 6, Order = 5, IngredientId = 5, RecipeId = 1, IngredientMeasurementId = 6 },
-                new RecipeIngredient { Id = 7, Order = 0, IngredientId = 12, RecipeId = 2, IngredientMeasurementId = 7 },
-                new RecipeIngredient { Id = 8, Order = 1, IngredientId = 13, RecipeId = 2, IngredientMeasurementId = 8 },
-                new RecipeIngredient { Id = 9, Order = 2, IngredientId = 9, RecipeId = 2, IngredientMeasurementId = 9 },
-                new RecipeIngredient { Id = 10, Order = 0, IngredientId = 19, RecipeId = 3, IngredientMeasurementId = 10 },
-                new RecipeIngredient { Id = 11, Order = 1, IngredientId = 7, RecipeId = 3, IngredientMeasurementId = 11 },
-                new RecipeIngredient { Id = 12, Order = 2, IngredientId = 16, RecipeId = 3, IngredientMeasurementId = 12 },
-                new RecipeIngredient { Id = 13, Order = 0, IngredientId = 8, RecipeId = 4, IngredientMeasurementId = 13 },
-                new RecipeIngredient { Id = 14, Order = 1, IngredientId = 6, RecipeId = 4, IngredientMeasurementId = 14 }
-            );
-
         }
     }
 }
