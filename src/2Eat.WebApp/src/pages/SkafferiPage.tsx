@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { Leaf, Sparkles, Clock, Search, Plus, Pencil, Trash2, ArrowRight, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -177,23 +178,23 @@ function ItemFormModal({ open, editItem, onClose, onSave, isPending }: ItemFormM
             />
           </div>
 
-          <div style={{ display: 'flex', gap: 24 }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 14 }}>
-              <input
-                type="checkbox"
+          <div className="flex gap-6">
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="is-opened"
                 checked={form.isOpened}
-                onChange={(e) => setForm((f) => ({ ...f, isOpened: e.target.checked }))}
+                onCheckedChange={(v) => setForm((f) => ({ ...f, isOpened: !!v }))}
               />
-              Öppnad
-            </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 14 }}>
-              <input
-                type="checkbox"
+              <Label htmlFor="is-opened" className="cursor-pointer text-sm">Öppnad</Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="is-low"
                 checked={form.isLow}
-                onChange={(e) => setForm((f) => ({ ...f, isLow: e.target.checked }))}
+                onCheckedChange={(v) => setForm((f) => ({ ...f, isLow: !!v }))}
               />
-              Låg nivå
-            </label>
+              <Label htmlFor="is-low" className="cursor-pointer text-sm">Låg nivå</Label>
+            </div>
           </div>
 
           <DialogFooter>
@@ -207,6 +208,69 @@ function ItemFormModal({ open, editItem, onClose, onSave, isPending }: ItemFormM
         </form>
       </DialogContent>
     </Dialog>
+  )
+}
+
+// ── Shared review step used by receipt-scan, text-parse, and handlista-import modals ──
+
+interface ReviewStepProps {
+  items: ScannedItem[]
+  checkedIds: Set<number>
+  onToggle: (i: number) => void
+  onConfirm: () => void
+  onCancel: () => void
+  isSaving: boolean
+}
+
+function ReviewStep({ items, checkedIds, onToggle, onConfirm, onCancel, isSaving }: ReviewStepProps) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      {items.length === 0 ? (
+        <p style={{ fontSize: 14, color: 'var(--ink-60)', textAlign: 'center', padding: '16px 0' }}>
+          Inga varor hittades.
+        </p>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 320, overflowY: 'auto' }}>
+          {items.map((item, i) => (
+            <label
+              key={i}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                padding: '8px 10px',
+                borderRadius: 8,
+                border: '1px solid var(--line)',
+                cursor: 'pointer',
+                fontSize: 14,
+              }}
+            >
+              <Checkbox checked={checkedIds.has(i)} onCheckedChange={() => onToggle(i)} />
+              <span style={{ flex: 1 }}>{item.name}</span>
+              <span style={{ fontSize: 12, color: 'var(--ink-60)', whiteSpace: 'nowrap' }}>
+                {item.quantity} {item.unit}
+              </span>
+              <span style={{
+                fontSize: 11,
+                background: 'var(--ink)',
+                color: 'var(--paper)',
+                padding: '2px 7px',
+                borderRadius: 99,
+                whiteSpace: 'nowrap',
+              }}>
+                {item.category}
+              </span>
+            </label>
+          ))}
+        </div>
+      )}
+      <DialogFooter>
+        <Button variant="outline" onClick={onCancel}>Avbryt</Button>
+        <Button onClick={onConfirm} disabled={checkedIds.size === 0 || isSaving}>
+          {isSaving ? 'Sparar…' : `Lägg till ${checkedIds.size} varor`}
+        </Button>
+      </DialogFooter>
+    </div>
   )
 }
 
@@ -362,123 +426,17 @@ function ReceiptScanModal({ open, onClose, onItemsAdded }: ReceiptScanModalProps
         )}
 
         {step === 'review' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {scannedItems.length === 0 ? (
-              <p style={{ fontSize: 14, color: 'var(--ink-60)', textAlign: 'center', padding: '16px 0' }}>
-                Inga varor hittades på kvittot.
-              </p>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 320, overflowY: 'auto' }}>
-                {scannedItems.map((item, i) => (
-                  <label
-                    key={i}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 10,
-                      padding: '8px 10px',
-                      borderRadius: 8,
-                      border: '1px solid var(--line)',
-                      cursor: 'pointer',
-                      fontSize: 14,
-                    }}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={checkedIds.has(i)}
-                      onChange={() => toggleItem(i)}
-                    />
-                    <span style={{ flex: 1 }}>{item.name}</span>
-                    <span style={{ fontSize: 12, color: 'var(--ink-60)', whiteSpace: 'nowrap' }}>
-                      {item.quantity} {item.unit}
-                    </span>
-                    <span style={{
-                      fontSize: 11,
-                      background: 'var(--ink)',
-                      color: 'var(--paper)',
-                      padding: '2px 7px',
-                      borderRadius: 99,
-                      whiteSpace: 'nowrap',
-                    }}>
-                      {item.category}
-                    </span>
-                  </label>
-                ))}
-              </div>
-            )}
-            <DialogFooter>
-              <Button variant="outline" onClick={handleClose}>Avbryt</Button>
-              <Button onClick={handleConfirm} disabled={checkedIds.size === 0 || isSaving}>
-                {isSaving ? 'Sparar…' : `Lägg till ${checkedIds.size} varor`}
-              </Button>
-            </DialogFooter>
-          </div>
+          <ReviewStep
+            items={scannedItems}
+            checkedIds={checkedIds}
+            onToggle={toggleItem}
+            onConfirm={handleConfirm}
+            onCancel={handleClose}
+            isSaving={isSaving}
+          />
         )}
       </DialogContent>
     </Dialog>
-  )
-}
-
-// ── Shared review step used by text-parse and handlista-import modals ──────
-
-interface ReviewStepProps {
-  items: ScannedItem[]
-  checkedIds: Set<number>
-  onToggle: (i: number) => void
-  onConfirm: () => void
-  onCancel: () => void
-  isSaving: boolean
-}
-
-function ReviewStep({ items, checkedIds, onToggle, onConfirm, onCancel, isSaving }: ReviewStepProps) {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      {items.length === 0 ? (
-        <p style={{ fontSize: 14, color: 'var(--ink-60)', textAlign: 'center', padding: '16px 0' }}>
-          Inga varor hittades.
-        </p>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 320, overflowY: 'auto' }}>
-          {items.map((item, i) => (
-            <label
-              key={i}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                padding: '8px 10px',
-                borderRadius: 8,
-                border: '1px solid var(--line)',
-                cursor: 'pointer',
-                fontSize: 14,
-              }}
-            >
-              <input type="checkbox" checked={checkedIds.has(i)} onChange={() => onToggle(i)} />
-              <span style={{ flex: 1 }}>{item.name}</span>
-              <span style={{ fontSize: 12, color: 'var(--ink-60)', whiteSpace: 'nowrap' }}>
-                {item.quantity} {item.unit}
-              </span>
-              <span style={{
-                fontSize: 11,
-                background: 'var(--ink)',
-                color: 'var(--paper)',
-                padding: '2px 7px',
-                borderRadius: 99,
-                whiteSpace: 'nowrap',
-              }}>
-                {item.category}
-              </span>
-            </label>
-          ))}
-        </div>
-      )}
-      <DialogFooter>
-        <Button variant="outline" onClick={onCancel}>Avbryt</Button>
-        <Button onClick={onConfirm} disabled={checkedIds.size === 0 || isSaving}>
-          {isSaving ? 'Sparar…' : `Lägg till ${checkedIds.size} varor`}
-        </Button>
-      </DialogFooter>
-    </div>
   )
 }
 
