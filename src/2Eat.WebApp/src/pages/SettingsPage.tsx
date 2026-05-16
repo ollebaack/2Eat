@@ -7,13 +7,7 @@ import { IngredientsPage } from './IngredientsPage'
 import { useTheme } from '@/hooks/useTheme'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import { getIngredients } from '@/lib/api'
-
-const iconButtonStyle: React.CSSProperties = {
-  width: 32, height: 32, borderRadius: '50%',
-  border: '1px solid var(--line)', background: 'transparent',
-  cursor: 'pointer', display: 'grid', placeItems: 'center',
-  color: 'var(--ink-60)', flexShrink: 0,
-}
+import { Button } from '@/components/ui/button'
 
 export function SettingsPage() {
   const [open, setOpen] = useState(false)
@@ -28,13 +22,15 @@ export function SettingsPage() {
         <span style={{ fontFamily: 'var(--font-sans)', fontSize: 13, color: 'var(--ink-60)' }}>
           {isDark ? 'Mörkt läge' : 'Ljust läge'}
         </span>
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => setIsDark(d => !d)}
           title={isDark ? 'Byt till ljust läge' : 'Byt till mörkt läge'}
-          style={iconButtonStyle}
+          className="rounded-full h-8 w-8 border border-[var(--line)] text-[var(--ink-60)] shrink-0"
         >
           {isDark ? <Sun size={15} /> : <Moon size={15} />}
-        </button>
+        </Button>
       </div>
 
       <ProfilePage />
@@ -47,27 +43,18 @@ export function SettingsPage() {
           }}>
             Bibliotek
           </p>
-          <button
+          <Button
+            variant="ghost"
             onClick={() => setOpen(true)}
-            style={{
-              width: '100%', display: 'flex', alignItems: 'center', gap: 14,
-              background: 'var(--paper)', border: '1px solid var(--line)',
-              borderRadius: 10, padding: '14px 16px', cursor: 'pointer',
-              textAlign: 'left',
-            }}
-            onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-2)')}
-            onMouseLeave={e => (e.currentTarget.style.background = 'var(--paper)')}
+            className="w-full h-auto flex items-center gap-[14px] rounded-[10px] border border-[var(--line)] px-4 py-[14px] justify-start text-left whitespace-normal bg-[var(--paper)] hover:bg-[var(--surface-2)]"
           >
-            <div style={{
-              width: 36, height: 36, borderRadius: 8,
-              background: 'var(--surface-2)', display: 'grid', placeItems: 'center', flexShrink: 0,
-            }}>
+            <div className="w-9 h-9 rounded-lg bg-[var(--surface-2)] grid place-items-center shrink-0">
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--ink-60)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M3 21l8-8"/><path d="M11 13c-2 2-6 5-8 8 5-1 8-4 10-6"/>
                 <path d="M14 7c2-1 4-1 6 1s1 4 0 6l-7 0z"/>
               </svg>
             </div>
-            <div className="flex flex-col min-w-0 flex-1" style={{ gap: 2 }}>
+            <div className="flex flex-col min-w-0 flex-1 gap-0.5">
               <span style={{ fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: 500, color: 'var(--ink)' }}>
                 Ingredienser
               </span>
@@ -76,7 +63,7 @@ export function SettingsPage() {
               </span>
             </div>
             <ChevronRight size={16} style={{ color: 'var(--ink-40)', flexShrink: 0 }} />
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -136,8 +123,15 @@ export function SettingsPage() {
                   Ingredienser
                 </p>
               </div>
-              <DialogPrimitive.Close style={iconButtonStyle} aria-label="Stäng">
-                <X size={15} />
+              <DialogPrimitive.Close asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Stäng"
+                  className="rounded-full h-8 w-8 border border-[var(--line)] text-[var(--ink-60)] shrink-0"
+                >
+                  <X size={15} />
+                </Button>
               </DialogPrimitive.Close>
             </div>
             <div style={{ overflowY: 'auto', flex: 1 }}>
