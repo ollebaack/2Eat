@@ -46,13 +46,6 @@ function NavItem({ to, label, icon: Icon, end }: { to: string; label: string; ic
   )
 }
 
-const iconButtonStyle: React.CSSProperties = {
-  width: 32, height: 32, borderRadius: '50%',
-  border: '1px solid var(--line)', background: 'transparent',
-  cursor: 'pointer', display: 'grid', placeItems: 'center',
-  color: 'var(--ink-60)', flexShrink: 0,
-}
-
 export function Layout() {
   const navigate = useNavigate()
   const isMobile = useIsMobile()
@@ -76,20 +69,21 @@ export function Layout() {
           <Outlet />
         </main>
         {!isRecipeForm && (
-          <button
+          <Button
+            size="icon"
             onClick={() => navigate('/recipes/new')}
             aria-label="Nytt recept"
+            className="fixed rounded-full h-[52px] w-[52px] border-0 shadow-[0_4px_16px_rgba(0,0,0,0.18)]"
             style={{
-              position: 'fixed', bottom: 'calc(env(safe-area-inset-bottom) + 76px)', right: 20, zIndex: 40,
-              width: 52, height: 52, borderRadius: '50%',
-              background: 'var(--2eat-accent)', color: 'var(--paper)',
-              border: 'none', cursor: 'pointer',
-              display: 'grid', placeItems: 'center',
-              boxShadow: '0 4px 16px rgba(0,0,0,0.18)',
+              bottom: 'calc(env(safe-area-inset-bottom) + 76px)',
+              right: 20,
+              zIndex: 40,
+              background: 'var(--2eat-accent)',
+              color: 'var(--paper)',
             }}
           >
             <Plus size={22} strokeWidth={2} />
-          </button>
+          </Button>
         )}
         <MobileTabBar />
       </div>
@@ -202,20 +196,24 @@ export function Layout() {
             </span>
             <span style={{ fontSize: 11, color: 'var(--ink-50)' }}>Min profil</span>
           </div>
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => setIsDark(d => !d)}
             title={isDark ? 'Byt till ljust läge' : 'Byt till mörkt läge'}
-            style={iconButtonStyle}
+            className="rounded-full h-8 w-8 border border-[var(--line)] text-[var(--ink-60)] shrink-0"
           >
             {isDark ? <Sun size={15} /> : <Moon size={15} />}
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={handleLogout}
             title="Logga ut"
-            style={iconButtonStyle}
+            className="rounded-full h-8 w-8 border border-[var(--line)] text-[var(--ink-60)] shrink-0"
           >
             <LogOut size={15} />
-          </button>
+          </Button>
         </div>
       </aside>
 
