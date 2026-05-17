@@ -19,7 +19,7 @@ test.describe('Recipe Page Interactions', () => {
     recipeName = `Interaktionstest ${Date.now()}`
     await createRecipeViaApi(page, recipeName)
     // Re-navigate so the feed fetches after the recipe exists
-    await page.goto('/')
+    await page.goto('/recept')
     await expect(page.locator('h1, h2, h3').first()).toBeVisible({ timeout: 10_000 })
   })
 
