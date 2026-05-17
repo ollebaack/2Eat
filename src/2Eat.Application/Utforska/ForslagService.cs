@@ -1,4 +1,5 @@
 using _2Eat.Domain;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace _2Eat.Application.Utforska;
@@ -10,15 +11,18 @@ public class ForslagService : IForslagService
 
     private readonly IForslagRepository _repo;
     private readonly IForslagScraperService _scraper;
+    private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<ForslagService> _logger;
 
     public ForslagService(
         IForslagRepository repo,
         IForslagScraperService scraper,
+        IServiceScopeFactory scopeFactory,
         ILogger<ForslagService> logger)
     {
         _repo = repo;
         _scraper = scraper;
+        _scopeFactory = scopeFactory;
         _logger = logger;
     }
 
@@ -41,8 +45,15 @@ public class ForslagService : IForslagService
 
         // When the user has seen ≥ half the pool, kick off a background refresh so
         // fresh content is ready before they exhaust what remains.
+        // A new scope is required: this service and its DbContext are request-scoped
+        // and will be disposed when the request ends — before the task completes.
         if (total > 0 && unseenCount <= total / 2)
-            _ = RefreshPoolAsync(CancellationToken.None);
+            _ = Task.Run(async () =>
+            {
+                using var scope = _scopeFactory.CreateScope();
+                var svc = scope.ServiceProvider.GetRequiredService<IForslagService>();
+                await svc.RefreshPoolAsync();
+            });
 
         return items;
     }
