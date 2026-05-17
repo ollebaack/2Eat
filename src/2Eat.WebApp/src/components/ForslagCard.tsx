@@ -161,7 +161,7 @@ export function ForslagCard({ forslag }: ForslagCardProps) {
               size="sm"
               style={{ background: 'var(--2eat-accent)', color: 'var(--paper)', border: 'none' }}
               disabled={addMutation.isPending}
-              onClick={(_e: React.MouseEvent) => addMutation.mutate()}
+              onClick={() => addMutation.mutate()}
             >
               {addMutation.isPending ? (
                 <><Loader2 size={14} className="animate-spin mr-1.5" /> Hämtar recept…</>
