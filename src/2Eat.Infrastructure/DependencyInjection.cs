@@ -14,6 +14,9 @@ using _2Eat.Application.Samlingar;
 using _2Eat.Infrastructure.Samlingar;
 using _2Eat.Application.ShoppingLists;
 using _2Eat.Infrastructure.ShoppingLists;
+using _2Eat.Application.Utforska;
+using _2Eat.Infrastructure.Utforska;
+using _2Eat.Infrastructure.Utforska.Scrapers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
@@ -53,6 +56,23 @@ namespace _2Eat.Infrastructure
             builder.Services.AddScoped<IShoppingListService, ShoppingListService>();
             builder.Services.AddScoped<ISamlingRepository, EfSamlingRepository>();
             builder.Services.AddScoped<ISamlingService, SamlingService>();
+
+            // Utforska / Förslag
+            builder.Services.AddScoped<IForslagRepository, EfForslagRepository>();
+            builder.Services.AddScoped<IForslagService, ForslagService>();
+            builder.Services.AddScoped<IForslagScraperService, ForslagScraperOrchestrator>();
+            builder.Services.AddScoped<IcaScraper>();
+            builder.Services.AddScoped<KoketScraper>();
+            builder.Services.AddScoped<CoopScraper>();
+
+            builder.Services.AddHttpClient("ForslagScraper", c =>
+            {
+                c.Timeout = TimeSpan.FromSeconds(30);
+                c.DefaultRequestHeaders.UserAgent.ParseAdd(
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36");
+                c.DefaultRequestHeaders.AcceptLanguage.ParseAdd("sv-SE,sv;q=0.9,en-US;q=0.8,en;q=0.7");
+                c.DefaultRequestHeaders.Accept.ParseAdd("text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+            });
 
             builder.Services.AddHttpClient("RecipeScan", c =>
             {

@@ -1,4 +1,4 @@
-import type { Category, FileUpload, Ingredient, PantryItem, Recipe, RecipePage, AllergenId, WeekPlan, WeekPlanDay, ScannedRecipe, ScanStatus, ShoppingListItem, SamlingListItem, SamlingDetail } from '@/types'
+import type { Category, FileUpload, Ingredient, PantryItem, Recipe, RecipePage, AllergenId, WeekPlan, WeekPlanDay, ScannedRecipe, ScanStatus, ShoppingListItem, SamlingListItem, SamlingDetail, Forslag } from '@/types'
 
 export const ALLERGEN_OPTIONS: AllergenId[] = [
   'Gluten',
@@ -221,3 +221,13 @@ export const getSamlingarForRecept = (receptId: number) =>
   request<{ samlingIds: number[] }>(`/recipes/${receptId}/samlingar`)
 export const syncReceptSamlingar = (receptId: number, samlingIds: number[]) =>
   request<void>(`/recipes/${receptId}/samlingar`, { method: 'PUT', body: JSON.stringify({ samlingIds }) })
+
+// Utforska (Explore) API
+export const getUtforskaForslag = () => request<Forslag[]>('/utforska')
+export const fastAddForslag = (id: number, samlingIds: number[]) =>
+  request<{ id: number; name: string }>(`/utforska/${id}/add`, {
+    method: 'POST',
+    body: JSON.stringify({ samlingIds }),
+  })
+export const refreshForslagPool = () =>
+  request<{ message: string }>('/admin/forslag/refresh', { method: 'POST' })

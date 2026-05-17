@@ -18,6 +18,7 @@ import { ProfilePage } from '@/pages/ProfilePage'
 import { SettingsPage } from '@/pages/SettingsPage'
 import { SamlingarPage } from '@/pages/SamlingarPage'
 import { SamlingDetailPage } from '@/pages/SamlingDetailPage'
+import { UtforskaSida } from '@/pages/UtforskaSida'
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000 } },
@@ -36,6 +37,7 @@ export default function App() {
             <Route element={<ProtectedRoute />}>
               <Route element={<Layout />}>
                 <Route index element={<RecipesPage />} />
+                <Route path="utforska" element={<UtforskaSida />} />
                 <Route path="recipes/new" element={<RecipeFormPage />} />
                 <Route path="recipes/:id" element={<RecipeDetailPage />} />
                 <Route path="recipes/:id/edit" element={<RecipeFormPage />} />

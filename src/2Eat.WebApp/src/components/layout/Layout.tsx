@@ -1,7 +1,7 @@
 import { NavLink, Outlet, Link, useNavigate, useMatch } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
-import { Plus, BookOpen, Settings, Calendar, ShoppingBasket, Moon, Sun, LogOut, Library } from 'lucide-react'
+import { Plus, BookOpen, Settings, Calendar, ShoppingBasket, Moon, Sun, LogOut, Library, Compass } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import { useTheme } from '@/hooks/useTheme'
@@ -11,11 +11,12 @@ import { getSamlingar } from '@/lib/api'
 import { AuthImg } from '@/components/AuthImg'
 
 const navItems = [
-  { to: '/',            label: 'Recept',       icon: BookOpen,       end: true  },
+  { to: '/utforska',    label: 'Utforska',      icon: Compass,        end: false },
+  { to: '/',            label: 'Recept',        icon: BookOpen,       end: true  },
+  { to: '/veckoplan',   label: 'Veckoplan',     icon: Calendar,       end: false },
+  { to: '/skafferi',    label: 'Skafferi',      icon: ShoppingBasket, end: false },
+  { to: '/samlingar',   label: 'Samlingar',     icon: Library,        end: false },
   { to: '/settings',    label: 'Inställningar', icon: Settings,       end: false },
-  { to: '/veckoplan',   label: 'Veckoplan',    icon: Calendar,       end: false },
-  { to: '/skafferi',    label: 'Skafferi',     icon: ShoppingBasket, end: false },
-  { to: '/samlingar',   label: 'Samlingar',    icon: Library,        end: false },
 ]
 
 function NavItem({ to, label, icon: Icon, end }: { to: string; label: string; icon: LucideIcon; end: boolean }) {
