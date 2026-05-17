@@ -7,6 +7,11 @@ import type { AllergenId, RecipeIngredient, ScannedRecipe, UnitOfMeasurement } f
 import { ScanRecipeDialog } from '@/components/ScanRecipeDialog'
 import { PhotoSlot } from '@/components/PhotoSlot'
 import { StarPicker } from '@/components/StarPicker'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
 
 const UNITS: UnitOfMeasurement[] = [
   'g', 'ml', 'kg', 'krm', 'tsk', 'msk', 'dl', 'l', 'kaffemått', 'st',
@@ -16,17 +21,7 @@ const UNITS: UnitOfMeasurement[] = [
 type IngredientRow = { key: string; name: string; quantity: number; unit: UnitOfMeasurement; order: number }
 function newRow(order: number): IngredientRow { return { key: crypto.randomUUID(), name: '', quantity: 0, unit: 'g', order } }
 
-const inputStyle: React.CSSProperties = {
-  width: '100%', padding: '11px 14px',
-  background: 'var(--paper)', border: '1px solid var(--line)', borderRadius: 10,
-  fontFamily: 'var(--font-sans)', fontSize: 14, color: 'var(--ink)',
-  outline: 'none', boxSizing: 'border-box',
-}
-
-const labelStyle: React.CSSProperties = {
-  fontFamily: 'var(--font-mono)', fontSize: 10.5, letterSpacing: '0.12em',
-  textTransform: 'uppercase', color: 'var(--ink-50)',
-}
+const fieldLabel = 'font-mono text-[10.5px] tracking-[0.12em] uppercase text-[var(--ink-50)]'
 
 export function RecipeFormPage() {
   const { id } = useParams<{ id: string }>()
@@ -171,12 +166,13 @@ export function RecipeFormPage() {
     <div style={{ maxWidth: 980, margin: '0 auto', padding: '36px 40px 80px', width: '100%' }}>
 
       {/* Back button */}
-      <button
+      <Button
+        variant="ghost"
         onClick={() => navigate(isEdit ? `/recipes/${id}` : '/')}
-        style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, color: 'var(--ink-60)', fontFamily: 'var(--font-sans)', fontSize: 13, marginBottom: 18 }}
+        className="mb-[18px] px-0 text-[13px] text-[var(--ink-60)]"
       >
         ← Avbryt
-      </button>
+      </Button>
 
       {/* Page header */}
       <header style={{ marginBottom: 36, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
@@ -188,19 +184,14 @@ export function RecipeFormPage() {
             {isEdit ? existing?.name ?? 'Redigera recept' : 'Lägg till recept'}
           </h1>
         </div>
-        <button
+        <Button
           type="button"
+          variant="outline"
+          className="rounded-full mt-2 shrink-0 text-[13px]"
           onClick={() => setScanOpen(true)}
-          style={{
-            display: 'inline-flex', alignItems: 'center', gap: 7,
-            padding: '10px 18px', borderRadius: 999,
-            border: '1px solid var(--line)', background: 'transparent',
-            cursor: 'pointer', fontFamily: 'var(--font-sans)', fontSize: 13,
-            color: 'var(--ink)', marginTop: 8, flexShrink: 0,
-          }}
         >
           ⌁ Skanna recept
-        </button>
+        </Button>
       </header>
 
       <ScanRecipeDialog open={scanOpen} onOpenChange={setScanOpen} onApply={applyScannedRecipe} />
@@ -210,68 +201,78 @@ export function RecipeFormPage() {
 
         {/* Recipe name — spans all 4 columns */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6, gridColumn: 'span 4' }}>
-          <label style={labelStyle}>Receptnamn <span style={{ color: 'var(--2eat-accent)', marginLeft: 1 }}>*</span></label>
-          <input
-            value={name} onChange={e => setName(e.target.value)}
+          <Label className={fieldLabel}>
+            Receptnamn <span style={{ color: 'var(--2eat-accent)', marginLeft: 1 }}>*</span>
+          </Label>
+          <Input
+            value={name}
+            onChange={e => setName(e.target.value)}
             placeholder="t.ex. Mormors köttbullar"
-            style={{ ...inputStyle, fontFamily: 'var(--font-serif)', fontSize: 26, padding: '14px 18px', letterSpacing: '-0.02em' }}
+            className="font-serif text-[26px] tracking-[-0.02em] h-auto px-[18px] py-[14px]"
           />
         </div>
 
         {/* Description — spans 4 cols */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6, gridColumn: 'span 4' }}>
-          <label style={labelStyle}>Kort beskrivning</label>
-          <textarea
-            value={description} onChange={e => setDescription(e.target.value)}
-            rows={2} placeholder="En liten mening om rätten…"
-            style={{ ...inputStyle, resize: 'vertical' }}
+          <Label className={fieldLabel}>Kort beskrivning</Label>
+          <Textarea
+            value={description}
+            onChange={e => setDescription(e.target.value)}
+            rows={2}
+            placeholder="En liten mening om rätten…"
+            className="resize-y"
           />
         </div>
 
         {/* Category */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <label style={labelStyle}>Kategori</label>
-          <select
-            value={categoryId ?? ''}
-            onChange={e => setCategoryId(e.target.value ? Number(e.target.value) : undefined)}
-            style={inputStyle}
-          >
-            <option value="">Välj kategori…</option>
-            {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
+          <Label className={fieldLabel}>Kategori</Label>
+          <Select value={String(categoryId ?? '')} onValueChange={v => setCategoryId(v ? Number(v) : undefined)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Välj kategori…" />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map(c => <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>)}
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Portioner */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <label style={labelStyle}>Portioner</label>
-          <input type="number" value={servings} onChange={e => setServings(Number(e.target.value))} style={inputStyle} />
+          <Label className={fieldLabel}>Portioner</Label>
+          <Input type="number" value={servings} onChange={e => setServings(Number(e.target.value))} />
         </div>
 
         {/* Förberedelsetid */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <label style={labelStyle}>Förberedelsetid (min)</label>
-          <input type="number" value={prepTime} onChange={e => setPrepTime(Number(e.target.value))} style={inputStyle} />
+          <Label className={fieldLabel}>Förberedelsetid (min)</Label>
+          <Input type="number" value={prepTime} onChange={e => setPrepTime(Number(e.target.value))} />
         </div>
 
         {/* Tillagningstid */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <label style={labelStyle}>Tillagningstid (min)</label>
-          <input type="number" value={cookTime} onChange={e => setCookTime(Number(e.target.value))} style={inputStyle} />
+          <Label className={fieldLabel}>Tillagningstid (min)</Label>
+          <Input type="number" value={cookTime} onChange={e => setCookTime(Number(e.target.value))} />
         </div>
 
         {/* Difficulty */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <label style={labelStyle}>Svårighet</label>
-          <select value={difficulty} onChange={e => setDifficulty(e.target.value)} style={inputStyle}>
-            <option>Lätt</option>
-            <option>Medel</option>
-            <option>Svår</option>
-          </select>
+          <Label className={fieldLabel}>Svårighet</Label>
+          <Select value={difficulty} onValueChange={setDifficulty}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Lätt">Lätt</SelectItem>
+              <SelectItem value="Medel">Medel</SelectItem>
+              <SelectItem value="Svår">Svår</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Rating */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <label style={labelStyle}>Betyg</label>
+          <Label className={fieldLabel}>Betyg</Label>
           <div style={{ padding: '8px 10px', background: 'var(--paper)', border: '1px solid var(--line)', borderRadius: 10 }}>
             <StarPicker value={rating} onChange={setRating} />
           </div>
@@ -279,7 +280,7 @@ export function RecipeFormPage() {
 
         {/* Image upload */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6, gridColumn: 'span 4' }}>
-          <label style={labelStyle}>Bild</label>
+          <Label className={fieldLabel}>Bild</Label>
           {(localPreview || imageUrl) ? (
             <div style={{ position: 'relative', borderRadius: 12, overflow: 'hidden', maxWidth: 360, aspectRatio: '4/3' }}>
               {localPreview
@@ -293,40 +294,37 @@ export function RecipeFormPage() {
               )}
               {!uploading && (
                 <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end', padding: 10, gap: 6 }}>
-                  <button
+                  <Button
                     type="button"
+                    size="sm"
+                    className="rounded-full text-white border-0"
+                    style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)' }}
                     onClick={() => fileRef.current?.click()}
-                    style={{ padding: '6px 12px', borderRadius: 999, background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)', border: 'none', color: 'white', fontFamily: 'var(--font-sans)', fontSize: 12, cursor: 'pointer' }}
                   >
                     Byt bild
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
+                    size="sm"
+                    className="rounded-full text-white border-0"
+                    style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)' }}
                     onClick={() => setImageUrl(undefined)}
-                    style={{ padding: '6px 12px', borderRadius: 999, background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)', border: 'none', color: 'white', fontFamily: 'var(--font-sans)', fontSize: 12, cursor: 'pointer' }}
                   >
                     Ta bort
-                  </button>
+                  </Button>
                 </div>
               )}
             </div>
           ) : (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <button
-                type="button"
-                disabled={uploading}
-                onClick={() => fileRef.current?.click()}
-                style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 8,
-                  padding: '9px 16px', borderRadius: 999,
-                  border: '1px solid var(--line)', background: 'transparent',
-                  cursor: uploading ? 'wait' : 'pointer',
-                  fontFamily: 'var(--font-sans)', fontSize: 13, color: 'var(--ink)',
-                }}
-              >
-                ↑ Ladda upp bild
-              </button>
-            </div>
+            <Button
+              type="button"
+              variant="outline"
+              className="rounded-full text-[13px] self-start"
+              disabled={uploading}
+              onClick={() => fileRef.current?.click()}
+            >
+              ↑ Ladda upp bild
+            </Button>
           )}
           <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFileChange} />
         </div>
@@ -336,12 +334,13 @@ export function RecipeFormPage() {
       <section style={{ marginBottom: 36 }}>
         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 14 }}>
           <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 28, letterSpacing: '-0.025em', margin: 0, fontWeight: 400, color: 'var(--ink)' }}>Ingredienser</h2>
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => setRows(arr => [...arr, newRow(arr.length + 1)])}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-sans)', fontSize: 12, color: 'var(--ink-60)', padding: '4px 8px', borderRadius: 8 }}
           >
             + Lägg till rad
-          </button>
+          </Button>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {rows.map((row, i) => (
@@ -349,29 +348,37 @@ export function RecipeFormPage() {
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--ink-50)', textAlign: 'center' }}>
                 {String(i + 1).padStart(2, '0')}
               </span>
-              <input
+              <Input
                 placeholder="Ingrediens (t.ex. Vetemjöl)"
                 value={row.name}
                 onChange={e => setRows(arr => arr.map((x, j) => j === i ? { ...x, name: e.target.value } : x))}
-                style={inputStyle}
               />
-              <input
-                type="number" placeholder="Mängd"
+              <Input
+                type="number"
+                placeholder="Mängd"
                 value={row.quantity || ''}
                 onChange={e => setRows(arr => arr.map((x, j) => j === i ? { ...x, quantity: +e.target.value } : x))}
-                style={{ ...inputStyle, fontFamily: 'var(--font-mono)', textAlign: 'right' }}
+                className="font-mono text-right"
               />
-              <select
+              <Select
                 value={row.unit}
-                onChange={e => setRows(arr => arr.map((x, j) => j === i ? { ...x, unit: e.target.value as UnitOfMeasurement } : x))}
-                style={{ ...inputStyle, fontFamily: 'var(--font-mono)', fontSize: 12 }}
+                onValueChange={v => setRows(arr => arr.map((x, j) => j === i ? { ...x, unit: v as UnitOfMeasurement } : x))}
               >
-                {UNITS.map(u => <option key={u}>{u}</option>)}
-              </select>
-              <button
+                <SelectTrigger className="h-8 text-xs w-full font-mono">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {UNITS.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
                 onClick={() => setRows(arr => arr.filter((_, j) => j !== i))}
-                style={{ width: 32, height: 32, border: '1px solid var(--line)', background: 'transparent', borderRadius: 8, cursor: 'pointer', color: 'var(--ink-50)', display: 'grid', placeItems: 'center' }}
-              >✕</button>
+              >
+                ✕
+              </Button>
             </div>
           ))}
         </div>
@@ -381,12 +388,13 @@ export function RecipeFormPage() {
       <section style={{ marginBottom: 36 }}>
         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 14 }}>
           <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 28, letterSpacing: '-0.025em', margin: 0, fontWeight: 400, color: 'var(--ink)' }}>Tillagning</h2>
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => setSteps(arr => [...arr, ''])}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-sans)', fontSize: 12, color: 'var(--ink-60)', padding: '4px 8px', borderRadius: 8 }}
           >
-            + Nytt steg
-          </button>
+            + Lägg till steg
+          </Button>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {steps.map((step, i) => (
@@ -394,22 +402,23 @@ export function RecipeFormPage() {
               <span style={{ fontFamily: 'var(--font-serif)', fontSize: 32, lineHeight: 1, fontStyle: 'italic', color: 'var(--2eat-accent-deep)', textAlign: 'right', paddingTop: 8, letterSpacing: '-0.03em' }}>
                 {String(i + 1).padStart(2, '0')}
               </span>
-              <textarea
-                rows={2} placeholder="Beskriv steget…"
+              <Textarea
+                rows={2}
+                placeholder="Beskriv steget…"
                 value={step}
                 onChange={e => setSteps(arr => arr.map((s, j) => j === i ? e.target.value : s))}
-                style={{ ...inputStyle, fontFamily: 'var(--font-serif)', fontSize: 16, lineHeight: 1.5, resize: 'vertical' }}
+                className="resize-y font-serif text-base leading-[1.5]"
               />
             </div>
           ))}
         </div>
         {steps.length === 0 && (
-          <textarea
+          <Textarea
             value={instructions}
             onChange={e => setInstructions(e.target.value)}
             placeholder="Instruktioner steg för steg…"
             rows={6}
-            style={{ ...inputStyle, resize: 'vertical', marginTop: 8 }}
+            className="resize-y mt-2"
           />
         )}
       </section>
@@ -418,24 +427,17 @@ export function RecipeFormPage() {
       <section style={{ marginBottom: 36 }}>
         <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 28, letterSpacing: '-0.025em', margin: '0 0 14px', fontWeight: 400, color: 'var(--ink)' }}>Märkningar</h2>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          {ALLERGEN_OPTIONS.map(a => {
-            const active = allergens.includes(a)
-            return (
-              <button
-                key={a}
-                onClick={() => setAllergens(arr => active ? arr.filter(x => x !== a) : [...arr, a])}
-                style={{
-                  padding: '8px 16px', borderRadius: 999,
-                  border: '1px solid ' + (active ? 'var(--2eat-accent)' : 'var(--line)'),
-                  background: active ? 'color-mix(in oklch, var(--2eat-accent) 15%, transparent)' : 'transparent',
-                  color: active ? 'var(--2eat-accent-deep)' : 'var(--ink-60)',
-                  fontFamily: 'var(--font-sans)', fontSize: 13, cursor: 'pointer', transition: 'all 0.15s',
-                }}
-              >
-                {a}
-              </button>
-            )
-          })}
+          {ALLERGEN_OPTIONS.map(a => (
+            <Button
+              key={a}
+              variant={allergens.includes(a) ? 'default' : 'outline'}
+              size="sm"
+              className="rounded-full"
+              onClick={() => setAllergens(arr => arr.includes(a) ? arr.filter(x => x !== a) : [...arr, a])}
+            >
+              {a}
+            </Button>
+          ))}
         </div>
       </section>
 
@@ -447,24 +449,20 @@ export function RecipeFormPage() {
           </span>
         )}
         <div style={{ display: 'flex', gap: 8 }}>
-          <button
+          <Button
+            variant="outline"
+            className="rounded-full text-[13px]"
             onClick={() => navigate(isEdit ? `/recipes/${id}` : '/')}
-            style={{ padding: '10px 18px', borderRadius: 999, border: '1px solid var(--line)', background: 'transparent', cursor: 'pointer', fontFamily: 'var(--font-sans)', fontSize: 13, color: 'var(--ink)' }}
           >
             Avbryt
-          </button>
-          <button
-            onClick={() => saveMutation.mutate()}
+          </Button>
+          <Button
+            className="rounded-full text-[13px]"
             disabled={saveDisabled}
-            style={{
-              padding: '10px 18px', borderRadius: 999, border: 'none',
-              background: saveDisabled ? 'var(--ink-50)' : 'var(--2eat-accent)',
-              color: 'var(--paper)', cursor: saveDisabled ? 'default' : 'pointer',
-              fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 500,
-            }}
+            onClick={() => saveMutation.mutate()}
           >
             {saveMutation.isPending ? 'Sparar…' : (isEdit ? 'Spara ändringar' : 'Spara recept') + ' ✓'}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
