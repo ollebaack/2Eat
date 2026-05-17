@@ -1,6 +1,8 @@
 using _2Eat.Application.Auth;
 using _2Eat.Application.Auth.Dtos;
+using _2Eat.Application.Utforska;
 using _2Eat.Domain;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -22,7 +24,7 @@ namespace _2Eat.Web.API
             group.MapDelete("/me", DeleteMe).RequireAuthorization();
         }
 
-        static async Task<IResult> Register(RegisterRequest req, IUserService svc, IConfiguration config)
+        static async Task<IResult> Register(RegisterRequest req, IUserService svc, IConfiguration config, IServiceScopeFactory scopeFactory)
         {
             if (string.IsNullOrWhiteSpace(req.Email) ||
                 string.IsNullOrWhiteSpace(req.Password) || req.Password.Length < 8 ||
@@ -33,15 +35,30 @@ namespace _2Eat.Web.API
             if (user is null)
                 return Results.Conflict(new { detail = "Email already registered." });
 
+            TriggerForslagRefresh(scopeFactory);
             return Results.Created("/api/auth/me", new AuthResponse(GenerateToken(user, config), ToDto(user)));
         }
 
-        static async Task<IResult> Login(LoginRequest req, IUserService svc, IConfiguration config)
+        static async Task<IResult> Login(LoginRequest req, IUserService svc, IConfiguration config, IServiceScopeFactory scopeFactory)
         {
             var user = await svc.ValidateLoginAsync(req.Email, req.Password);
             if (user is null) return Results.Unauthorized();
+            TriggerForslagRefresh(scopeFactory);
             return Results.Ok(new AuthResponse(GenerateToken(user, config), ToDto(user)));
         }
+
+        /// <summary>
+        /// Fires a background Förslag pool refresh on every login/register.
+        /// The 30-minute cooldown in ForslagService makes this a no-op until the pool is stale,
+        /// so calling it on every auth event is safe.
+        /// </summary>
+        static void TriggerForslagRefresh(IServiceScopeFactory scopeFactory) =>
+            _ = Task.Run(async () =>
+            {
+                using var scope = scopeFactory.CreateScope();
+                var service = scope.ServiceProvider.GetRequiredService<IForslagService>();
+                await service.RefreshPoolAsync();
+            });
 
         static async Task<IResult> GetMe(ClaimsPrincipal principal, IUserService svc)
         {
