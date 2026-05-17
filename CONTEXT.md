@@ -40,6 +40,14 @@ _Avoid_: Shopping list, grocery list
 A transient, session-scoped selection of one or more Ingredienser used to filter the Recept catalog — surfacing Recept that match those Ingredienser. Not persisted; not tied to the user's Skafferi.
 _Avoid_: Ingredient search, pantry filter, recipe search
 
+**Förslag** (plural: **Förslag**):
+A lightweight recipe discovery card sourced from an external website (e.g. ICA, Köket.se, Coop). Contains a title, image, and source URL. Not owned by any user — exists in a shared pool. A Förslag is not a Recept; it becomes one only when a user explicitly adds it via the fast-add action, which triggers full extraction via the existing scan flow.
+_Avoid_: External recipe, suggestion, discovered recipe, imported recipe
+
+**Utforska** (Explore):
+The dedicated page where Förslag are surfaced. Separate from the user's personal Recept library. The primary landing experience — first tab on mobile, first item in the desktop sidebar. Users browse Förslag here and can fast-add them to their library. Tapping a Förslag card opens the source URL in a new browser tab.
+_Avoid_: Discovery page, feed, explore feed
+
 ## Relationships
 
 - A **User** owns zero or more **Samlingar**
@@ -48,7 +56,8 @@ _Avoid_: Ingredient search, pantry filter, recipe search
 - A **User** owns exactly one **Handlista**
 - A **User** owns zero or more **Veckoplaner** (one per week)
 - A **User** owns zero or more **Skafferi**-items
+- A **User** has a seen-cursor into the shared **Förslag** pool (tracks which Förslag have been surfaced to them). When exhausted, the cursor resets and the cycle begins again.
 
 ## Flagged ambiguities
 
-_(none yet)_
+- **Förslag already-added state**: Should a Förslag that a user has already imported appear differently (e.g. checkmark) in Utforska? Leaning yes, but not decided. Deferred.

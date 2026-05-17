@@ -26,6 +26,8 @@ namespace _2Eat.Infrastructure
         public DbSet<Domain.Files.FileUpload> Files { get; set; } = default!;
         public DbSet<Samling> Samlingar { get; set; } = default!;
         public DbSet<SamlingRecept> SamlingarRecept { get; set; } = default!;
+        public DbSet<Forslag> Forslag { get; set; } = default!;
+        public DbSet<UserForslag> UserForslag { get; set; } = default!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -151,6 +153,32 @@ namespace _2Eat.Infrastructure
 
             modelBuilder.Entity<SamlingRecept>()
                 .HasIndex(sr => sr.ReceptId);
+
+            // Förslag — shared discovery pool
+            modelBuilder.Entity<Forslag>()
+                .HasIndex(f => f.SourceSite);
+
+            modelBuilder.Entity<Forslag>()
+                .HasIndex(f => f.FetchedAt);
+
+            // UserForslag — per-user seen cursor
+            modelBuilder.Entity<UserForslag>()
+                .HasKey(uf => new { uf.UserId, uf.ForslagId });
+
+            modelBuilder.Entity<UserForslag>()
+                .HasOne(uf => uf.Forslag)
+                .WithMany()
+                .HasForeignKey(uf => uf.ForslagId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<UserForslag>()
+                .HasOne<User>()
+                .WithMany()
+                .HasForeignKey(uf => uf.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<UserForslag>()
+                .HasIndex(uf => uf.UserId);
 
             SeedData(modelBuilder);
         }

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using _2Eat.Infrastructure;
@@ -11,9 +12,11 @@ using _2Eat.Infrastructure;
 namespace _2Eat.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260517093035_AddForslag")]
+    partial class AddForslag
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -372,6 +375,92 @@ namespace _2Eat.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("IngredientMeasurements");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Quantity = 500.0,
+                            Unit = 0
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Quantity = 250.0,
+                            Unit = 0
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Quantity = 200.0,
+                            Unit = 0
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Quantity = 3.0,
+                            Unit = 9
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Quantity = 100.0,
+                            Unit = 0
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Quantity = 250.0,
+                            Unit = 1
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Quantity = 200.0,
+                            Unit = 0
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Quantity = 2.0,
+                            Unit = 9
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Quantity = 50.0,
+                            Unit = 0
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Quantity = 1.0,
+                            Unit = 2
+                        },
+                        new
+                        {
+                            Id = 11,
+                            Quantity = 500.0,
+                            Unit = 0
+                        },
+                        new
+                        {
+                            Id = 12,
+                            Quantity = 100.0,
+                            Unit = 0
+                        },
+                        new
+                        {
+                            Id = 13,
+                            Quantity = 400.0,
+                            Unit = 0
+                        },
+                        new
+                        {
+                            Id = 14,
+                            Quantity = 200.0,
+                            Unit = 1
+                        });
                 });
 
             modelBuilder.Entity("_2Eat.Domain.MealPlan", b =>
@@ -529,19 +618,76 @@ namespace _2Eat.Infrastructure.Migrations
                     b.Property<int>("Servings")
                         .HasColumnType("integer");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
-
                     b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
 
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("UserId", "Name")
+                    b.HasIndex("Name")
                         .IsUnique();
 
                     b.ToTable("Recipes");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CategoryId = 1,
+                            CookTime = 15,
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 5, 17, 9, 30, 35, 196, DateTimeKind.Unspecified).AddTicks(6108), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Traditionella svenska kanelbullar",
+                            Difficulty = "Medel",
+                            Instructions = "Blanda ingredienser och baka i 180°C i 15 minuter.",
+                            LastModified = new DateTimeOffset(new DateTime(2021, 10, 10, 10, 30, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Name = "Kanelbullar",
+                            PrepTime = 45,
+                            Rating = 5,
+                            Servings = 4
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CategoryId = 2,
+                            CookTime = 0,
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 5, 17, 9, 30, 35, 196, DateTimeKind.Unspecified).AddTicks(7283), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "En klassisk svensk räkmacka",
+                            Difficulty = "Medel",
+                            Instructions = "Montera mackan med bröd, räkor, majonnäs och dill.",
+                            LastModified = new DateTimeOffset(new DateTime(2021, 10, 10, 12, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Name = "Räkmacka",
+                            PrepTime = 10,
+                            Rating = 4,
+                            Servings = 2
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CategoryId = 3,
+                            CookTime = 120,
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 5, 17, 9, 30, 35, 196, DateTimeKind.Unspecified).AddTicks(7286), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Älgstek med enbär",
+                            Difficulty = "Medel",
+                            Instructions = "Rosta älgköttet med enbär och servera med potatis och lingon.",
+                            LastModified = new DateTimeOffset(new DateTime(2023, 10, 10, 15, 45, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Name = "Älgstek",
+                            PrepTime = 30,
+                            Rating = 5,
+                            Servings = 6
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CategoryId = 4,
+                            CookTime = 30,
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 5, 17, 9, 30, 35, 196, DateTimeKind.Unspecified).AddTicks(7288), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Lax i en krämig sås",
+                            Difficulty = "Medel",
+                            Instructions = "Laga laxen i en gräddig sås med dill och servera med kokt potatis.",
+                            LastModified = new DateTimeOffset(new DateTime(2024, 10, 10, 9, 15, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Name = "Lax med grädde",
+                            PrepTime = 20,
+                            Rating = 4,
+                            Servings = 4
+                        });
                 });
 
             modelBuilder.Entity("_2Eat.Domain.RecipeIngredient", b =>
@@ -569,6 +715,120 @@ namespace _2Eat.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("RecipeIngredients");
+
+                    b.HasData(
+                        new
+                        {
+                            RecipeId = 1,
+                            IngredientId = 1,
+                            Id = 1,
+                            IngredientMeasurementId = 1,
+                            Order = 0
+                        },
+                        new
+                        {
+                            RecipeId = 1,
+                            IngredientId = 17,
+                            Id = 2,
+                            IngredientMeasurementId = 2,
+                            Order = 1
+                        },
+                        new
+                        {
+                            RecipeId = 1,
+                            IngredientId = 2,
+                            Id = 3,
+                            IngredientMeasurementId = 3,
+                            Order = 2
+                        },
+                        new
+                        {
+                            RecipeId = 1,
+                            IngredientId = 3,
+                            Id = 4,
+                            IngredientMeasurementId = 4,
+                            Order = 3
+                        },
+                        new
+                        {
+                            RecipeId = 1,
+                            IngredientId = 4,
+                            Id = 5,
+                            IngredientMeasurementId = 5,
+                            Order = 4
+                        },
+                        new
+                        {
+                            RecipeId = 1,
+                            IngredientId = 5,
+                            Id = 6,
+                            IngredientMeasurementId = 6,
+                            Order = 5
+                        },
+                        new
+                        {
+                            RecipeId = 2,
+                            IngredientId = 12,
+                            Id = 7,
+                            IngredientMeasurementId = 7,
+                            Order = 0
+                        },
+                        new
+                        {
+                            RecipeId = 2,
+                            IngredientId = 13,
+                            Id = 8,
+                            IngredientMeasurementId = 8,
+                            Order = 1
+                        },
+                        new
+                        {
+                            RecipeId = 2,
+                            IngredientId = 9,
+                            Id = 9,
+                            IngredientMeasurementId = 9,
+                            Order = 2
+                        },
+                        new
+                        {
+                            RecipeId = 3,
+                            IngredientId = 19,
+                            Id = 10,
+                            IngredientMeasurementId = 10,
+                            Order = 0
+                        },
+                        new
+                        {
+                            RecipeId = 3,
+                            IngredientId = 7,
+                            Id = 11,
+                            IngredientMeasurementId = 11,
+                            Order = 1
+                        },
+                        new
+                        {
+                            RecipeId = 3,
+                            IngredientId = 16,
+                            Id = 12,
+                            IngredientMeasurementId = 12,
+                            Order = 2
+                        },
+                        new
+                        {
+                            RecipeId = 4,
+                            IngredientId = 8,
+                            Id = 13,
+                            IngredientMeasurementId = 13,
+                            Order = 0
+                        },
+                        new
+                        {
+                            RecipeId = 4,
+                            IngredientId = 6,
+                            Id = 14,
+                            IngredientMeasurementId = 14,
+                            Order = 1
+                        });
                 });
 
             modelBuilder.Entity("_2Eat.Domain.Samling", b =>
@@ -800,12 +1060,6 @@ namespace _2Eat.Infrastructure.Migrations
                     b.HasOne("_2Eat.Domain.Category", "Category")
                         .WithMany("Recipes")
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("_2Eat.Domain.User", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
