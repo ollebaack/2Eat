@@ -28,6 +28,7 @@ namespace _2Eat.Infrastructure
         public DbSet<SamlingRecept> SamlingarRecept { get; set; } = default!;
         public DbSet<Forslag> Forslag { get; set; } = default!;
         public DbSet<UserForslag> UserForslag { get; set; } = default!;
+        public DbSet<ForslagIngredientName> ForslagIngredientNames { get; set; } = default!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -155,6 +156,12 @@ namespace _2Eat.Infrastructure
                 .HasIndex(sr => sr.ReceptId);
 
             // Förslag — shared discovery pool
+            modelBuilder.Entity<ForslagIngredientName>()
+                .HasOne<Forslag>()
+                .WithMany(f => f.IngredientNames)
+                .HasForeignKey(n => n.ForslagId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             modelBuilder.Entity<Forslag>()
                 .HasIndex(f => f.SourceSite);
 

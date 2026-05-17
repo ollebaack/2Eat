@@ -168,4 +168,5 @@ export interface Forslag {
   imageUrl?: string | null
   sourceUrl: string
   sourceSite: string
+  ingredientNames: string[]
 }

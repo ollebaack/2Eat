@@ -224,6 +224,7 @@ export const syncReceptSamlingar = (receptId: number, samlingIds: number[]) =>
 
 // Utforska (Explore) API
 export const getUtforskaForslag = () => request<Forslag[]>('/utforska')
+export const getAllUnseenForslag = () => request<Forslag[]>('/utforska/all')
 export const fastAddForslag = (id: number, samlingIds: number[]) =>
   request<{ id: number; name: string }>(`/utforska/${id}/add`, {
     method: 'POST',

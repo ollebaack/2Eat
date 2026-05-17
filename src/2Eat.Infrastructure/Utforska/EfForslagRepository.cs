@@ -25,6 +25,12 @@ public class EfForslagRepository : IForslagRepository
             .Take(count)
             .ToListAsync(ct);
 
+    public Task<List<Forslag>> GetAllUnseenAsync(int userId, CancellationToken ct = default) =>
+        _db.Forslag
+            .Include(f => f.IngredientNames)
+            .Where(f => !_db.UserForslag.Any(uf => uf.UserId == userId && uf.ForslagId == f.Id))
+            .ToListAsync(ct);
+
     public Task<Forslag?> GetByIdAsync(int id, CancellationToken ct = default) =>
         _db.Forslag.FirstOrDefaultAsync(f => f.Id == id, ct);
 
