@@ -18,7 +18,8 @@ test.describe('Recipe Page Interactions', () => {
     // Create a recipe so the feed is non-empty for interaction tests
     recipeName = `Interaktionstest ${Date.now()}`
     await createRecipeViaApi(page, recipeName)
-    // loginViaApi already navigates to '/', just wait for content
+    // Re-navigate so the feed fetches after the recipe exists
+    await page.goto('/')
     await expect(page.locator('h1, h2, h3').first()).toBeVisible({ timeout: 10_000 })
   })
 
