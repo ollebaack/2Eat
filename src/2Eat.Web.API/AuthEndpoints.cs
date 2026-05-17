@@ -49,8 +49,8 @@ namespace _2Eat.Web.API
 
         /// <summary>
         /// Fires a background Förslag pool refresh on every login/register.
-        /// The 30-minute cooldown in ForslagService makes this a no-op until the pool is stale,
-        /// so calling it on every auth event is safe.
+        /// ForslagService holds a static semaphore so concurrent logins result in at most
+        /// one scrape running at a time — subsequent callers return immediately.
         /// </summary>
         static void TriggerForslagRefresh(IServiceScopeFactory scopeFactory) =>
             _ = Task.Run(async () =>
