@@ -7,6 +7,7 @@ namespace _2Eat.Application.Utforska;
 public class ForslagService : IForslagService
 {
     private const int PageSize = 10;
+    private static readonly SemaphoreSlim _refreshLock = new(1, 1);
 
     private readonly IForslagRepository _repo;
     private readonly IForslagScraperService _scraper;
@@ -62,17 +63,30 @@ public class ForslagService : IForslagService
 
     public async Task<(bool Refreshed, string Message)> RefreshPoolAsync(CancellationToken ct = default)
     {
-        _logger.LogInformation("Starting Förslag pool refresh...");
-        var bySource = await _scraper.ScrapeAllAsync(ct);
-
-        var total = 0;
-        foreach (var (site, items) in bySource)
+        if (!await _refreshLock.WaitAsync(0, ct))
         {
-            await _repo.ReplaceBySourceAsync(site, items, ct);
-            total += items.Count;
-            _logger.LogInformation("Replaced {Count} Förslag from {Site}", items.Count, site);
+            _logger.LogInformation("Förslag pool refresh already in progress — skipping");
+            return (false, "Pool refresh already in progress.");
         }
 
-        return (true, $"Refreshed {total} Förslag from {bySource.Count} sources.");
+        try
+        {
+            _logger.LogInformation("Starting Förslag pool refresh...");
+            var bySource = await _scraper.ScrapeAllAsync(ct);
+
+            var total = 0;
+            foreach (var (site, items) in bySource)
+            {
+                await _repo.ReplaceBySourceAsync(site, items, ct);
+                total += items.Count;
+                _logger.LogInformation("Replaced {Count} Förslag from {Site}", items.Count, site);
+            }
+
+            return (true, $"Refreshed {total} Förslag from {bySource.Count} sources.");
+        }
+        finally
+        {
+            _refreshLock.Release();
+        }
     }
 }
