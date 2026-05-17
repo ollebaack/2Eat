@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { RefreshCw, Compass } from 'lucide-react'
@@ -12,6 +12,7 @@ export function UtforskaSida() {
   const isMobile = useIsMobile()
   const [page, setPage] = useState(0)
   const [allForslag, setAllForslag] = useState<Forslag[]>([])
+  const sentinelRef = useRef<HTMLDivElement>(null)
 
   const { isLoading, isFetching, refetch } = useQuery({
     queryKey: ['utforska', page],
@@ -44,6 +45,18 @@ export function UtforskaSida() {
   })
 
   const hasMore = allForslag.length > 0 && allForslag.length % 10 === 0
+
+  useEffect(() => {
+    if (!hasMore || isFetching) return
+    const sentinel = sentinelRef.current
+    if (!sentinel) return
+    const observer = new IntersectionObserver(
+      (entries) => { if (entries[0].isIntersecting) setPage(p => p + 1) },
+      { threshold: 0.1 }
+    )
+    observer.observe(sentinel)
+    return () => observer.disconnect()
+  }, [hasMore, isFetching])
 
   const mobileHeader = isMobile ? (
     <div
@@ -153,20 +166,11 @@ export function UtforskaSida() {
           ))}
         </div>
 
-        {hasMore && (
-          <div className="flex justify-center mt-8">
-            <Button
-              variant="ghost"
-              disabled={isFetching}
-              onClick={() => setPage(p => p + 1)}
-              className="gap-2"
-            >
-              {isFetching
-                ? <><RefreshCw size={14} className="animate-spin" /> Laddar…</>
-                : 'Visa fler förslag'}
-            </Button>
-          </div>
-        )}
+        <div ref={sentinelRef} className="flex justify-center mt-8 py-4 min-h-[40px]">
+          {isFetching && allForslag.length > 0 && (
+            <RefreshCw size={16} className="animate-spin text-ink-50" />
+          )}
+        </div>
       </div>
     </div>
   )
