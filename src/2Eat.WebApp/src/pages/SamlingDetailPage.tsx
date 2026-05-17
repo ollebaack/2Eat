@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, Plus, GripVertical, Trash2, Pencil } from 'lucide-react'
@@ -8,6 +8,14 @@ import {
   addReceptToSamling, removeReceptFromSamling,
   updateSamlingOrder, getRecipes,
 } from '@/lib/api'
+import {
+  DndContext, closestCenter, PointerSensor, TouchSensor, useSensor, useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  SortableContext, verticalListSortingStrategy, useSortable, arrayMove,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import { AuthImg } from '@/components/AuthImg'
 import type { SamlingReceptItem, Recipe } from '@/types'
 import { Button } from '@/components/ui/button'
@@ -20,7 +28,41 @@ import { SearchBar } from '@/components/SearchBar'
 import { recipeSwatch } from '@/lib/recipeUtils'
 import { Skeleton } from '@/components/ui/skeleton'
 
-// ── Reorder list with HTML5 drag ─────────────────────────────────────────────
+// ── Sortable item ─────────────────────────────────────────────────────────────
+function SortableItem({ item }: { item: SamlingReceptItem }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.receptId })
+  return (
+    <li
+      ref={setNodeRef}
+      {...attributes}
+      {...listeners}
+      style={{
+        display: 'grid', gridTemplateColumns: '28px 44px 1fr',
+        alignItems: 'center', gap: 12,
+        padding: '10px 14px',
+        background: 'var(--paper)',
+        border: '1px solid var(--line)',
+        borderRadius: 12, cursor: 'grab',
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.5 : 1,
+        touchAction: 'none',
+      }}
+    >
+      <GripVertical size={16} style={{ color: 'var(--ink-30)' }} />
+      <div style={{ width: 44, height: 44, borderRadius: 8, overflow: 'hidden', flexShrink: 0 }}>
+        {item.imageUrl ? (
+          <AuthImg src={item.imageUrl} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        ) : (
+          <div style={{ width: '100%', height: '100%', background: recipeSwatch(item.receptId) }} />
+        )}
+      </div>
+      <span style={{ fontFamily: 'var(--font-sans)', fontSize: 14, color: 'var(--ink)' }}>{item.name}</span>
+    </li>
+  )
+}
+
+// ── Reorder list with dnd-kit (mouse + touch) ─────────────────────────────────
 function ReorderList({
   items,
   onReorder,
@@ -28,51 +70,27 @@ function ReorderList({
   items: SamlingReceptItem[]
   onReorder: (newOrder: SamlingReceptItem[]) => void
 }) {
-  const dragIdx = useRef<number | null>(null)
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(TouchSensor),
+  )
 
-  function onDragStart(i: number) {
-    dragIdx.current = i
-  }
-
-  function onDragOver(e: React.DragEvent, i: number) {
-    e.preventDefault()
-    if (dragIdx.current === null || dragIdx.current === i) return
-    const next = [...items]
-    const [moved] = next.splice(dragIdx.current, 1)
-    next.splice(i, 0, moved)
-    dragIdx.current = i
-    onReorder(next)
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+    const oldIndex = items.findIndex(i => i.receptId === active.id)
+    const newIndex = items.findIndex(i => i.receptId === over.id)
+    onReorder(arrayMove(items, oldIndex, newIndex))
   }
 
   return (
-    <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
-      {items.map((item, i) => (
-        <li
-          key={item.receptId}
-          draggable
-          onDragStart={() => onDragStart(i)}
-          onDragOver={e => onDragOver(e, i)}
-          style={{
-            display: 'grid', gridTemplateColumns: '28px 44px 1fr',
-            alignItems: 'center', gap: 12,
-            padding: '10px 14px',
-            background: 'var(--paper)',
-            border: '1px solid var(--line)',
-            borderRadius: 12, cursor: 'grab',
-          }}
-        >
-          <GripVertical size={16} style={{ color: 'var(--ink-30)' }} />
-          <div style={{ width: 44, height: 44, borderRadius: 8, overflow: 'hidden', flexShrink: 0 }}>
-            {item.imageUrl ? (
-              <AuthImg src={item.imageUrl} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            ) : (
-              <div style={{ width: '100%', height: '100%', background: recipeSwatch(item.receptId) }} />
-            )}
-          </div>
-          <span style={{ fontFamily: 'var(--font-sans)', fontSize: 14, color: 'var(--ink)' }}>{item.name}</span>
-        </li>
-      ))}
-    </ul>
+    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+      <SortableContext items={items.map(i => i.receptId)} strategy={verticalListSortingStrategy}>
+        <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
+          {items.map(item => <SortableItem key={item.receptId} item={item} />)}
+        </ul>
+      </SortableContext>
+    </DndContext>
   )
 }
 

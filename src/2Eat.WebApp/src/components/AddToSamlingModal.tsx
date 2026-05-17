@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 import { getSamlingar, getSamlingarForRecept, syncReceptSamlingar } from '@/lib/api'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 
 interface AddToSamlingModalProps {
   recipeId: number
@@ -82,22 +83,7 @@ export function AddToSamlingModal({ recipeId, open, onOpenChange }: AddToSamling
                       transition: 'background 0.15s',
                     }}
                   >
-                    <span
-                      style={{
-                        width: 18, height: 18, borderRadius: 4, flexShrink: 0,
-                        border: `1.5px solid ${checked ? 'var(--2eat-accent)' : 'var(--ink-30)'}`,
-                        background: checked ? 'var(--2eat-accent)' : 'transparent',
-                        display: 'grid', placeItems: 'center',
-                        transition: 'all 0.15s',
-                      }}
-                    >
-                      {checked && (
-                        <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-                          <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      )}
-                    </span>
-                    <input type="checkbox" checked={checked} onChange={() => toggle(s.id)} style={{ display: 'none' }} />
+                    <Checkbox checked={checked} onCheckedChange={() => toggle(s.id)} />
                     <span style={{ fontFamily: 'var(--font-sans)', fontSize: 14, color: 'var(--ink)' }}>
                       {s.name}
                     </span>
