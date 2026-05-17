@@ -47,10 +47,14 @@ function FeedCard({ recipe, onDelete }: { recipe: Recipe; onDelete: (r: Recipe) 
         <div style={{ position: 'absolute', top: 12, left: 12 }}>
           <Pill tone="ink" size="sm">{recipe.totalTime} MIN</Pill>
         </div>
-        <button
-          style={{ position: 'absolute', top: 12, right: 12, width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(6px)', border: 'none', cursor: 'pointer', display: 'grid', placeItems: 'center', color: 'var(--ink)' }}
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Spara recept"
+          className="absolute top-3 right-3 h-8 w-8 rounded-full"
+          style={{ background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(6px)', color: 'var(--ink)' }}
           onClick={e => { e.preventDefault(); e.stopPropagation() }}
-        ><Bookmark size={14} strokeWidth={1.5} /></button>
+        ><Bookmark size={14} strokeWidth={1.5} /></Button>
       </Link>
       <div style={{ padding: '18px 20px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
         <Link to={`/recipes/${recipe.id}`} style={{ textDecoration: 'none' }}>
@@ -71,10 +75,13 @@ function FeedCard({ recipe, onDelete }: { recipe: Recipe; onDelete: (r: Recipe) 
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <StarRating value={recipe.rating} size={11} />
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Ta bort recept"
+              className="h-6 w-6"
               onClick={e => { e.preventDefault(); e.stopPropagation(); onDelete(recipe) }}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex' }}
-            ><Trash2 size={12} strokeWidth={1.5} style={{ color: 'var(--destructive)' }} /></button>
+            ><Trash2 size={12} strokeWidth={1.5} style={{ color: 'var(--destructive)' }} /></Button>
           </div>
         </div>
       </div>
@@ -142,9 +149,16 @@ function ShuffleModal({ open, recipes, onClose, onPick }: {
       >
         <div style={{ position: 'relative', height: 220 }}>
           <PhotoSlot imageUrl={r.imageUrl} swatch={recipeSwatch(r.id)} label={r.name} height="220px" />
-          <button onClick={onClose} style={{ position: 'absolute', top: 14, right: 14, width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,0.92)', border: 'none', cursor: 'pointer', display: 'grid', placeItems: 'center' }}>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Stäng"
+            className="absolute top-3.5 right-3.5 h-8 w-8 rounded-full"
+            style={{ background: 'rgba(255,255,255,0.92)' }}
+            onClick={onClose}
+          >
             <X size={14} />
-          </button>
+          </Button>
           <div style={{ position: 'absolute', top: 14, left: 14 }}>
             <Pill tone="ink" size="sm">
               <Shuffle size={11} strokeWidth={1.5} style={{ color: 'var(--paper)', marginRight: 4 }} />
@@ -355,19 +369,20 @@ export function RecipesPage() {
           {ALLERGEN_OPTIONS.map(a => {
             const active = activeAllergens.includes(a)
             return (
-              <motion.button
-                key={a}
-                whileTap={{ scale: 0.93 }}
-                onClick={() => toggleAllergen(a)}
-                style={{
-                  padding: '6px 12px', borderRadius: 999,
-                  border: '1px dashed ' + (active ? 'var(--2eat-accent)' : 'var(--ink-30)'),
-                  background: active ? 'color-mix(in oklch, var(--2eat-accent) 12%, transparent)' : 'transparent',
-                  color: active ? 'var(--2eat-accent-deep)' : 'var(--ink-50)',
-                  fontFamily: 'var(--font-mono)', fontSize: 10.5, letterSpacing: '0.06em', textTransform: 'uppercase' as const,
-                  cursor: 'pointer', transition: 'all 0.15s',
-                }}
-              >{a}</motion.button>
+              <motion.div key={a} whileTap={{ scale: 0.93 }}>
+                <Button
+                  size="sm"
+                  className="rounded-full"
+                  onClick={() => toggleAllergen(a)}
+                  style={{
+                    border: '1px dashed ' + (active ? 'var(--2eat-accent)' : 'var(--ink-30)'),
+                    background: active ? 'color-mix(in oklch, var(--2eat-accent) 12%, transparent)' : 'transparent',
+                    color: active ? 'var(--2eat-accent-deep)' : 'var(--ink-50)',
+                    fontFamily: 'var(--font-mono)', fontSize: 10.5, letterSpacing: '0.06em', textTransform: 'uppercase',
+                    transition: 'all 0.15s',
+                  }}
+                >{a}</Button>
+              </motion.div>
             )
           })}
         </div>
