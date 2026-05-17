@@ -29,14 +29,16 @@ public class CoopScraper : ListingPageScraper
     private const int ConcurrencyLimit = 8;
     private static readonly string TitleSuffix = " | Recept - Coop";
 
-    // Matches: <meta name="og:title" content="..." />
+    // OpenGraph uses property="og:title"; some older implementations use name="og:title".
+    // Each regex handles both attribute orderings (property/name before or after content).
     private static readonly Regex OgTitlePattern = new(
-        @"<meta\s[^>]*name=""og:title""\s[^>]*content=""([^""]+)""",
+        @"<meta\b[^>]*\b(?:property|name)=""og:title""[^>]*\bcontent=""([^""]+)""" +
+        @"|<meta\b[^>]*\bcontent=""([^""]+)""[^>]*\b(?:property|name)=""og:title""",
         RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-    // Matches: <meta name="og:image" content="..." />
     private static readonly Regex OgImagePattern = new(
-        @"<meta\s[^>]*name=""og:image""\s[^>]*content=""([^""]+)""",
+        @"<meta\b[^>]*\b(?:property|name)=""og:image""[^>]*\bcontent=""([^""]+)""" +
+        @"|<meta\b[^>]*\bcontent=""([^""]+)""[^>]*\b(?:property|name)=""og:image""",
         RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
     public CoopScraper(IHttpClientFactory httpFactory, ILogger<CoopScraper> logger)
@@ -140,14 +142,29 @@ public class CoopScraper : ListingPageScraper
                 return null;
             }
 
-            var rawTitle = WebUtility.HtmlDecode(titleMatch.Groups[1].Value.Trim());
-            var title = rawTitle.EndsWith(TitleSuffix, StringComparison.OrdinalIgnoreCase)
-                ? rawTitle[..^TitleSuffix.Length].Trim()
-                : rawTitle;
+            // Groups: 1 = property-before-content match, 2 = content-before-property match
+            var rawTitle = WebUtility.HtmlDecode(
+                (titleMatch.Groups[1].Value.Trim() is { Length: > 0 } g1t ? g1t : titleMatch.Groups[2].Value.Trim()));
 
-            var imageUrl = imageMatch.Success
-                ? WebUtility.HtmlDecode(imageMatch.Groups[1].Value.Trim())
-                : null;
+            // Category pages (e.g. /recept/vegetariskt/) have two path segments but are not
+            // individual recipes — their og:title does not end with the recipe suffix.
+            if (!rawTitle.EndsWith(TitleSuffix, StringComparison.OrdinalIgnoreCase))
+            {
+                _logger.LogDebug("Skipping non-recipe Coop page {Url}, title: {Title}", url, rawTitle);
+                return null;
+            }
+
+            var title = rawTitle[..^TitleSuffix.Length].Trim();
+
+            string? rawImageUrl = null;
+            if (imageMatch.Success)
+            {
+                var g1i = imageMatch.Groups[1].Value.Trim();
+                var g2i = imageMatch.Groups[2].Value.Trim();
+                rawImageUrl = g1i.Length > 0 ? g1i : g2i;
+                if (rawImageUrl.Length == 0) rawImageUrl = null;
+            }
+            var imageUrl = rawImageUrl is not null ? WebUtility.HtmlDecode(rawImageUrl) : null;
 
             return new Forslag
             {

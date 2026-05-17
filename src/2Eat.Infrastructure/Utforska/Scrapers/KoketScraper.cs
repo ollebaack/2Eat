@@ -16,14 +16,16 @@ public class KoketScraper : ListingPageScraper
     protected override IReadOnlyList<string> ListingUrls =>
     [
         "https://www.koket.se/recept",   // no trailing slash — /recept/ returns 404
-        "https://www.koket.se/",
+        // Homepage excluded: contains navigation links to TV shows, chefs, etc.
     ];
 
     // koket.se uses flat /{slug} paths (no category prefix).
     // The title may be direct anchor text or inside a child element (span/p) — no heading tags.
     // Group 1 = relative href (e.g. /klassisk-rabarberkram), Group 2 = title text
+    // [^:<] in the title prevents matching rating text like "Betyg: 3.4 av 5 (125 röster)"
+    // and ensures the text is plain prose, not structured metadata.
     protected override Regex RecipeCardPattern { get; } = new(
-        @"<a\b[^>]+href=""(/[a-z][a-z0-9\-]*)""[^>]*>\s*(?:<[^>]+>\s*)*([A-ZÅÄÖ][^<]{3,80})",
+        @"<a\b[^>]+href=""(/[a-z][a-z0-9\-]*)""[^>]*>\s*(?:<[^>]+>\s*)*([A-ZÅÄÖ][^<:]{3,80})",
         RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
     protected override Regex? ImagePattern { get; } = new(

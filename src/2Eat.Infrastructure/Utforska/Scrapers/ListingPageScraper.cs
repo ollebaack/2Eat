@@ -92,7 +92,13 @@ public abstract class ListingPageScraper
                 var block = html.Substring(start, length);
                 var imgMatch = ImagePattern.Match(block);
                 if (imgMatch.Success)
-                    imageUrl = WebUtility.HtmlDecode(imgMatch.Groups[1].Value.Trim());
+                {
+                    // Group 1 = data-src/src, Group 2 = srcset — use whichever matched
+                    var g1 = imgMatch.Groups[1].Value.Trim();
+                    var g2 = imgMatch.Groups[2].Value.Trim();
+                    imageUrl = WebUtility.HtmlDecode(g1.Length > 0 ? g1 : g2);
+                    if (imageUrl.Length == 0) imageUrl = null;
+                }
             }
 
             items.Add(new Forslag
