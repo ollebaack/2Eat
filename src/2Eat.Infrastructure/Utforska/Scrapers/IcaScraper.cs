@@ -16,14 +16,15 @@ public class IcaScraper : ListingPageScraper
 
     protected override IReadOnlyList<string> ListingUrls =>
     [
-        "https://www.ica.se/recept/alla-recept/?pageSize=50",
+        "https://www.ica.se/recept/",
         "https://www.ica.se/recept/middag/",
     ];
 
-    // Match anchors whose href points to a recipe page: /recept/[slug]/[digits]/
-    // Group 1 = href, Group 2 = title from the link text or nearby heading
+    // ICA renders absolute hrefs: https://www.ica.se/recept/[slug]-[id]/
+    // The ID is appended to the slug (no separate path segment).
+    // Group 1 = href, Group 2 = title (direct text content of the anchor)
     protected override Regex RecipeCardPattern { get; } = new(
-        @"<a[^>]+href=""(/recept/[a-zA-Z0-9\-]+/\d+/?)""[^>]*>\s*(?:<[^>]+>\s*)*([A-ZÅÄÖ][^<]{3,80})",
+        @"<a[^>]+href=""(https://www\.ica\.se/recept/[a-zA-Z0-9\-]+/)""[^>]*>\s*(?:<[^>]+>\s*)*([A-ZÅÄÖ][^<]{3,80})",
         RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
     // ICA typically uses a data-src or src on <img> tags within each card
