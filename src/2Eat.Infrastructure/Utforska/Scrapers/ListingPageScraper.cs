@@ -12,8 +12,8 @@ namespace _2Eat.Infrastructure.Utforska.Scrapers;
 /// </summary>
 public abstract class ListingPageScraper
 {
-    private readonly IHttpClientFactory _httpFactory;
-    private readonly ILogger _logger;
+    protected readonly IHttpClientFactory _httpFactory;
+    protected readonly ILogger _logger;
 
     protected ListingPageScraper(IHttpClientFactory httpFactory, ILogger logger)
     {
@@ -42,7 +42,7 @@ public abstract class ListingPageScraper
     /// </summary>
     protected abstract string ResolveUrl(string href);
 
-    public async Task<List<Forslag>> ScrapeAsync(int maxPerSource, CancellationToken ct)
+    public virtual async Task<List<Forslag>> ScrapeAsync(int maxPerSource, CancellationToken ct)
     {
         var results = new List<Forslag>();
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
