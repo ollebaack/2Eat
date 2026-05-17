@@ -61,7 +61,7 @@ public static class UtforskaEndpoints
         Recipe created;
         try
         {
-            created = await recipeService.AddRecipeAsync(recipe);
+            created = await recipeService.AddRecipeAsync(recipe, userId.Value);
         }
         catch (ArgumentException ex)
         {

@@ -26,6 +26,7 @@ namespace _2Eat.Domain
         public DateTimeOffset LastModified { get; set; } = DateTimeOffset.UtcNow;
         public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
         public int CategoryId { get; set; }
+        public int UserId { get; set; }
         public ICollection<Allergen> Allergens { get; set; } = new List<Allergen>();
         public int? Calories { get; set; }
         public double? Protein { get; set; }

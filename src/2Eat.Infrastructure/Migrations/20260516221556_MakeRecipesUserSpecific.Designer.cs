@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using _2Eat.Infrastructure;
@@ -11,9 +12,11 @@ using _2Eat.Infrastructure;
 namespace _2Eat.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260516221556_MakeRecipesUserSpecific")]
+    partial class MakeRecipesUserSpecific
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -173,41 +176,6 @@ namespace _2Eat.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Files");
-                });
-
-            modelBuilder.Entity("_2Eat.Domain.Forslag", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTimeOffset>("FetchedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("ImageUrl")
-                        .HasColumnType("text");
-
-                    b.Property<string>("SourceSite")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("SourceUrl")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FetchedAt");
-
-                    b.HasIndex("SourceSite");
-
-                    b.ToTable("Forslag");
                 });
 
             modelBuilder.Entity("_2Eat.Domain.Ingredient", b =>
@@ -705,26 +673,6 @@ namespace _2Eat.Infrastructure.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("_2Eat.Domain.UserForslag", b =>
-                {
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("ForslagId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTimeOffset>("SeenAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("UserId", "ForslagId");
-
-                    b.HasIndex("ForslagId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserForslag");
-                });
-
             modelBuilder.Entity("AllergenIngredient", b =>
                 {
                     b.HasOne("_2Eat.Domain.Allergen", null)
@@ -885,23 +833,6 @@ namespace _2Eat.Infrastructure.Migrations
                         .HasForeignKey("_2Eat.Domain.User", "ShoppingListId");
 
                     b.Navigation("ShoppingList");
-                });
-
-            modelBuilder.Entity("_2Eat.Domain.UserForslag", b =>
-                {
-                    b.HasOne("_2Eat.Domain.Forslag", "Forslag")
-                        .WithMany()
-                        .HasForeignKey("ForslagId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("_2Eat.Domain.User", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Forslag");
                 });
 
             modelBuilder.Entity("_2Eat.Domain.Category", b =>

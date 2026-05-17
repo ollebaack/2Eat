@@ -336,7 +336,7 @@ export function RecipeDetailPage() {
                 {Object.values(checked).filter(Boolean).length} / {sortedIngredients.length} ikryssat
               </span>
               <Button variant="outline" size="sm" className="rounded-full gap-1.5 text-xs" onClick={() => addToShoppingListMutation.mutate()} disabled={addToShoppingListMutation.isPending}>
-                <Plus size={12} /> Till handlista
+                <Plus size={12} /> Till handlingslista
               </Button>
             </div>
             {hasCost && (

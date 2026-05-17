@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { loginViaApi, uniqueEmail } from './helpers'
+import { loginViaApi, uniqueEmail, createRecipeViaApi } from './helpers'
 
 // Fail immediately on any unhandled JS exception
 test.beforeEach(async ({ page }) => {
@@ -19,7 +19,8 @@ test('recipes page loads', async ({ page }) => {
 })
 
 test('recipe detail page loads', async ({ page }) => {
-  await page.goto('/recipes/1')
+  const recipe = await createRecipeViaApi(page, `Smoke detail test ${Date.now()}`)
+  await page.goto(`/recipes/${recipe.id}`)
   await expect(page.locator('h1, h2').first()).toBeVisible({ timeout: 10_000 })
 })
 
