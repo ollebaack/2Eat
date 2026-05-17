@@ -6,8 +6,7 @@ namespace _2Eat.Application.Utforska;
 
 public class ForslagService : IForslagService
 {
-    private static readonly TimeSpan RefreshCooldown = TimeSpan.FromMinutes(30);
-    private const int PageSize = 25;
+    private const int PageSize = 10;
 
     private readonly IForslagRepository _repo;
     private readonly IForslagScraperService _scraper;
@@ -63,13 +62,6 @@ public class ForslagService : IForslagService
 
     public async Task<(bool Refreshed, string Message)> RefreshPoolAsync(CancellationToken ct = default)
     {
-        if (await _repo.WasRefreshedRecentlyAsync(RefreshCooldown, ct))
-        {
-            var msg = $"Refresh blocked — pool was updated within the last {RefreshCooldown.TotalMinutes:0} minutes.";
-            _logger.LogInformation(msg);
-            return (false, msg);
-        }
-
         _logger.LogInformation("Starting Förslag pool refresh...");
         var bySource = await _scraper.ScrapeAllAsync(ct);
 

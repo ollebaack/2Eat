@@ -59,9 +59,4 @@ public class EfForslagRepository : IForslagRepository
         await _db.SaveChangesAsync(ct);
     }
 
-    public async Task<bool> WasRefreshedRecentlyAsync(TimeSpan window, CancellationToken ct = default)
-    {
-        var cutoff = DateTimeOffset.UtcNow - window;
-        return await _db.Forslag.AnyAsync(f => f.FetchedAt >= cutoff, ct);
-    }
 }
