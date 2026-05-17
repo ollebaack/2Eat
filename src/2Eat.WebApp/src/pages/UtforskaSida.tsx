@@ -90,9 +90,9 @@ export function UtforskaSida() {
     >
       <div className="flex items-center gap-2">
         <Compass size={18} strokeWidth={1.5} className="text-ink-50" />
-        <span style={{ fontFamily: 'var(--font-serif)', fontSize: 20, letterSpacing: '-0.02em', color: 'var(--ink)' }}>
+        <h1 className="m-0 font-normal" style={{ fontFamily: 'var(--font-serif)', fontSize: 20, letterSpacing: '-0.02em', color: 'var(--ink)' }}>
           Utforska
-        </span>
+        </h1>
       </div>
       <Button
         variant="ghost"

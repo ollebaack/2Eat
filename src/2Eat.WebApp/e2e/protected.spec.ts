@@ -47,9 +47,15 @@ test.describe('Authenticated access', () => {
     await loginViaApi(page, uniqueEmail('auth'))
   })
 
-  test('home page renders recipe list', async ({ page }) => {
+  test('home page (utforska) renders', async ({ page }) => {
     await page.goto('/')
     await expect(page).toHaveURL('/')
+    await expect(page.locator('h1, h2').first()).toBeVisible({ timeout: 10_000 })
+  })
+
+  test('recept page renders recipe list', async ({ page }) => {
+    await page.goto('/recept')
+    await expect(page).toHaveURL('/recept')
     await expect(page.locator('h1, h2').first()).toBeVisible({ timeout: 10_000 })
   })
 

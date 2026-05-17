@@ -13,8 +13,13 @@ test.beforeEach(async ({ page }) => {
   await loginViaApi(page, uniqueEmail('smoke'))
 })
 
-test('recipes page loads', async ({ page }) => {
+test('home page (utforska) loads', async ({ page }) => {
   await page.goto('/')
+  await expect(page.locator('h1, h2, h3').first()).toBeVisible({ timeout: 10_000 })
+})
+
+test('recipes page loads', async ({ page }) => {
+  await page.goto('/recept')
   await expect(page.locator('h1, h2, h3').first()).toBeVisible({ timeout: 10_000 })
 })
 
