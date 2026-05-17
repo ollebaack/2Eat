@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cd 'C:/Source/2Eat/src/2Eat.WebApp' && npm run build 2>&1 && npm run test 2>&1",
+            "command": "cd '/home/user/2Eat/src/2Eat.WebApp' && npm run build 2>&1 && npm run test 2>&1",
             "shell": "bash",
             "timeout": 120,
             "statusMessage": "Running build + smoke tests…"
