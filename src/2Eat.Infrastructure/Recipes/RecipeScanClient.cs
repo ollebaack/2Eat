@@ -74,7 +74,9 @@ public class RecipeScanClient : IRecipeScanService
         }
 
         var http = _httpFactory.CreateClient("RecipeScan");
-        var html = await http.GetStringAsync(url, ct);
+        using var httpResponse = await http.GetAsync(url, ct);
+        httpResponse.EnsureSuccessStatusCode();
+        var html = await httpResponse.Content.ReadAsStringAsync(ct);
 
         var ogImageUrl = ExtractOgMetaContent(html, "og:image");
 
@@ -85,9 +87,12 @@ public class RecipeScanClient : IRecipeScanService
             return scraped with { ImageUrl = ogImageUrl };
         }
 
-        // Fall back to AI when no structured data is found
+        // Fall back to AI when no structured data is found.
+        // Extract the main content area first so Claude gets focused recipe text
+        // rather than the full page with nav, footer, and cookie banners.
         EnsureConfigured();
-        var text = StripHtml(html);
+        var mainHtml = ExtractMainContent(html);
+        var text = StripHtml(mainHtml);
         if (text.Length > 80_000) text = text[..80_000];
 
         var messages = new List<Message>
@@ -251,11 +256,26 @@ public class RecipeScanClient : IRecipeScanService
             ?? throw new InvalidOperationException("Claude returned an empty response.");
     }
 
+    // Attempts to narrow the HTML to the primary content region so the text sent to
+    // Claude is focused on recipe content rather than nav, cookie banners, etc.
+    private static string ExtractMainContent(string html)
+    {
+        var m = Regex.Match(html, @"<main\b[^>]*>([\s\S]+?)</main>", RegexOptions.IgnoreCase);
+        if (m.Success) return m.Groups[1].Value;
+
+        m = Regex.Match(html, @"<article\b[^>]*>([\s\S]+?)</article>", RegexOptions.IgnoreCase);
+        if (m.Success) return m.Groups[1].Value;
+
+        return html;
+    }
+
     private static string StripHtml(string html)
     {
-        // Remove script/style/noscript blocks entirely (content included) before stripping tags,
-        // otherwise raw JavaScript and CSS pollute the text sent to Claude.
-        var noBlocks = Regex.Replace(html, @"<(script|style|noscript)[^>]*>[\s\S]*?</(script|style|noscript)>", " ", RegexOptions.IgnoreCase);
+        // Remove entire blocks whose content is noise: scripts, styles, SVG markup,
+        // template fragments, and page-chrome sections (nav/header/footer/aside).
+        var noBlocks = Regex.Replace(html,
+            @"<(script|style|noscript|svg|template|nav|header|footer|aside)[^>]*>[\s\S]*?</(script|style|noscript|svg|template|nav|header|footer|aside)>",
+            " ", RegexOptions.IgnoreCase);
         var noTags = Regex.Replace(noBlocks, "<[^>]+>", " ");
         return Regex.Replace(noTags, @"\s{2,}", " ").Trim();
     }

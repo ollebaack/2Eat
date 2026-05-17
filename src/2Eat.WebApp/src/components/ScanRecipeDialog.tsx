@@ -206,7 +206,6 @@ export function ScanRecipeDialog({ open, onOpenChange, onApply }: Props) {
                   ref={fileRef}
                   type="file"
                   accept="image/*"
-                  capture="environment"
                   style={{ display: 'none' }}
                   onChange={handleImageFile}
                 />
