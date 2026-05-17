@@ -54,9 +54,12 @@ test.describe('Create Recipe', () => {
 
     await page.goto('/recipes/new')
     await nameInput(page).fill(recipeName)
-    // Category is required (FK constraint). The <select> has no htmlFor so we
-    // target it via its "Välj kategori…" placeholder option; "1" = Bakverk (seeded).
-    await page.locator('select:has(option[value=""])').selectOption('1')
+    // Category is required (FK constraint). The category field uses a Shadcn/Radix
+    // Select (custom combobox), not a native <select>. Open it by clicking the trigger
+    // showing the placeholder, then pick "Bakverk" (categoryId=1, always seeded).
+    const categoryTrigger = page.getByRole('combobox').filter({ hasText: 'Välj kategori…' })
+    await categoryTrigger.click()
+    await page.getByRole('option', { name: 'Bakverk' }).click()
     const saveBtn = page.getByRole('button', { name: /Spara recept/ })
     await saveBtn.evaluate(el => el.scrollIntoView({ block: 'center' }))
     await saveBtn.click({ force: true })
