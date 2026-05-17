@@ -11,8 +11,8 @@ import { getSamlingar } from '@/lib/api'
 import { AuthImg } from '@/components/AuthImg'
 
 const navItems = [
-  { to: '/utforska',    label: 'Utforska',      icon: Compass,        end: false },
-  { to: '/',            label: 'Recept',        icon: BookOpen,       end: true  },
+  { to: '/',            label: 'Utforska',      icon: Compass,        end: true  },
+  { to: '/recept',      label: 'Recept',        icon: BookOpen,       end: false },
   { to: '/veckoplan',   label: 'Veckoplan',     icon: Calendar,       end: false },
   { to: '/skafferi',    label: 'Skafferi',      icon: ShoppingBasket, end: false },
   { to: '/samlingar',   label: 'Samlingar',     icon: Library,        end: false },

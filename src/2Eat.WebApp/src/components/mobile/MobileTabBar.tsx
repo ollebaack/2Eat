@@ -2,17 +2,17 @@ import { useNavigate, useMatch } from 'react-router-dom'
 import { BookOpen, ShoppingBasket, Utensils, Library, Compass } from 'lucide-react'
 
 const TABS = [
-  { key: 'utforska',  label: 'Utforska',  Icon: Compass,        to: '/utforska'   },
-  { key: 'home',      label: 'Recept',    Icon: BookOpen,       to: '/'           },
-  { key: 'skafferi',  label: 'Skafferi',  Icon: ShoppingBasket, to: '/skafferi'   },
-  { key: 'plan',      label: 'Plan',      Icon: Utensils,       to: '/veckoplan'  },
-  { key: 'samlingar', label: 'Samlingar', Icon: Library,        to: '/samlingar'  },
+  { key: 'utforska',  label: 'Utforska',  Icon: Compass,        to: '/'          },
+  { key: 'home',      label: 'Recept',    Icon: BookOpen,       to: '/recept'    },
+  { key: 'skafferi',  label: 'Skafferi',  Icon: ShoppingBasket, to: '/skafferi'  },
+  { key: 'plan',      label: 'Plan',      Icon: Utensils,       to: '/veckoplan' },
+  { key: 'samlingar', label: 'Samlingar', Icon: Library,        to: '/samlingar' },
 ]
 
 export function MobileTabBar() {
   const navigate = useNavigate()
-  const isUtforska  = !!useMatch('/utforska')
-  const isHome      = !!useMatch({ path: '/', end: true })
+  const isUtforska  = !!useMatch({ path: '/', end: true })
+  const isHome      = !!useMatch('/recept')
   const isSkafferi  = !!useMatch('/skafferi')
   const isVeckoplan = !!useMatch('/veckoplan')
   const isSamlingar = !!useMatch('/samlingar/*')

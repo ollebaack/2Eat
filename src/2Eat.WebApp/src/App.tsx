@@ -36,8 +36,8 @@ export default function App() {
             <Route path="register" element={<RegisterPage />} />
             <Route element={<ProtectedRoute />}>
               <Route element={<Layout />}>
-                <Route index element={<RecipesPage />} />
-                <Route path="utforska" element={<UtforskaSida />} />
+                <Route index element={<UtforskaSida />} />
+                <Route path="recept" element={<RecipesPage />} />
                 <Route path="recipes/new" element={<RecipeFormPage />} />
                 <Route path="recipes/:id" element={<RecipeDetailPage />} />
                 <Route path="recipes/:id/edit" element={<RecipeFormPage />} />
