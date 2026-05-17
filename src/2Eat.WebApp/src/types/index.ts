@@ -161,3 +161,11 @@ export interface SamlingDetail {
   createdAt: string
   recept: SamlingReceptItem[]
 }
+
+export interface Forslag {
+  id: number
+  title: string
+  imageUrl?: string | null
+  sourceUrl: string
+  sourceSite: string
+}

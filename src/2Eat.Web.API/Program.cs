@@ -99,6 +99,7 @@ app.MapMealPlanEndpoints();
 app.MapPantryEndpoints();
 app.MapShoppingListEndpoints();
 app.MapSamlingarEndpoints();
+app.MapUtforskaEndpoints();
 
 app.Run();
 
