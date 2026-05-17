@@ -18,25 +18,20 @@ public class UtforskaTests(UtforskaFixture fixture)
     }
 
     /// <summary>
-    /// Verifies the full Utforska flow: pool seeding, serving Förslag, and 30-minute cooldown.
+    /// Verifies the full Utforska flow: pool seeding, serving Förslag, and repeated refresh.
     ///
     /// The pool may already be seeded via the background refresh that fires on login
-    /// (AuthEndpoints.TriggerForslagRefresh). The test accounts for both cases:
-    ///   - If the pool was empty: the explicit refresh returns 200 and seeds it.
-    ///   - If already seeded: the explicit refresh returns 429; the pool is already usable.
-    /// Either way, GetNext must return items and a second immediate refresh must be blocked.
+    /// (AuthEndpoints.TriggerForslagRefresh). Either way, GetNext must return items
+    /// and a second immediate refresh must also succeed (no cooldown).
     /// </summary>
     [Fact]
-    public async Task FullFlow_SeedPoolServeForslag_CooldownBlocksDoubleRefresh()
+    public async Task FullFlow_SeedPoolServeForslag_DoubleRefreshSucceeds()
     {
         var client = await fixture.CreateAuthenticatedClientAsync();
 
-        // Seed the pool. Stub scraper returns 3 items. A 429 here means the background
-        // trigger on login already seeded the pool — that is fine, proceed either way.
+        // Seed the pool. Stub scraper returns 3 items.
         var seedResp = await client.PostAsync("/api/admin/forslag/refresh", null);
-        Assert.True(
-            seedResp.StatusCode is HttpStatusCode.OK or HttpStatusCode.TooManyRequests,
-            $"Unexpected status from refresh: {seedResp.StatusCode}");
+        Assert.Equal(HttpStatusCode.OK, seedResp.StatusCode);
 
         // Pool is seeded — GetNext must return items with correct shape.
         var getResp = await client.GetAsync("/api/utforska");
@@ -52,9 +47,9 @@ public class UtforskaTests(UtforskaFixture fixture)
         Assert.False(string.IsNullOrEmpty(first.GetProperty("sourceUrl").GetString()));
         Assert.False(string.IsNullOrEmpty(first.GetProperty("sourceSite").GetString()));
 
-        // A second immediate refresh must always be blocked by the 30-minute cooldown.
-        var cooldownResp = await client.PostAsync("/api/admin/forslag/refresh", null);
-        Assert.Equal(HttpStatusCode.TooManyRequests, cooldownResp.StatusCode);
+        // A second immediate refresh must also succeed — no cooldown.
+        var secondResp = await client.PostAsync("/api/admin/forslag/refresh", null);
+        Assert.Equal(HttpStatusCode.OK, secondResp.StatusCode);
     }
 
     /// <summary>
