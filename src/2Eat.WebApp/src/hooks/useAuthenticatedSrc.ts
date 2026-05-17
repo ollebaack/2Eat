@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react'
 import { fetchFile } from '@/lib/api'
 
 export function useAuthenticatedSrc(storedFileName?: string | null): string | undefined {
+  const isExternal = storedFileName?.startsWith('http') ?? false
   const [blobUrl, setBlobUrl] = useState<string | undefined>()
 
   useEffect(() => {
-    if (!storedFileName) return
+    // External URLs (Coop Cloudinary, koket.se CDN, etc.) are used directly.
+    if (!storedFileName || isExternal) return
 
     let url: string | undefined
     let cancelled = false
@@ -26,7 +28,7 @@ export function useAuthenticatedSrc(storedFileName?: string | null): string | un
       if (url) URL.revokeObjectURL(url)
       setBlobUrl(undefined)
     }
-  }, [storedFileName])
+  }, [storedFileName, isExternal])
 
-  return blobUrl
+  return isExternal ? storedFileName ?? undefined : blobUrl
 }
