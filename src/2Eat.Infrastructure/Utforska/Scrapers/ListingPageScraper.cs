@@ -64,8 +64,53 @@ public abstract class ListingPageScraper
             }
         }
 
+        // Enrich each card with ingredient names from its detail page
+        var sem = new SemaphoreSlim(5);
+        await Task.WhenAll(results.Select(async forslag =>
+        {
+            await sem.WaitAsync(ct);
+            try
+            {
+                var detailHtml = await http.GetStringAsync(forslag.SourceUrl, ct);
+                forslag.IngredientNames = ExtractIngredientNames(detailHtml)
+                    .Select(n => new ForslagIngredientName { Name = n })
+                    .ToList();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to extract ingredients from {Url}", forslag.SourceUrl);
+                forslag.IngredientNames = [];
+            }
+            finally
+            {
+                sem.Release();
+            }
+        }));
+
         _logger.LogInformation("Scraped {Count} Förslag from {Site}", results.Count, SourceSite);
         return results;
+    }
+
+    /// <summary>
+    /// Extracts ingredient name strings from a recipe detail page HTML.
+    /// Uses the schema.org JSON-LD recipeIngredient property (present on most Swedish recipe sites).
+    /// Override in subclasses for sites with a different structure.
+    /// </summary>
+    protected virtual List<string> ExtractIngredientNames(string html)
+    {
+        var blockMatch = Regex.Match(
+            html,
+            @"""recipeIngredient""\s*:\s*\[([^\]]+)\]",
+            RegexOptions.IgnoreCase);
+
+        if (!blockMatch.Success) return [];
+
+        var block = blockMatch.Groups[1].Value;
+        return Regex.Matches(block, @"""([^""]{2,100})""")
+            .Select(m => WebUtility.HtmlDecode(m.Groups[1].Value.Trim().ToLowerInvariant()))
+            .Where(s => s.Length >= 2)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
     }
 
     private List<Forslag> ExtractCards(string html, int limit, HashSet<string> seen)

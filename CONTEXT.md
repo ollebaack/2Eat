@@ -41,11 +41,11 @@ A transient, session-scoped selection of one or more Ingredienser used to filter
 _Avoid_: Ingredient search, pantry filter, recipe search
 
 **Förslag** (plural: **Förslag**):
-A lightweight recipe discovery card sourced from an external website (e.g. ICA, Köket.se, Coop). Contains a title, image, and source URL. Not owned by any user — exists in a shared pool. A Förslag is not a Recept; it becomes one only when a user explicitly adds it via the fast-add action, which triggers full extraction via the existing scan flow.
+A lightweight recipe discovery card sourced from an external website (e.g. ICA, Köket.se, Coop). Contains a title, image, source URL, and a list of raw ingredient name strings scraped from the source page. Not owned by any user — exists in a shared pool. A Förslag is not a Recept; it becomes one only when a user explicitly adds it via the fast-add action, which triggers full extraction via the existing scan flow.
 _Avoid_: External recipe, suggestion, discovered recipe, imported recipe
 
 **Utforska** (Explore):
-The dedicated page where Förslag are surfaced. Separate from the user's personal Recept library. The primary landing experience — first tab on mobile, first item in the desktop sidebar. Users browse Förslag here and can fast-add them to their library. Tapping a Förslag card opens the source URL in a new browser tab.
+The dedicated page where Förslag are surfaced. Separate from the user's personal Recept library. The primary landing experience — first tab on mobile, first item in the desktop sidebar. Users browse Förslag here and can fast-add them to their library. Tapping a Förslag card opens the source URL in a new browser tab. Supports a **"Från skafferiet"** filter: when active, all unseen Förslag are fetched at once, scored against the user's Skafferi by ingredient name match, and sorted best-match first. Each card shows match percentage, missing count, and missing ingredient names. The seen-cursor only advances during normal (unfiltered) browsing.
 _Avoid_: Discovery page, feed, explore feed
 
 ## Relationships

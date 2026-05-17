@@ -9,8 +9,14 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { PhotoSlot } from '@/components/PhotoSlot'
 import { fastAddForslag, getSamlingar } from '@/lib/api'
 
+export interface MatchInfo {
+  score: number      // 0–1 fraction of ingredients matched
+  missing: string[]  // lowercase ingredient name strings not in Skafferi
+}
+
 interface ForslagCardProps {
   forslag: Forslag
+  matchInfo?: MatchInfo
 }
 
 const SITE_COLORS: Record<string, string> = {
@@ -27,7 +33,7 @@ function sourceDomain(url: string): string {
   }
 }
 
-export function ForslagCard({ forslag }: ForslagCardProps) {
+export function ForslagCard({ forslag, matchInfo }: ForslagCardProps) {
   const [open, setOpen] = useState(false)
   const [selectedIds, setSelectedIds] = useState<number[]>([])
   const queryClient = useQueryClient()
@@ -58,6 +64,8 @@ export function ForslagCard({ forslag }: ForslagCardProps) {
       prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
     )
   }
+
+  const matchPct = matchInfo ? Math.round(matchInfo.score * 100) : null
 
   return (
     <article
@@ -93,6 +101,23 @@ export function ForslagCard({ forslag }: ForslagCardProps) {
         >
           {forslag.sourceSite}
         </span>
+        {/* Missing count badge — top-right of image */}
+        {matchInfo && matchInfo.missing.length > 0 && (
+          <span
+            className="absolute top-3 right-3 rounded-full px-2.5 py-1"
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: 10,
+              fontWeight: 600,
+              letterSpacing: '0.04em',
+              background: 'rgba(20,18,14,0.82)',
+              color: '#fff',
+              backdropFilter: 'blur(4px)',
+            }}
+          >
+            Saknas: {matchInfo.missing.length}
+          </span>
+        )}
       </a>
 
       {/* Card body */}
@@ -174,6 +199,56 @@ export function ForslagCard({ forslag }: ForslagCardProps) {
             </PopoverContent>
           </Popover>
         </div>
+
+        {/* Match info row — only in filter mode */}
+        {matchInfo && (
+          <div className="flex flex-col gap-2">
+            <span
+              style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: 10.5,
+                color: matchPct! >= 80 ? 'var(--2eat-accent-deep)' : 'var(--ink-50)',
+                letterSpacing: '0.04em',
+              }}
+            >
+              {matchPct}% matchar
+            </span>
+            {matchInfo.missing.length > 0 && (
+              <div className="flex flex-col gap-1">
+                <span
+                  style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: 9.5,
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase',
+                    color: 'var(--ink-40)',
+                  }}
+                >
+                  Köp till
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  {matchInfo.missing.map(name => (
+                    <span
+                      key={name}
+                      className="rounded-full px-2.5 py-0.5"
+                      style={{
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: 10,
+                        letterSpacing: '0.04em',
+                        background: 'var(--surface-1)',
+                        border: '1px solid var(--line)',
+                        color: 'var(--ink-70)',
+                        textTransform: 'capitalize',
+                      }}
+                    >
+                      {name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Source line */}
         <a

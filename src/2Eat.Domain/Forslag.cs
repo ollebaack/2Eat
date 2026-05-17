@@ -16,4 +16,6 @@ public class Forslag
     public string SourceSite { get; set; } = null!;
 
     public DateTimeOffset FetchedAt { get; set; } = DateTimeOffset.UtcNow;
+
+    public ICollection<ForslagIngredientName> IngredientNames { get; set; } = new List<ForslagIngredientName>();
 }

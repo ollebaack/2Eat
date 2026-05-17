@@ -166,6 +166,10 @@ public class CoopScraper : ListingPageScraper
             }
             var imageUrl = rawImageUrl is not null ? WebUtility.HtmlDecode(rawImageUrl) : null;
 
+            var ingredientNames = ExtractIngredientNames(html)
+                .Select(n => new ForslagIngredientName { Name = n })
+                .ToList();
+
             return new Forslag
             {
                 Title = title,
@@ -173,6 +177,7 @@ public class CoopScraper : ListingPageScraper
                 SourceSite = SourceSite,
                 ImageUrl = imageUrl,
                 FetchedAt = DateTimeOffset.UtcNow,
+                IngredientNames = ingredientNames,
             };
         }
         catch (Exception ex)

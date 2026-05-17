@@ -58,6 +58,9 @@ public class ForslagService : IForslagService
         return items;
     }
 
+    public Task<List<Forslag>> GetAllUnseenAsync(int userId, CancellationToken ct = default) =>
+        _repo.GetAllUnseenAsync(userId, ct);
+
     public Task<Forslag?> GetByIdAsync(int id, CancellationToken ct = default) =>
         _repo.GetByIdAsync(id, ct);
 

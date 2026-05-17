@@ -7,6 +7,9 @@ public interface IForslagRepository
     /// <summary>Returns up to <paramref name="count"/> Förslag the user has not yet seen.</summary>
     Task<List<Forslag>> GetUnseenAsync(int userId, int count, CancellationToken ct = default);
 
+    /// <summary>Returns all Förslag the user has not yet seen, including ingredient names. Does not mark as seen.</summary>
+    Task<List<Forslag>> GetAllUnseenAsync(int userId, CancellationToken ct = default);
+
     /// <summary>Total number of Förslag in the shared pool.</summary>
     Task<int> TotalCountAsync(CancellationToken ct = default);
 

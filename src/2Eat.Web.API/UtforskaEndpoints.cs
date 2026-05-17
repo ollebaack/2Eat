@@ -13,6 +13,7 @@ public static class UtforskaEndpoints
     {
         var utforska = endpoints.MapGroup("/api/utforska").RequireAuthorization();
         utforska.MapGet("/", GetNext);
+        utforska.MapGet("/all", GetAllUnseen);
         utforska.MapPost("/{id}/add", FastAdd);
 
         var admin = endpoints.MapGroup("/api/admin").RequireAuthorization();
@@ -26,7 +27,20 @@ public static class UtforskaEndpoints
         if (userId is null) return Results.Unauthorized();
 
         var items = await service.GetNextAsync(userId.Value);
-        var dtos = items.Select(f => new ForslagDto(f.Id, f.Title, f.ImageUrl, f.SourceUrl, f.SourceSite)).ToList();
+        var dtos = items.Select(f => new ForslagDto(f.Id, f.Title, f.ImageUrl, f.SourceUrl, f.SourceSite, [])).ToList();
+        return Results.Ok(dtos);
+    }
+
+    // GET /api/utforska/all  — returns all unseen Förslag with ingredient names (no cursor advance)
+    static async Task<IResult> GetAllUnseen(ClaimsPrincipal principal, IForslagService service)
+    {
+        var userId = principal.GetUserId();
+        if (userId is null) return Results.Unauthorized();
+
+        var items = await service.GetAllUnseenAsync(userId.Value);
+        var dtos = items.Select(f => new ForslagDto(
+            f.Id, f.Title, f.ImageUrl, f.SourceUrl, f.SourceSite,
+            f.IngredientNames.Select(n => n.Name).ToList())).ToList();
         return Results.Ok(dtos);
     }
 
@@ -158,6 +172,6 @@ public static class UtforskaEndpoints
         };
     }
 
-    record ForslagDto(int Id, string Title, string? ImageUrl, string SourceUrl, string SourceSite);
+    record ForslagDto(int Id, string Title, string? ImageUrl, string SourceUrl, string SourceSite, List<string> IngredientNames);
     record FastAddRequest(List<int>? SamlingIds);
 }
