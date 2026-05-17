@@ -19,11 +19,11 @@ public class KoketScraper : ListingPageScraper
         "https://www.koket.se/",
     ];
 
-    // koket.se now uses flat /{slug} paths (no category prefix).
-    // The recipe title lives inside a heading element within the anchor, not as direct text.
-    // Group 1 = relative href (e.g. /klassisk-rabarberkram), Group 2 = title from heading
+    // koket.se uses flat /{slug} paths (no category prefix).
+    // The title may be direct anchor text or inside a child element (span/p) — no heading tags.
+    // Group 1 = relative href (e.g. /klassisk-rabarberkram), Group 2 = title text
     protected override Regex RecipeCardPattern { get; } = new(
-        @"<a\b[^>]+href=""(/[a-z][a-z0-9\-]*)""[^>]*>(?:(?!</a>)[\s\S]){0,600}?<h[1-6][^>]*>\s*([A-ZÅÄÖ][^<]{3,80})",
+        @"<a\b[^>]+href=""(/[a-z][a-z0-9\-]*)""[^>]*>\s*(?:<[^>]+>\s*)*([A-ZÅÄÖ][^<]{3,80})",
         RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
     protected override Regex? ImagePattern { get; } = new(
