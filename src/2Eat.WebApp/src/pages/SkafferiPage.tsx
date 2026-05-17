@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { Leaf, Sparkles, Clock, Search, Plus, Pencil, Trash2, ArrowRight, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -178,22 +179,20 @@ function ItemFormModal({ open, editItem, onClose, onSave, isPending }: ItemFormM
           </div>
 
           <div style={{ display: 'flex', gap: 24 }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 14 }}>
-              <input
-                type="checkbox"
+            <Label className="flex items-center gap-2 cursor-pointer text-sm font-normal">
+              <Checkbox
                 checked={form.isOpened}
-                onChange={(e) => setForm((f) => ({ ...f, isOpened: e.target.checked }))}
+                onCheckedChange={(v) => setForm((f) => ({ ...f, isOpened: v === true }))}
               />
               Öppnad
-            </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 14 }}>
-              <input
-                type="checkbox"
+            </Label>
+            <Label className="flex items-center gap-2 cursor-pointer text-sm font-normal">
+              <Checkbox
                 checked={form.isLow}
-                onChange={(e) => setForm((f) => ({ ...f, isLow: e.target.checked }))}
+                onCheckedChange={(v) => setForm((f) => ({ ...f, isLow: v === true }))}
               />
               Låg nivå
-            </label>
+            </Label>
           </div>
 
           <DialogFooter>
@@ -323,13 +322,15 @@ function ReceiptScanModal({ open, onClose, onItemsAdded }: ReceiptScanModalProps
                   alt="Kvitto"
                   style={{ maxHeight: 220, maxWidth: '100%', borderRadius: 8, objectFit: 'contain' }}
                 />
-                <button
+                <Button
+                  variant="link"
+                  size="sm"
                   type="button"
                   onClick={() => fileRef.current?.click()}
-                  style={{ fontSize: 13, color: 'var(--ink-60)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+                  style={{ color: 'var(--ink-60)', fontSize: 13 }}
                 >
                   Välj annan bild
-                </button>
+                </Button>
               </div>
             ) : (
               <div
@@ -370,23 +371,18 @@ function ReceiptScanModal({ open, onClose, onItemsAdded }: ReceiptScanModalProps
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 320, overflowY: 'auto' }}>
                 {scannedItems.map((item, i) => (
-                  <label
+                  <Label
                     key={i}
+                    className="flex items-center gap-2.5 cursor-pointer text-sm font-normal"
                     style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 10,
                       padding: '8px 10px',
                       borderRadius: 8,
                       border: '1px solid var(--line)',
-                      cursor: 'pointer',
-                      fontSize: 14,
                     }}
                   >
-                    <input
-                      type="checkbox"
+                    <Checkbox
                       checked={checkedIds.has(i)}
-                      onChange={() => toggleItem(i)}
+                      onCheckedChange={() => toggleItem(i)}
                     />
                     <span style={{ flex: 1 }}>{item.name}</span>
                     <span style={{ fontSize: 12, color: 'var(--ink-60)', whiteSpace: 'nowrap' }}>
@@ -402,7 +398,7 @@ function ReceiptScanModal({ open, onClose, onItemsAdded }: ReceiptScanModalProps
                     }}>
                       {item.category}
                     </span>
-                  </label>
+                  </Label>
                 ))}
               </div>
             )}
@@ -440,20 +436,16 @@ function ReviewStep({ items, checkedIds, onToggle, onConfirm, onCancel, isSaving
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 320, overflowY: 'auto' }}>
           {items.map((item, i) => (
-            <label
+            <Label
               key={i}
+              className="flex items-center gap-2.5 cursor-pointer text-sm font-normal"
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
                 padding: '8px 10px',
                 borderRadius: 8,
                 border: '1px solid var(--line)',
-                cursor: 'pointer',
-                fontSize: 14,
               }}
             >
-              <input type="checkbox" checked={checkedIds.has(i)} onChange={() => onToggle(i)} />
+              <Checkbox checked={checkedIds.has(i)} onCheckedChange={() => onToggle(i)} />
               <span style={{ flex: 1 }}>{item.name}</span>
               <span style={{ fontSize: 12, color: 'var(--ink-60)', whiteSpace: 'nowrap' }}>
                 {item.quantity} {item.unit}
@@ -468,7 +460,7 @@ function ReviewStep({ items, checkedIds, onToggle, onConfirm, onCancel, isSaving
               }}>
                 {item.category}
               </span>
-            </label>
+            </Label>
           ))}
         </div>
       )}
@@ -719,7 +711,7 @@ function StatCard({ label, value, subtitle, icon, active, tab, onClick, activeSt
   }
 
   return (
-    <button style={baseStyle} onClick={() => onClick(tab)}>
+    <Button variant="ghost" className="w-full h-auto whitespace-normal" style={baseStyle} onClick={() => onClick(tab)}>
       <div>
         <div style={{
           fontFamily: 'var(--font-mono)',
@@ -761,7 +753,7 @@ function StatCard({ label, value, subtitle, icon, active, tab, onClick, activeSt
       }}>
         {icon}
       </div>
-    </button>
+    </Button>
   )
 }
 
@@ -876,25 +868,17 @@ function PantryItemCard({ item, onDelete, onEdit }: PantryItemCardProps) {
             { label: 'Ta bort',  icon: <Trash2  size={13} />, onClick: () => onDelete(item.id) },
           ] as const
         ).map(({ label, icon, onClick }) => (
-          <button
+          <Button
             key={label}
+            variant="ghost"
+            size="icon"
             onClick={onClick}
-            style={{
-              width: 28,
-              height: 28,
-              borderRadius: '50%',
-              background: 'transparent',
-              border: 'none',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'var(--ink-50)',
-            }}
             aria-label={label}
+            className="h-7 w-7 rounded-full"
+            style={{ color: 'var(--ink-50)' }}
           >
             {icon}
-          </button>
+          </Button>
         ))}
       </div>
     </div>
@@ -1127,22 +1111,22 @@ function ExpiringRow({ item, recipes, onManage, onNavigate }: ExpiringRowProps) 
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
               {matchingRecipes.map((r) => (
-                <button
+                <Button
                   key={r.id}
+                  variant="ghost"
+                  size="sm"
                   onClick={(e) => { e.stopPropagation(); onNavigate(r.id) }}
+                  className="rounded-full h-auto py-0.5 px-2.5"
                   style={{
-                    padding: '3px 10px',
-                    borderRadius: 999,
                     background: 'var(--surface-1)',
                     border: '1px solid var(--line)',
                     fontFamily: 'var(--font-sans)',
                     fontSize: 11.5,
                     color: 'var(--ink-60)',
-                    cursor: 'pointer',
                   }}
                 >
                   {r.name}
-                </button>
+                </Button>
               ))}
             </div>
           </>
@@ -1150,25 +1134,20 @@ function ExpiringRow({ item, recipes, onManage, onNavigate }: ExpiringRowProps) 
       </div>
 
       {/* Manage button */}
-      <button
+      <Button
+        variant="outline"
+        size="sm"
         onClick={() => onManage(item)}
+        className="rounded-lg gap-1"
         style={{
-          padding: '6px 12px',
-          borderRadius: 8,
-          background: 'transparent',
           border: '1px solid var(--line)',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 4,
           fontFamily: 'var(--font-sans)',
           fontSize: 12,
           color: 'var(--ink-60)',
-          whiteSpace: 'nowrap',
         }}
       >
         Hantera <ArrowRight size={12} />
-      </button>
+      </Button>
     </div>
   )
 }
@@ -1397,69 +1376,37 @@ export function SkafferiPage() {
         </div>
 
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-          <button
+          <Button
+            variant="outline"
             onClick={() => setShowHandlistaModal(true)}
-            style={{
-              padding: '9px 18px',
-              borderRadius: 999,
-              background: 'var(--paper)',
-              border: '1px solid var(--line)',
-              fontFamily: 'var(--font-sans)',
-              fontSize: 13.5,
-              color: 'var(--ink)',
-              cursor: 'pointer',
-            }}
+            className="rounded-full"
+            style={{ fontFamily: 'var(--font-sans)', fontSize: 13.5, background: 'var(--paper)', border: '1px solid var(--line)', color: 'var(--ink)' }}
           >
             Importera från Handlistan
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="outline"
             onClick={() => setShowTextModal(true)}
-            style={{
-              padding: '9px 18px',
-              borderRadius: 999,
-              background: 'var(--paper)',
-              border: '1px solid var(--line)',
-              fontFamily: 'var(--font-sans)',
-              fontSize: 13.5,
-              color: 'var(--ink)',
-              cursor: 'pointer',
-            }}
+            className="rounded-full"
+            style={{ fontFamily: 'var(--font-sans)', fontSize: 13.5, background: 'var(--paper)', border: '1px solid var(--line)', color: 'var(--ink)' }}
           >
             Skriv vad du har
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="outline"
             onClick={() => setShowScanModal(true)}
-            style={{
-              padding: '9px 18px',
-              borderRadius: 999,
-              background: 'var(--paper)',
-              border: '1px solid var(--line)',
-              fontFamily: 'var(--font-sans)',
-              fontSize: 13.5,
-              color: 'var(--ink)',
-              cursor: 'pointer',
-            }}
+            className="rounded-full"
+            style={{ fontFamily: 'var(--font-sans)', fontSize: 13.5, background: 'var(--paper)', border: '1px solid var(--line)', color: 'var(--ink)' }}
           >
             Skanna kvitto
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => setShowAddModal(true)}
-            style={{
-              padding: '9px 18px',
-              borderRadius: 999,
-              background: 'var(--ink)',
-              border: '1px solid var(--ink)',
-              fontFamily: 'var(--font-sans)',
-              fontSize: 13.5,
-              color: 'var(--paper)',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 6,
-            }}
+            className="rounded-full gap-1.5"
+            style={{ fontFamily: 'var(--font-sans)', fontSize: 13.5, background: 'var(--ink)', border: '1px solid var(--ink)', color: 'var(--paper)' }}
           >
             <Plus size={14} /> Lägg till i skafferi
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -1521,25 +1468,19 @@ export function SkafferiPage() {
               <span style={{ fontFamily: 'var(--font-sans)', fontSize: 13.5, color: 'var(--ink)' }}>
                 {lowItems.length} {lowItems.length === 1 ? 'vara har' : 'varor har'} låg nivå
               </span>
-              <button
+              <Button
                 onClick={handleAddLowItemsToHandlista}
                 disabled={isAddingLowItems}
+                className="rounded-full whitespace-nowrap shrink-0"
                 style={{
-                  padding: '7px 16px',
-                  borderRadius: 999,
                   background: 'oklch(0.5 0.15 30)',
-                  border: 'none',
                   fontFamily: 'var(--font-sans)',
                   fontSize: 13,
                   color: 'white',
-                  cursor: isAddingLowItems ? 'default' : 'pointer',
-                  opacity: isAddingLowItems ? 0.6 : 1,
-                  whiteSpace: 'nowrap',
-                  flexShrink: 0,
                 }}
               >
                 {isAddingLowItems ? 'Lägger till…' : 'Lägg till på Handlistan'}
-              </button>
+              </Button>
             </div>
           )}
 
@@ -1555,41 +1496,33 @@ export function SkafferiPage() {
               padding: '8px 16px',
             }}>
               <Search size={15} style={{ color: 'var(--ink-50)', flexShrink: 0 }} />
-              <input
+              <Input
                 placeholder="Sök i skafferiet…"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                style={{
-                  border: 'none',
-                  background: 'transparent',
-                  outline: 'none',
-                  fontFamily: 'var(--font-sans)',
-                  fontSize: 14,
-                  color: 'var(--ink)',
-                  width: '100%',
-                }}
+                className="border-0 bg-transparent shadow-none focus-visible:ring-0 px-0 w-full"
+                style={{ fontFamily: 'var(--font-sans)', fontSize: 14, color: 'var(--ink)' }}
               />
             </div>
 
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
               {FILTER_CATEGORIES.map((cat) => (
-                <button
+                <Button
                   key={cat}
+                  size="sm"
                   onClick={() => setCategoryFilter(cat)}
+                  className="rounded-full"
                   style={{
-                    padding: '5px 14px',
-                    borderRadius: 999,
                     border: `1px solid ${categoryFilter === cat ? 'var(--ink)' : 'var(--line)'}`,
                     background: categoryFilter === cat ? 'var(--ink)' : 'transparent',
                     color: categoryFilter === cat ? 'var(--paper)' : 'var(--ink-70)',
                     fontFamily: 'var(--font-sans)',
                     fontSize: 12.5,
-                    cursor: 'pointer',
                     transition: 'all 0.12s',
                   }}
                 >
                   {cat}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -1612,23 +1545,19 @@ export function SkafferiPage() {
                 : (
                   <>
                     <span>Skafferiet är tomt.</span>
-                    <button
+                    <Button
                       onClick={handleSeedStarter}
                       disabled={isSeedingStarter}
+                      className="rounded-full"
                       style={{
-                        padding: '10px 22px',
-                        borderRadius: 999,
                         background: 'var(--ink)',
-                        border: 'none',
                         fontFamily: 'var(--font-sans)',
                         fontSize: 13.5,
                         color: 'var(--paper)',
-                        cursor: isSeedingStarter ? 'default' : 'pointer',
-                        opacity: isSeedingStarter ? 0.6 : 1,
                       }}
                     >
                       {isSeedingStarter ? 'Lägger till…' : 'Fyll på med vanliga basvaror'}
-                    </button>
+                    </Button>
                   </>
                 )}
             </div>
