@@ -41,18 +41,20 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+
+      - name: Fetch PR diff
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh pr diff ${{ github.event.pull_request.number }} > /tmp/pr-diff.txt
 
       - name: Run Frontend Review
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          claude_args: --model claude-sonnet-4-6
+          claude_args: --model claude-sonnet-4-6 --max-turns 3
           prompt: |
             You are a code reviewer for the 2Eat project. Review only the frontend changes in this pull request.
-            Run `gh pr diff ${{ github.event.pull_request.number }}` to get the diff, then review only files
-            under src/2Eat.WebApp/src/.
+            The diff is already in /tmp/pr-diff.txt — read that file. Review only files under src/2Eat.WebApp/src/.
 
             ## Frontend rules
 
@@ -102,18 +104,21 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+
+      - name: Fetch PR diff
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh pr diff ${{ github.event.pull_request.number }} > /tmp/pr-diff.txt
 
       - name: Run Backend Review
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          claude_args: --model claude-sonnet-4-6
+          claude_args: --model claude-sonnet-4-6 --max-turns 3
           prompt: |
             You are a code reviewer for the 2Eat project. Review only the backend changes in this pull request.
-            Run `gh pr diff ${{ github.event.pull_request.number }}` to get the diff, then review only files
-            under src/ and tests/, excluding src/2Eat.WebApp/.
+            The diff is already in /tmp/pr-diff.txt — read that file. Review only files under src/ and tests/,
+            excluding src/2Eat.WebApp/.
 
             ## Backend rules
 
