@@ -27,9 +27,4 @@ public interface IForslagRepository
     /// </summary>
     Task ReplaceBySourceAsync(string sourceSite, IEnumerable<Forslag> incoming, CancellationToken ct = default);
 
-    /// <summary>
-    /// Returns true if any Förslag was fetched within the given time window
-    /// (used to enforce the manual-refresh cooldown).
-    /// </summary>
-    Task<bool> WasRefreshedRecentlyAsync(TimeSpan window, CancellationToken ct = default);
 }

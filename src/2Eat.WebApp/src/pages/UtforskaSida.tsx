@@ -38,46 +38,12 @@ export function UtforskaSida() {
       setAllForslag([])
       refetch()
     },
-    onError: (err: Error) => {
-      if (err.message.startsWith('429')) {
-        toast.error('Uppdatering blockerad — vänta 30 minuter innan nästa försök.')
-      } else {
-        toast.error('Uppdateringen misslyckades.')
-      }
+    onError: () => {
+      toast.error('Uppdateringen misslyckades.')
     },
   })
 
-  const hasMore = allForslag.length > 0 && allForslag.length % 25 === 0
-
-  const pageTitle = isMobile ? null : (
-    <div className="flex items-center justify-between mb-6">
-      <div>
-        <h1
-          className="m-0 font-normal"
-          style={{ fontFamily: 'var(--font-serif)', fontSize: 28, letterSpacing: '-0.03em', color: 'var(--ink)' }}
-        >
-          Utforska
-        </h1>
-        <p
-          className="m-0 mt-1"
-          style={{ fontFamily: 'var(--font-sans)', fontSize: 13, color: 'var(--ink-50)' }}
-        >
-          Recept från ICA, Köket och Coop — lägg till dem i ditt bibliotek
-        </p>
-      </div>
-      <Button
-        variant="ghost"
-        size="sm"
-        className="gap-1.5 text-ink-50"
-        disabled={refreshMutation.isPending}
-        onClick={() => refreshMutation.mutate()}
-        title="Uppdatera receptpoolen (max var 30:e minut)"
-      >
-        <RefreshCw size={14} strokeWidth={1.5} className={refreshMutation.isPending ? 'animate-spin' : ''} />
-        Uppdatera
-      </Button>
-    </div>
-  )
+  const hasMore = allForslag.length > 0 && allForslag.length % 10 === 0
 
   const mobileHeader = isMobile ? (
     <div
@@ -107,13 +73,43 @@ export function UtforskaSida() {
     </div>
   ) : null
 
+  const desktopHeader = !isMobile ? (
+    <div className="flex items-center justify-between mb-8">
+      <div>
+        <h1
+          className="m-0 font-normal"
+          style={{ fontFamily: 'var(--font-serif)', fontSize: 28, letterSpacing: '-0.03em', color: 'var(--ink)' }}
+        >
+          Utforska
+        </h1>
+        <p
+          className="m-0 mt-1"
+          style={{ fontFamily: 'var(--font-sans)', fontSize: 13, color: 'var(--ink-50)' }}
+        >
+          Recept från ICA, Köket och Coop — lägg till dem i ditt bibliotek
+        </p>
+      </div>
+      <Button
+        variant="ghost"
+        size="sm"
+        className="gap-1.5 text-ink-50"
+        disabled={refreshMutation.isPending}
+        onClick={() => refreshMutation.mutate()}
+        title="Uppdatera receptpoolen"
+      >
+        <RefreshCw size={14} strokeWidth={1.5} className={refreshMutation.isPending ? 'animate-spin' : ''} />
+        Uppdatera
+      </Button>
+    </div>
+  ) : null
+
   if (isLoading && allForslag.length === 0) {
     return (
       <div style={{ padding: isMobile ? '0' : '32px 40px' }}>
         {mobileHeader}
-        <div style={{ padding: isMobile ? '24px 16px' : '0' }}>
-          {pageTitle}
-          <SkeletonGrid />
+        <div style={{ padding: isMobile ? '16px' : '0' }}>
+          {desktopHeader}
+          <SkeletonFeed />
         </div>
       </div>
     )
@@ -124,7 +120,7 @@ export function UtforskaSida() {
       <div style={{ padding: isMobile ? '0' : '32px 40px' }}>
         {mobileHeader}
         <div style={{ padding: isMobile ? '40px 16px' : '0', textAlign: 'center' }}>
-          {pageTitle}
+          {desktopHeader}
           <Compass size={40} strokeWidth={1} className="text-ink-30 mx-auto mb-4" />
           <p style={{ fontFamily: 'var(--font-serif)', fontSize: 18, color: 'var(--ink)', marginBottom: 8 }}>
             Inga förslag än
@@ -149,12 +145,9 @@ export function UtforskaSida() {
     <div style={{ padding: isMobile ? '0' : '32px 40px' }}>
       {mobileHeader}
       <div style={{ padding: isMobile ? '16px' : '0' }}>
-        {pageTitle}
+        {desktopHeader}
 
-        <div
-          className="grid gap-4"
-          style={{ gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(240px, 1fr))' }}
-        >
+        <div className="mx-auto flex flex-col gap-6" style={{ maxWidth: 600 }}>
           {allForslag.map(f => (
             <ForslagCard key={f.id} forslag={f} />
           ))}
@@ -179,17 +172,14 @@ export function UtforskaSida() {
   )
 }
 
-function SkeletonGrid() {
+function SkeletonFeed() {
   return (
-    <div
-      className="grid gap-4"
-      style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))' }}
-    >
-      {Array.from({ length: 8 }).map((_, i) => (
+    <div className="mx-auto flex flex-col gap-6" style={{ maxWidth: 600 }}>
+      {Array.from({ length: 3 }).map((_, i) => (
         <div
           key={i}
           className="rounded-[18px] overflow-hidden animate-pulse"
-          style={{ background: 'var(--surface-2)', aspectRatio: '5/6' }}
+          style={{ background: 'var(--surface-2)', aspectRatio: '4/3' }}
         />
       ))}
     </div>

@@ -19,7 +19,7 @@ public static class UtforskaEndpoints
         admin.MapPost("/forslag/refresh", RefreshPool);
     }
 
-    // GET /api/utforska  — returns next 25 unseen Förslag for the authenticated user
+    // GET /api/utforska  — returns next 10 unseen Förslag for the authenticated user
     static async Task<IResult> GetNext(ClaimsPrincipal principal, IForslagService service)
     {
         var userId = principal.GetUserId();
@@ -81,13 +81,10 @@ public static class UtforskaEndpoints
         return Results.Ok(new { id = created.Id, name = created.Name });
     }
 
-    // POST /api/admin/forslag/refresh  — manually trigger pool refresh (30-min cooldown)
+    // POST /api/admin/forslag/refresh  — manually trigger pool refresh
     static async Task<IResult> RefreshPool(IForslagService service)
     {
-        var (refreshed, message) = await service.RefreshPoolAsync();
-        if (!refreshed)
-            return Results.Problem(detail: message, statusCode: 429);
-
+        var (_, message) = await service.RefreshPoolAsync();
         return Results.Ok(new { message });
     }
 

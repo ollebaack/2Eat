@@ -16,8 +16,10 @@ Try sitemap.xml or RSS feed first; fall back to HTML category-page scraping if n
 
 ## Pool size and refresh cadence
 
-~50 Förslag per source (150 total). Full replace on each run — old Förslag for a source are cleared and replaced with fresh ones. The manual refresh endpoint enforces a 30-minute cooldown via a `LastRefreshedAt` timestamp to prevent abuse.
+~50 Förslag per source (150 total). Full replace on each run — old Förslag for a source are cleared and replaced with fresh ones.
+
+The manual refresh endpoint originally enforced a 30-minute cooldown. This was removed when the Utforska layout switched to a feed-style (single large card, 10 per page) — users exhaust a batch faster and need to refresh more frequently, making the cooldown counterproductive.
 
 ## Per-user seen tracking
 
-Each user has a seen-cursor into the shared pool. The Utforska page returns 25 unseen Förslag at a time. When all are exhausted the cursor resets. This prevents users from hitting a dead end while keeping the pool shared and small.
+Each user has a seen-cursor into the shared pool. The Utforska page returns 10 unseen Förslag at a time (reduced from 25 when the layout moved to full-width feed cards). When all are exhausted the cursor resets. This prevents users from hitting a dead end while keeping the pool shared and small.
