@@ -17,6 +17,12 @@ namespace _2Eat.Infrastructure.Migrations
                 name: "IX_Recipes_Name",
                 table: "Recipes");
 
+            // Clear all recipes (seed + user-created) before adding the UserId NOT NULL FK.
+            // Without this, any existing rows get UserId=0 which violates the FK constraint.
+            migrationBuilder.Sql("DELETE FROM \"RecipeIngredients\";");
+            migrationBuilder.Sql("DELETE FROM \"IngredientMeasurements\";");
+            migrationBuilder.Sql("DELETE FROM \"Recipes\";");
+
             migrationBuilder.DeleteData(
                 table: "RecipeIngredients",
                 keyColumns: new[] { "IngredientId", "RecipeId" },
