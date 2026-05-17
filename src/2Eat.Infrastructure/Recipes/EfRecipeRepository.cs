@@ -15,8 +15,9 @@ public class EfRecipeRepository : IRecipeRepository
         _context = context;
     }
 
-    public Task<List<Recipe>> GetAllAsync()
+    public Task<List<Recipe>> GetAllAsync(int userId)
         => _context.Recipes
+            .Where(r => r.UserId == userId)
             .Include(x => x.Category)
             .Include(x => x.Ingredients)
                 .ThenInclude(x => x.Ingredient)
@@ -29,7 +30,7 @@ public class EfRecipeRepository : IRecipeRepository
 
     public async Task<PagedResult<Recipe>> GetPageAsync(RecipeQuery query)
     {
-        var idQuery = _context.Recipes.AsNoTracking().AsQueryable();
+        var idQuery = _context.Recipes.AsNoTracking().Where(r => r.UserId == query.UserId).AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(query.Search))
         {
@@ -81,16 +82,18 @@ public class EfRecipeRepository : IRecipeRepository
         return new PagedResult<Recipe>(ordered, hasMore, query.Page);
     }
 
-    public Task<List<Recipe>> GetRandomAsync(int count)
+    public Task<List<Recipe>> GetRandomAsync(int count, int userId)
         => _context.Recipes
+            .Where(r => r.UserId == userId)
             .Include(x => x.Category)
             .AsNoTracking()
             .OrderBy(r => Guid.NewGuid())
             .Take(count)
             .ToListAsync();
 
-    public Task<Recipe?> GetByIdAsync(int id)
+    public Task<Recipe?> GetByIdAsync(int id, int userId)
         => _context.Recipes
+            .Where(r => r.Id == id && r.UserId == userId)
             .Include(x => x.Category)
             .Include(x => x.Ingredients)
                 .ThenInclude(x => x.Ingredient)
@@ -99,16 +102,17 @@ public class EfRecipeRepository : IRecipeRepository
                 .ThenInclude(x => x.IngredientMeasurement)
             .Include(x => x.Allergens)
             .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == id);
+            .FirstOrDefaultAsync();
 
-    public Task<Recipe?> GetWithIngredientsAsync(int id)
+    public Task<Recipe?> GetWithIngredientsAsync(int id, int userId)
         => _context.Recipes
+            .Where(r => r.Id == id && r.UserId == userId)
             .Include(x => x.Ingredients)
                 .ThenInclude(x => x.Ingredient)
             .Include(x => x.Ingredients)
                 .ThenInclude(x => x.IngredientMeasurement)
             .Include(x => x.Allergens)
-            .FirstOrDefaultAsync(x => x.Id == id);
+            .FirstOrDefaultAsync();
 
     public Task<Ingredient?> FindIngredientByNameAsync(string name)
         => _context.Ingredients.FirstOrDefaultAsync(i => i.Name == name);

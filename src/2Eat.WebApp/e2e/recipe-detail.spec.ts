@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { loginViaApi, uniqueEmail } from './helpers'
+import { loginViaApi, uniqueEmail, createRecipeViaApi } from './helpers'
 
 test.beforeEach(async ({ page }) => {
   page.on('pageerror', err => {
@@ -8,9 +8,13 @@ test.beforeEach(async ({ page }) => {
 })
 
 test.describe('Recipe Detail', () => {
+  let recipeId: number
+
   test.beforeEach(async ({ page }) => {
     await loginViaApi(page, uniqueEmail('detail'))
-    await page.goto('/recipes/1')
+    const recipe = await createRecipeViaApi(page, `Detail test ${Date.now()}`)
+    recipeId = recipe.id
+    await page.goto(`/recipes/${recipeId}`)
     await expect(page.locator('h1, h2').first()).toBeVisible({ timeout: 10_000 })
   })
 
@@ -88,7 +92,7 @@ test.describe('Recipe Detail', () => {
     test.skip(testInfo.project.name === 'mobile', 'Edit button not shown on mobile')
 
     await page.getByRole('link', { name: /Redigera/i }).first().click()
-    await expect(page).toHaveURL(/\/recipes\/1\/edit/, { timeout: 5_000 })
+    await expect(page).toHaveURL(new RegExp(`/recipes/${recipeId}/edit`), { timeout: 5_000 })
   })
 
   test('back button navigates away from recipe detail', async ({ page }, testInfo) => {
@@ -97,14 +101,13 @@ test.describe('Recipe Detail', () => {
     } else {
       await page.getByRole('button', { name: /Tillbaka till alla recept/i }).click()
     }
-    await expect(page).not.toHaveURL(/\/recipes\/1$/, { timeout: 5_000 })
+    await expect(page).not.toHaveURL(new RegExp(`/recipes/${recipeId}$`), { timeout: 5_000 })
   })
 
   test('delete button opens confirmation dialog', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name === 'mobile', 'Delete button not shown on mobile')
 
-    // Recipe 1 is owned by the seed user, not the test user — delete button may be hidden.
-    // Create a recipe owned by the test user instead.
+    // Create a second recipe owned by the test user to exercise the delete dialog
     const token = await page.evaluate(() => localStorage.getItem('2eat_token'))
     const res = await page.request.post('/api/recipes', {
       headers: token ? { Authorization: `Bearer ${token}` } : {},

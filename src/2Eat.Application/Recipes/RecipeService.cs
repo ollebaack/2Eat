@@ -12,18 +12,20 @@ public class RecipeService : IRecipeService
         _repository = repository;
     }
 
-    public Task<List<Recipe>> GetRecipesAsync() => _repository.GetAllAsync();
+    public Task<List<Recipe>> GetRecipesAsync(int userId) => _repository.GetAllAsync(userId);
 
     public Task<PagedResult<Recipe>> GetRecipesPageAsync(RecipeQuery query) => _repository.GetPageAsync(query);
 
     public Task<List<Category>> GetCategoriesAsync() => _repository.GetCategoriesAsync();
 
-    public Task<List<Recipe>> GetRandomRecipesAsync(int count) => _repository.GetRandomAsync(count);
+    public Task<List<Recipe>> GetRandomRecipesAsync(int count, int userId) => _repository.GetRandomAsync(count, userId);
 
-    public Task<Recipe?> GetRecipeByIdAsync(int id) => _repository.GetByIdAsync(id);
+    public Task<Recipe?> GetRecipeByIdAsync(int id, int userId) => _repository.GetByIdAsync(id, userId);
 
-    public async Task<Recipe> AddRecipeAsync(Recipe recipe)
+    public async Task<Recipe> AddRecipeAsync(Recipe recipe, int userId)
     {
+        recipe.UserId = userId;
+
         if (string.IsNullOrEmpty(recipe.Name))
             throw new ArgumentException("Recipe name is required", nameof(recipe));
 
@@ -78,9 +80,9 @@ public class RecipeService : IRecipeService
         return await _repository.AddAsync(recipe);
     }
 
-    public async Task<Recipe> UpdateRecipeAsync(int Id, Recipe recipe)
+    public async Task<Recipe> UpdateRecipeAsync(int Id, Recipe recipe, int userId)
     {
-        var recipeEntity = await _repository.GetWithIngredientsAsync(Id)
+        var recipeEntity = await _repository.GetWithIngredientsAsync(Id, userId)
             ?? throw new Exception("Recipe not found");
 
         recipeEntity.Name = recipe.Name;
@@ -154,9 +156,9 @@ public class RecipeService : IRecipeService
         return await _repository.UpdateAsync(recipeEntity);
     }
 
-    public async Task<Recipe> DeleteRecipeAsync(int id)
+    public async Task<Recipe> DeleteRecipeAsync(int id, int userId)
     {
-        var recipe = await _repository.GetByIdAsync(id)
+        var recipe = await _repository.GetByIdAsync(id, userId)
             ?? throw new Exception("Recipe not found");
 
         return await _repository.RemoveAsync(recipe);

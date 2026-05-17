@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { loginViaApi, uniqueEmail } from './helpers'
+import { loginViaApi, uniqueEmail, createRecipeViaApi } from './helpers'
 
 const SEARCH_PLACEHOLDER = /Sök (bland recept|recept eller ingrediens)…/
 
@@ -11,9 +11,15 @@ test.beforeEach(async ({ page }) => {
 })
 
 test.describe('Recipe Page Interactions', () => {
+  let recipeName: string
+
   test.beforeEach(async ({ page }) => {
     await loginViaApi(page, uniqueEmail('interactions'))
-    // loginViaApi already navigates to '/', just wait for content
+    // Create a recipe so the feed is non-empty for interaction tests
+    recipeName = `Interaktionstest ${Date.now()}`
+    await createRecipeViaApi(page, recipeName)
+    // Re-navigate so the feed fetches after the recipe exists
+    await page.goto('/')
     await expect(page.locator('h1, h2, h3').first()).toBeVisible({ timeout: 10_000 })
   })
 
@@ -22,22 +28,24 @@ test.describe('Recipe Page Interactions', () => {
     await expect(searchInput).toBeVisible()
 
     await searchInput.fill('zzznomatch')
-    // Seeded recipe "Kanelbullar" should not be visible with a no-match query
-    await expect(page.getByText('Kanelbullar')).not.toBeVisible({ timeout: 5_000 })
+    await expect(page.getByText(recipeName)).not.toBeVisible({ timeout: 5_000 })
   })
 
-  test('search input shows results for seeded recipe name', async ({ page }) => {
+  test('search input shows results for recipe name', async ({ page }) => {
     const searchInput = page.getByPlaceholder(SEARCH_PLACEHOLDER).first()
     await expect(searchInput).toBeVisible()
 
-    await searchInput.fill('Kanel')
-    await expect(page.getByText('Kanelbullar').first()).toBeVisible({ timeout: 5_000 })
+    // Search for the first word of the recipe name to verify filtering
+    const searchTerm = recipeName.split(' ')[0]
+    await searchInput.fill(searchTerm)
+    await expect(page.getByText(recipeName).first()).toBeVisible({ timeout: 5_000 })
   })
 
   test('category filter chip filters recipes', async ({ page, isMobile }) => {
     // Category chips are only visible on desktop (hidden behind a filter toggle on mobile)
     if (isMobile) { test.skip(); return }
-    await page.getByRole('button', { name: 'Bakverk' }).click()
+    // Test recipe is created in categoryId 5 = Övrigt
+    await page.getByRole('button', { name: 'Övrigt' }).click()
     await expect(page.locator('article').first()).toBeVisible({ timeout: 5_000 })
   })
 
@@ -86,6 +94,6 @@ test.describe('Recipe Page Interactions', () => {
 
     // Deactivate — full list should restore
     await glutenBtn.click()
-    await expect(page.getByText('Kanelbullar').first()).toBeVisible({ timeout: 5_000 })
+    await expect(page.getByText(recipeName).first()).toBeVisible({ timeout: 5_000 })
   })
 })
