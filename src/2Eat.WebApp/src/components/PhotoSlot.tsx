@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { recipeSwatch } from '@/lib/recipeUtils'
 import { cn } from '@/lib/utils'
 import { useAuthenticatedSrc } from '@/hooks/useAuthenticatedSrc'
@@ -32,7 +32,11 @@ export function PhotoSlot({
 
   const src = useAuthenticatedSrc(imageUrl)
   const [errored, setErrored] = useState(false)
-  useEffect(() => { setErrored(false) }, [imageUrl])
+  const [prevImageUrl, setPrevImageUrl] = useState(imageUrl)
+  if (prevImageUrl !== imageUrl) {
+    setPrevImageUrl(imageUrl)
+    setErrored(false)
+  }
 
   const containerStyle: React.CSSProperties = fill
     ? { position: 'absolute', inset: 0 }

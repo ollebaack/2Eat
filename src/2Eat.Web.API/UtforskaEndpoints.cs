@@ -1,4 +1,3 @@
-using System.Net.Http;
 using System.Security.Claims;
 using _2Eat.Application.Recipes;
 using _2Eat.Application.Recipes.Dtos;
