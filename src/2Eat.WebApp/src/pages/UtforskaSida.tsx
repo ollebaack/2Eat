@@ -152,6 +152,7 @@ export function UtforskaSida() {
           className="h-8 w-8 rounded-full"
           disabled={refreshMutation.isPending}
           onClick={() => refreshMutation.mutate()}
+          aria-label="Uppdatera förslag"
           title="Uppdatera"
         >
           <RefreshCw size={15} strokeWidth={1.5} className={refreshMutation.isPending ? 'animate-spin' : ''} />

@@ -281,6 +281,7 @@ export function SamlingDetailPage() {
             variant="outline"
             size="icon"
             className="h-9 w-9 rounded-full"
+            aria-label="Döp om samling"
             title="Döp om"
             onClick={() => { setRenameName(samling.name); setRenameOpen(true) }}
           >
@@ -290,6 +291,7 @@ export function SamlingDetailPage() {
             variant="outline"
             size="icon"
             className="h-9 w-9 rounded-full"
+            aria-label="Ta bort samling"
             title="Ta bort samling"
             onClick={() => setDeleteOpen(true)}
           >
@@ -386,6 +388,7 @@ export function SamlingDetailPage() {
                 <Button
                   variant="ghost"
                   size="icon"
+                  aria-label="Ta bort ur samling"
                   className="h-7 w-7"
                   style={{ color: 'var(--ink-40)' }}
                   onClick={() => setRemoveReceptId(item.receptId)}
