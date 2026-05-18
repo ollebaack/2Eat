@@ -103,16 +103,17 @@ export function ScanRecipeDialog({ open, onOpenChange, onApply }: Props) {
 
         {scanning && (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, padding: '32px 0' }}>
-            <div style={{
-              width: 36, height: 36, borderRadius: '50%',
-              border: '3px solid var(--line)',
-              borderTopColor: 'var(--2eat-accent)',
-              animation: 'spin 0.8s linear infinite',
-            }} />
+            <div
+              className="animate-spin"
+              style={{
+                width: 36, height: 36, borderRadius: '50%',
+                border: '3px solid var(--line)',
+                borderTopColor: 'var(--2eat-accent)',
+              }}
+            />
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.1em', color: 'var(--ink-50)', textTransform: 'uppercase' }}>
               Skannar…
             </span>
-            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
           </div>
         )}
 
