@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MotionConfig } from 'framer-motion'
 import { Toaster } from '@/components/ui/sonner'
@@ -24,34 +24,38 @@ const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000 } },
 })
 
+const router = createBrowserRouter([
+  { path: '/login', element: <LoginPage /> },
+  { path: '/register', element: <RegisterPage /> },
+  {
+    element: <ProtectedRoute />,
+    children: [{
+      element: <Layout />,
+      children: [
+        { index: true, element: <UtforskaSida /> },
+        { path: '/recept', element: <RecipesPage /> },
+        { path: '/recipes/new', element: <RecipeFormPage /> },
+        { path: '/recipes/:id', element: <RecipeDetailPage /> },
+        { path: '/recipes/:id/edit', element: <RecipeFormPage /> },
+        { path: '/ingredients', element: <IngredientsPage /> },
+        { path: '/veckoplan', element: <VeckoplanPage /> },
+        { path: '/skafferi', element: <SkafferiPage /> },
+        { path: '/profile', element: <ProfilePage /> },
+        { path: '/settings', element: <SettingsPage /> },
+        { path: '/samlingar', element: <SamlingarPage /> },
+        { path: '/samlingar/:id', element: <SamlingDetailPage /> },
+      ],
+    }],
+  },
+])
+
 export default function App() {
   return (
     <MotionConfig reducedMotion="user">
     <TooltipProvider delayDuration={400}>
     <AuthProvider>
       <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
-          <Routes>
-            <Route path="login" element={<LoginPage />} />
-            <Route path="register" element={<RegisterPage />} />
-            <Route element={<ProtectedRoute />}>
-              <Route element={<Layout />}>
-                <Route index element={<UtforskaSida />} />
-                <Route path="recept" element={<RecipesPage />} />
-                <Route path="recipes/new" element={<RecipeFormPage />} />
-                <Route path="recipes/:id" element={<RecipeDetailPage />} />
-                <Route path="recipes/:id/edit" element={<RecipeFormPage />} />
-                <Route path="ingredients" element={<IngredientsPage />} />
-                <Route path="veckoplan" element={<VeckoplanPage />} />
-                <Route path="skafferi" element={<SkafferiPage />} />
-                <Route path="profile" element={<ProfilePage />} />
-                <Route path="settings" element={<SettingsPage />} />
-                <Route path="samlingar" element={<SamlingarPage />} />
-                <Route path="samlingar/:id" element={<SamlingDetailPage />} />
-              </Route>
-            </Route>
-          </Routes>
-        </BrowserRouter>
+        <RouterProvider router={router} />
         <Toaster />
       </QueryClientProvider>
     </AuthProvider>
