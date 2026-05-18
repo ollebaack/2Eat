@@ -351,12 +351,14 @@ export function RecipeFormPage() {
               <Input
                 placeholder="Ingrediens (t.ex. Vetemjöl)"
                 value={row.name}
+                aria-label={`Ingrediens rad ${i + 1}`}
                 onChange={e => setRows(arr => arr.map((x, j) => j === i ? { ...x, name: e.target.value } : x))}
               />
               <Input
                 type="number"
                 placeholder="Mängd"
                 value={row.quantity || ''}
+                aria-label={`Mängd rad ${i + 1}`}
                 onChange={e => setRows(arr => arr.map((x, j) => j === i ? { ...x, quantity: +e.target.value } : x))}
                 className="font-mono text-right"
               />
@@ -364,7 +366,7 @@ export function RecipeFormPage() {
                 value={row.unit}
                 onValueChange={v => setRows(arr => arr.map((x, j) => j === i ? { ...x, unit: v as UnitOfMeasurement } : x))}
               >
-                <SelectTrigger className="h-8 text-xs w-full font-mono">
+                <SelectTrigger className="h-8 text-xs w-full font-mono" aria-label={`Enhet rad ${i + 1}`}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -375,6 +377,7 @@ export function RecipeFormPage() {
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8"
+                aria-label={`Ta bort ingrediens rad ${i + 1}`}
                 onClick={() => setRows(arr => arr.filter((_, j) => j !== i))}
               >
                 ✕
@@ -406,6 +409,7 @@ export function RecipeFormPage() {
                 rows={2}
                 placeholder="Beskriv steget…"
                 value={step}
+                aria-label={`Steg ${i + 1}`}
                 onChange={e => setSteps(arr => arr.map((s, j) => j === i ? e.target.value : s))}
                 className="resize-y font-serif text-base leading-[1.5]"
               />
@@ -417,6 +421,7 @@ export function RecipeFormPage() {
             value={instructions}
             onChange={e => setInstructions(e.target.value)}
             placeholder="Instruktioner steg för steg…"
+            aria-label="Instruktioner"
             rows={6}
             className="resize-y mt-2"
           />
