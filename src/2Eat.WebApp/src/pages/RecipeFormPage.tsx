@@ -375,6 +375,7 @@ export function RecipeFormPage() {
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8"
+                aria-label="Ta bort ingrediens"
                 onClick={() => setRows(arr => arr.filter((_, j) => j !== i))}
               >
                 ✕
