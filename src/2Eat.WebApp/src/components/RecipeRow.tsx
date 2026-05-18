@@ -62,6 +62,7 @@ export function RecipeRow({ recipe, onDelete }: RecipeRowProps) {
       <Button
         variant="ghost"
         size="icon"
+        aria-label="Ta bort recept"
         className="h-8 w-8"
         onClick={() => onDelete(recipe)}
       >

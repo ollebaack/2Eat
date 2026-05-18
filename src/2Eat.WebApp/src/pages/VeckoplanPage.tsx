@@ -100,7 +100,7 @@ function RecipePickerModal({
               style={{ fontFamily: 'var(--font-sans)', fontSize: 13.5 }}
             />
             {query && (
-              <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0" onClick={() => setQuery('')}>
+              <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0" aria-label="Rensa sökning" onClick={() => setQuery('')}>
                 <X size={13} />
               </Button>
             )}
@@ -235,6 +235,7 @@ function DayCell({
               variant="ghost"
               size="icon"
               onClick={onRemove}
+              aria-label="Ta bort recept från dagen"
               className="absolute top-1.5 right-1.5 h-6 w-6 rounded-full border-0"
               style={{ background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(4px)', color: 'var(--ink)' }}
             >
@@ -627,7 +628,7 @@ function RecipeLibrary({ recipes, onDragStart }: { recipes: Recipe[]; onDragStar
             style={{ fontFamily: 'var(--font-sans)', fontSize: 13 }}
           />
           {query && (
-            <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0" onClick={() => setQuery('')}>
+            <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0" aria-label="Rensa sökning" onClick={() => setQuery('')}>
               <X size={12} />
             </Button>
           )}
@@ -825,6 +826,7 @@ export function VeckoplanPage() {
               variant="ghost"
               size="icon"
               onClick={() => setWeekOffset(w => w - 1)}
+              aria-label="Föregående vecka"
               className="rounded-none h-9 w-9"
               style={{ color: 'var(--ink-60)' }}
             >
@@ -847,6 +849,7 @@ export function VeckoplanPage() {
               variant="ghost"
               size="icon"
               onClick={() => setWeekOffset(w => w + 1)}
+              aria-label="Nästa vecka"
               className="rounded-none h-9 w-9"
               style={{ color: 'var(--ink-60)' }}
             >

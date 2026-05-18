@@ -325,7 +325,7 @@ export function RecipesPage() {
             style={{ fontFamily: 'var(--font-sans)', fontSize: 13.5, color: 'var(--ink)' }}
           />
           {searchText && (
-            <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0" style={{ color: 'var(--ink-50)' }} onClick={() => setSearchText('')}>
+            <Button variant="ghost" size="icon" aria-label="Rensa sökning" className="h-6 w-6 shrink-0" style={{ color: 'var(--ink-50)' }} onClick={() => setSearchText('')}>
               <X size={14} />
             </Button>
           )}
