@@ -58,6 +58,7 @@ export function IngredientCombobox({ ingredients, selectedIds, onChange }: Props
             onFocus={() => setOpen(true)}
             onKeyDown={e => { if (e.key === 'Escape') { setOpen(false); setSearch('') } }}
             placeholder="Filtrera på ingredienser…"
+            aria-label="Filtrera på ingredienser"
             className="border-0 bg-transparent shadow-none focus-visible:ring-0 px-0"
             style={{ fontFamily: 'var(--font-sans)', fontSize: 13.5, color: 'var(--ink)' }}
           />
