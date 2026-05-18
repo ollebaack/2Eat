@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { recipeSwatch } from '@/lib/recipeUtils'
 import { cn } from '@/lib/utils'
 import { useAuthenticatedSrc } from '@/hooks/useAuthenticatedSrc'
@@ -30,6 +31,12 @@ export function PhotoSlot({
     swatch ?? (recipeId != null ? recipeSwatch(recipeId) : 'oklch(0.65 0.08 60)')
 
   const src = useAuthenticatedSrc(imageUrl)
+  const [errored, setErrored] = useState(false)
+  const [prevImageUrl, setPrevImageUrl] = useState(imageUrl)
+  if (prevImageUrl !== imageUrl) {
+    setPrevImageUrl(imageUrl)
+    setErrored(false)
+  }
 
   const containerStyle: React.CSSProperties = fill
     ? { position: 'absolute', inset: 0 }
@@ -47,9 +54,9 @@ export function PhotoSlot({
       style={{ ...containerStyle, background: resolvedSwatch }}
       className={cn('overflow-hidden', className)}
     >
-      {src ? (
-        <img src={src} alt={label} className="w-full h-full object-cover" />
-      ) : !imageUrl ? (
+      {src && !errored ? (
+        <img src={src} alt={label} className="w-full h-full object-cover" onError={() => setErrored(true)} />
+      ) : !imageUrl || errored ? (
         <img src={recipePlaceholder} alt="" className="w-full h-full object-cover select-none" draggable={false} />
       ) : null}
     </div>

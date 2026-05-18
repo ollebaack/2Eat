@@ -75,6 +75,8 @@ public abstract class ListingPageScraper
                 forslag.IngredientNames = ExtractIngredientNames(detailHtml)
                     .Select(n => new ForslagIngredientName { Name = n })
                     .ToList();
+                if (forslag.ImageUrl is null)
+                    forslag.ImageUrl = ExtractOgImage(detailHtml);
             }
             catch (Exception ex)
             {
@@ -111,6 +113,16 @@ public abstract class ListingPageScraper
             .Where(s => s.Length >= 2)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
+    }
+
+    private static string? ExtractOgImage(string html)
+    {
+        var match = Regex.Match(html,
+            @"<meta[^>]+property=""og:image""[^>]+content=""([^""]*)""|<meta[^>]+content=""([^""]*)""[^>]+property=""og:image""",
+            RegexOptions.IgnoreCase);
+        if (!match.Success) return null;
+        var raw = match.Groups[1].Success ? match.Groups[1].Value : match.Groups[2].Value;
+        return raw.Length > 0 ? WebUtility.HtmlDecode(raw) : null;
     }
 
     private List<Forslag> ExtractCards(string html, int limit, HashSet<string> seen)

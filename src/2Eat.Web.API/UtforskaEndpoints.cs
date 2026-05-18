@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using _2Eat.Application.Recipes;
+using _2Eat.Application.Recipes.Dtos;
 using _2Eat.Application.Samlingar;
 using _2Eat.Application.Utforska;
 using _2Eat.Domain;
@@ -66,7 +67,19 @@ public static class UtforskaEndpoints
         var req = await context.Request.ReadFromJsonAsync<FastAddRequest>();
 
         // Run the full extraction
-        var scanned = await scanService.ScanFromUrlAsync(forslag.SourceUrl);
+        ScannedRecipeDto scanned;
+        try
+        {
+            scanned = await scanService.ScanFromUrlAsync(forslag.SourceUrl);
+        }
+        catch (HttpRequestException ex)
+        {
+            return Results.Problem(detail: $"Could not fetch the recipe page: {ex.Message}", statusCode: 502);
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or System.Text.Json.JsonException)
+        {
+            return Results.Problem(detail: "Failed to extract recipe data from the page.", statusCode: 502);
+        }
 
         // Map ScannedRecipeDto → Recipe domain entity
         var categories = await recipeService.GetCategoriesAsync();
@@ -105,8 +118,8 @@ public static class UtforskaEndpoints
     // ─── Private helpers ─────────────────────────────────────────────────────
 
     private static Recipe MapScannedToRecipe(
-        _2Eat.Application.Recipes.Dtos.ScannedRecipeDto scan,
-        _2Eat.Domain.Forslag forslag,
+        ScannedRecipeDto scan,
+        Forslag forslag,
         List<Category> categories)
     {
         var categoryId = categories
