@@ -10,12 +10,15 @@ import { IngredientCombobox } from '@/components/IngredientCombobox'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
+import * as RadixDialog from '@radix-ui/react-dialog'
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
+  DialogOverlay,
+  DialogPortal,
   DialogTitle,
 } from '@/components/ui/dialog'
 import { PhotoSlot } from '@/components/PhotoSlot'
@@ -121,9 +124,6 @@ function ShuffleModal({ open, recipes, onClose, onPick }: {
     return () => { clearInterval(iv); setPhase('rolling') }
   }, [open, recipes.length])
 
-  if (!open || recipes.length === 0) return null
-  const r = recipes[idx]
-
   const reroll = () => {
     setPhase('rolling')
     let n = 0
@@ -134,61 +134,65 @@ function ShuffleModal({ open, recipes, onClose, onPick }: {
     }, 80)
   }
 
+  const r = recipes[idx]
+
   return (
-    <motion.div
-      onClick={onClose}
-      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      transition={{ duration: 0.2, ease: 'easeOut' as const }}
-      style={{ position: 'fixed', inset: 0, background: 'rgba(20,18,14,0.55)', backdropFilter: 'blur(6px)', display: 'grid', placeItems: 'center', zIndex: 100, padding: 24 }}
-    >
-      <motion.div
-        onClick={e => e.stopPropagation()}
-        initial={{ opacity: 0, scale: 0.96, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.96, y: 8 }}
-        transition={{ duration: 0.2, ease: 'easeOut' as const }}
-        style={{ width: '100%', maxWidth: 520, background: 'var(--paper)', border: '1px solid var(--line)', borderRadius: 24, overflow: 'hidden', boxShadow: '0 30px 60px -20px rgba(0,0,0,0.3)' }}
-      >
-        <div style={{ position: 'relative', height: 220 }}>
-          <PhotoSlot imageUrl={r.imageUrl} swatch={recipeSwatch(r.id)} label={r.name} height="220px" />
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label="Stäng"
-            className="absolute top-3.5 right-3.5 h-8 w-8 rounded-full"
-            style={{ background: 'rgba(255,255,255,0.92)' }}
-            onClick={onClose}
-          >
-            <X size={14} />
-          </Button>
-          <div style={{ position: 'absolute', top: 14, left: 14 }}>
-            <Pill tone="ink" size="sm">
-              <Shuffle size={11} strokeWidth={1.5} style={{ color: 'var(--paper)', marginRight: 4 }} />
-              {phase === 'rolling' ? 'Slumpar…' : 'Ikvällens middag'}
-            </Pill>
-          </div>
-        </div>
-        <div style={{ padding: 28 }}>
-          <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--ink-50)', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 8 }}>
-            {r.category?.name} · {r.totalTime} min · {r.servings} pers
-          </div>
-          <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 38, letterSpacing: '-0.03em', lineHeight: 1, margin: 0, fontWeight: 400 }}>{r.name}</h2>
-          <p style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontSize: 15, lineHeight: 1.5, color: 'var(--ink-70)', margin: '12px 0 22px' }}>
-            "{r.description}"
-          </p>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <Button variant="outline" className="rounded-full gap-2" style={{ fontFamily: 'var(--font-sans)', fontSize: 13 }} onClick={reroll}>
-              <Shuffle size={14} /> Slumpa igen
-            </Button>
-            <Button
-              className="flex-1 rounded-full"
-              style={{ background: 'var(--2eat-accent)', color: 'var(--paper)', fontFamily: 'var(--font-sans)', fontSize: 13, border: 'none' }}
-              onClick={() => onPick(r.id)}
-            >
-              Öppna receptet →
-            </Button>
-          </div>
-        </div>
-      </motion.div>
-    </motion.div>
+    <Dialog open={open} onOpenChange={o => !o && onClose()}>
+      <DialogPortal>
+        <DialogOverlay />
+        <RadixDialog.Content
+          className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-48px)] max-w-[520px] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-[24px] outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
+          style={{ background: 'var(--paper)', border: '1px solid var(--line)', boxShadow: '0 30px 60px -20px rgba(0,0,0,0.3)' }}
+        >
+          {r && (
+            <>
+              <RadixDialog.Title className="sr-only">{r.name}</RadixDialog.Title>
+              <div style={{ position: 'relative', height: 220 }}>
+                <PhotoSlot imageUrl={r.imageUrl} swatch={recipeSwatch(r.id)} label={r.name} height="220px" />
+                <RadixDialog.Close asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label="Stäng"
+                    className="absolute top-3.5 right-3.5 h-8 w-8 rounded-full"
+                    style={{ background: 'rgba(255,255,255,0.92)' }}
+                  >
+                    <X size={14} />
+                  </Button>
+                </RadixDialog.Close>
+                <div style={{ position: 'absolute', top: 14, left: 14 }}>
+                  <Pill tone="ink" size="sm">
+                    <Shuffle size={11} strokeWidth={1.5} style={{ color: 'var(--paper)', marginRight: 4 }} />
+                    {phase === 'rolling' ? 'Slumpar…' : 'Ikvällens middag'}
+                  </Pill>
+                </div>
+              </div>
+              <div style={{ padding: 28 }}>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--ink-50)', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 8 }}>
+                  {r.category?.name} · {r.totalTime} min · {r.servings} pers
+                </div>
+                <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 38, letterSpacing: '-0.03em', lineHeight: 1, margin: 0, fontWeight: 400 }}>{r.name}</h2>
+                <p style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontSize: 15, lineHeight: 1.5, color: 'var(--ink-70)', margin: '12px 0 22px' }}>
+                  "{r.description}"
+                </p>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <Button variant="outline" className="rounded-full gap-2" style={{ fontFamily: 'var(--font-sans)', fontSize: 13 }} onClick={reroll}>
+                    <Shuffle size={14} /> Slumpa igen
+                  </Button>
+                  <Button
+                    className="flex-1 rounded-full"
+                    style={{ background: 'var(--2eat-accent)', color: 'var(--paper)', fontFamily: 'var(--font-sans)', fontSize: 13, border: 'none' }}
+                    onClick={() => onPick(r.id)}
+                  >
+                    Öppna receptet →
+                  </Button>
+                </div>
+              </div>
+            </>
+          )}
+        </RadixDialog.Content>
+      </DialogPortal>
+    </Dialog>
   )
 }
 
@@ -445,16 +449,12 @@ export function RecipesPage() {
       )}
 
       {/* ── Shuffle modal ───────────────────────────────────────── */}
-      <AnimatePresence>
-        {shuffleOpen && (
-          <ShuffleModal
-            open={shuffleOpen}
-            recipes={randomRecipesForShuffle ?? allRecipes.slice(0, 6)}
-            onClose={() => setShuffleOpen(false)}
-            onPick={id => { setShuffleOpen(false); navigate(`/recipes/${id}`) }}
-          />
-        )}
-      </AnimatePresence>
+      <ShuffleModal
+        open={shuffleOpen}
+        recipes={randomRecipesForShuffle ?? allRecipes.slice(0, 6)}
+        onClose={() => setShuffleOpen(false)}
+        onPick={id => { setShuffleOpen(false); navigate(`/recipes/${id}`) }}
+      />
 
       {/* ── Delete dialog ───────────────────────────────────────── */}
       <Dialog open={!!toDelete} onOpenChange={o => !o && setToDelete(null)}>
