@@ -187,16 +187,16 @@ export function Layout() {
               {user?.displayName?.slice(0, 2).toUpperCase() ?? '??'}
             </div>
           )}
-          <div
-            className="flex flex-col min-w-0 flex-1 cursor-pointer"
+          <Link
+            to="/settings"
+            className="flex flex-col min-w-0 flex-1 no-underline rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1"
             style={{ lineHeight: 1.2 }}
-            onClick={() => navigate('/settings')}
           >
             <span className="truncate" style={{ fontSize: 13, color: 'var(--ink)', fontWeight: 500 }}>
               {user?.displayName ?? ''}
             </span>
             <span style={{ fontSize: 11, color: 'var(--ink-50)' }}>Min profil</span>
-          </div>
+          </Link>
           <Button
             variant="ghost"
             size="icon"
