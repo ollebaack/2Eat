@@ -37,8 +37,14 @@ function SamlingCard({ samling, onDelete }: { samling: SamlingListItem; onDelete
 
   return (
     <article
+      tabIndex={0}
+      role="link"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      onFocus={() => setHovered(true)}
+      onBlur={() => setHovered(false)}
+      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/samlingar/${samling.id}`) } }}
+      className="focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
       style={{
         background: 'var(--paper)',
         border: `1px solid ${hovered ? 'var(--ink-30)' : 'var(--line)'}`,
