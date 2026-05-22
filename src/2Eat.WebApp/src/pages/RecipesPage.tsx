@@ -6,6 +6,7 @@ import { Plus, Shuffle, Clock, Users, Trash2, Bookmark, Search, X } from 'lucide
 import { toast } from 'sonner'
 import { getRecipesPage, getRandomRecipes, deleteRecipe, getCategories, getIngredients, ALLERGEN_OPTIONS } from '@/lib/api'
 import type { Recipe, AllergenId } from '@/types'
+import { AddToSamlingModal } from '@/components/AddToSamlingModal'
 import { IngredientCombobox } from '@/components/IngredientCombobox'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -26,7 +27,7 @@ import { recipeSwatch } from '@/lib/recipeUtils'
 const PAGE_SIZE = 8
 
 // ── Feed card (Instagram-style) ───────────────────────────────────────────
-function FeedCard({ recipe, onDelete }: { recipe: Recipe; onDelete: (r: Recipe) => void }) {
+function FeedCard({ recipe, onDelete, onSave }: { recipe: Recipe; onDelete: (r: Recipe) => void; onSave: (r: Recipe) => void }) {
   const [hovered, setHovered] = useState(false)
   return (
     <motion.article
@@ -53,7 +54,7 @@ function FeedCard({ recipe, onDelete }: { recipe: Recipe; onDelete: (r: Recipe) 
           aria-label="Spara recept"
           className="absolute top-3 right-3 h-8 w-8 rounded-full"
           style={{ background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(6px)', color: 'var(--ink)' }}
-          onClick={e => { e.preventDefault(); e.stopPropagation() }}
+          onClick={e => { e.preventDefault(); e.stopPropagation(); onSave(recipe) }}
         ><Bookmark size={14} strokeWidth={1.5} /></Button>
       </Link>
       <div style={{ padding: '18px 20px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -199,6 +200,7 @@ export function RecipesPage() {
   const [searchParams] = useSearchParams()
   const [shuffleOpen, setShuffleOpen] = useState(false)
   const [toDelete, setToDelete] = useState<Recipe | null>(null)
+  const [toSave, setToSave] = useState<Recipe | null>(null)
   const [searchText, setSearchText] = useState('')
   const [activeAllergens, setActiveAllergens] = useState<AllergenId[]>([])
   const toggleAllergen = useCallback((a: AllergenId) => setActiveAllergens(prev => prev.includes(a) ? prev.filter(x => x !== a) : [...prev, a]), [])
@@ -423,7 +425,7 @@ export function RecipesPage() {
             variants={{ animate: { transition: { staggerChildren: 0.05 } } }}
             style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 20 }}>
             {allRecipes.map(r => (
-              <FeedCard key={r.id} recipe={r} onDelete={setToDelete} />
+              <FeedCard key={r.id} recipe={r} onDelete={setToDelete} onSave={setToSave} />
             ))}
           </motion.div>
         )}
@@ -455,6 +457,15 @@ export function RecipesPage() {
           />
         )}
       </AnimatePresence>
+
+      {/* ── Save to samling modal ──────────────────────────────── */}
+      {toSave && (
+        <AddToSamlingModal
+          recipeId={toSave.id}
+          open={!!toSave}
+          onOpenChange={o => { if (!o) setToSave(null) }}
+        />
+      )}
 
       {/* ── Delete dialog ───────────────────────────────────────── */}
       <Dialog open={!!toDelete} onOpenChange={o => !o && setToDelete(null)}>
