@@ -1,6 +1,8 @@
-import type { ReactNode } from 'react'
+import { useEffect, type ReactNode } from 'react'
+import { toast } from 'sonner'
 
 export function AuthLayout({ title, children }: { title: string; children: ReactNode }) {
+  useEffect(() => { toast.dismiss() }, [])
   return (
     <div
       style={{
