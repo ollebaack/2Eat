@@ -106,27 +106,19 @@ export function UtforskaSida() {
   }
 
   const filterChip = (
-    <button
+    <Button
+      variant="ghost"
       onClick={toggleFilter}
+      className="h-auto rounded-full px-[14px] py-[6px] font-mono text-[10.5px] uppercase tracking-[0.06em] whitespace-nowrap"
       style={{
-        padding: '6px 14px',
-        borderRadius: 999,
         border: filterActive ? '1px solid var(--2eat-accent)' : '1px dashed var(--ink-30)',
-        background: filterActive
-          ? 'color-mix(in oklch, var(--2eat-accent) 12%, transparent)'
-          : 'transparent',
+        ...(filterActive && { background: 'color-mix(in oklch, var(--2eat-accent) 12%, transparent)' }),
         color: filterActive ? 'var(--2eat-accent-deep)' : 'var(--ink-50)',
-        fontFamily: 'var(--font-mono)',
-        fontSize: 10.5,
-        letterSpacing: '0.06em',
-        textTransform: 'uppercase' as const,
-        cursor: 'pointer',
         transition: 'all 0.15s',
-        whiteSpace: 'nowrap' as const,
       }}
     >
       Från skafferiet
-    </button>
+    </Button>
   )
 
   const mobileHeader = isMobile ? (
