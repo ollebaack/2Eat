@@ -1,5 +1,5 @@
 import { useNavigate, useMatch } from 'react-router-dom'
-import { BookOpen, ShoppingBasket, Utensils, Library, Compass } from 'lucide-react'
+import { BookOpen, ShoppingBasket, Utensils, Library, Compass, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 const TABS = [
@@ -8,6 +8,7 @@ const TABS = [
   { key: 'skafferi',  label: 'Skafferi',  Icon: ShoppingBasket, to: '/skafferi'  },
   { key: 'plan',      label: 'Plan',      Icon: Utensils,       to: '/veckoplan' },
   { key: 'samlingar', label: 'Samlingar', Icon: Library,        to: '/samlingar' },
+  { key: 'profil',    label: 'Profil',    Icon: User,           to: '/settings'  },
 ]
 
 export function MobileTabBar() {
@@ -17,6 +18,7 @@ export function MobileTabBar() {
   const isSkafferi  = !!useMatch('/skafferi')
   const isVeckoplan = !!useMatch('/veckoplan')
   const isSamlingar = !!useMatch('/samlingar/*')
+  const isProfil    = !!useMatch('/settings')
 
   function isActive(key: string) {
     if (key === 'utforska')  return isUtforska
@@ -24,6 +26,7 @@ export function MobileTabBar() {
     if (key === 'skafferi')  return isSkafferi
     if (key === 'plan')      return isVeckoplan
     if (key === 'samlingar') return isSamlingar
+    if (key === 'profil')    return isProfil
     return false
   }
 
