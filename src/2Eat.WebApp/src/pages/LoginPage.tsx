@@ -21,8 +21,12 @@ export function LoginPage() {
       login(result.token, result.user)
       navigate('/')
     },
-    onError: () => {
-      toast.error('Fel e-post eller lösenord')
+    onError: (error: Error) => {
+      if (error.message.startsWith('401')) {
+        toast.error('Fel e-post eller lösenord')
+      } else {
+        toast.error('Kunde inte nå servern. Försök igen.')
+      }
     },
   })
 
