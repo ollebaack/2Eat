@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { flushSync } from 'react-dom'
 import { useNavigate, useParams, useBlocker } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
@@ -117,7 +118,7 @@ export function RecipeFormPage() {
       return isEdit ? updateRecipe(Number(id), payload) : createRecipe(payload)
     },
     onSuccess: saved => {
-      setIsDirty(false)
+      flushSync(() => setIsDirty(false))
       queryClient.invalidateQueries({ queryKey: ['recipes'] })
       toast.success(isEdit ? 'Recept uppdaterat' : 'Recept skapat')
       navigate(`/recipes/${saved.id}`)
