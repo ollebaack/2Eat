@@ -1,5 +1,6 @@
-import { useState, useRef } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useState, useRef, useEffect } from 'react'
+import { flushSync } from 'react-dom'
+import { useNavigate, useParams, useBlocker } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { getRecipeById, createRecipe, updateRecipe, uploadFile, getCategories, ALLERGEN_OPTIONS } from '@/lib/api'
@@ -12,6 +13,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 
 const UNITS: UnitOfMeasurement[] = [
   'g', 'ml', 'kg', 'krm', 'tsk', 'msk', 'dl', 'l', 'kaffemått', 'st',
@@ -54,6 +56,7 @@ export function RecipeFormPage() {
   const [uploading, setUploading] = useState(false)
   const [localPreview, setLocalPreview] = useState<string | undefined>()
   const [scanOpen, setScanOpen] = useState(false)
+  const [isDirty, setIsDirty] = useState(false)
 
   if (isEdit && existing && !initialized) {
     setName(existing.name)
@@ -80,6 +83,20 @@ export function RecipeFormPage() {
     setInitialized(true)
   }
 
+  // Browser beforeunload — warns when closing tab / refreshing with unsaved changes
+  useEffect(() => {
+    if (!isDirty) return
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault()
+      e.returnValue = ''
+    }
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [isDirty])
+
+  // React Router in-app navigation blocker
+  const blocker = useBlocker(isDirty)
+
   const saveMutation = useMutation({
     mutationFn: () => {
       const payload = {
@@ -100,7 +117,12 @@ export function RecipeFormPage() {
       }
       return isEdit ? updateRecipe(Number(id), payload) : createRecipe(payload)
     },
-    onSuccess: saved => { queryClient.invalidateQueries({ queryKey: ['recipes'] }); toast.success(isEdit ? 'Recept uppdaterat' : 'Recept skapat'); navigate(`/recipes/${saved.id}`) },
+    onSuccess: saved => {
+      flushSync(() => setIsDirty(false))
+      queryClient.invalidateQueries({ queryKey: ['recipes'] })
+      toast.success(isEdit ? 'Recept uppdaterat' : 'Recept skapat')
+      navigate(`/recipes/${saved.id}`)
+    },
     onError: () => toast.error('Kunde inte spara receptet'),
   })
 
@@ -110,6 +132,7 @@ export function RecipeFormPage() {
     const preview = URL.createObjectURL(file)
     setLocalPreview(preview)
     setUploading(true)
+    setIsDirty(true)
     try {
       const upload = await uploadFile(file)
       if (upload.isSuccess) { setImageUrl(upload.storedFileName); setLocalPreview(undefined); URL.revokeObjectURL(preview) }
@@ -157,13 +180,38 @@ export function RecipeFormPage() {
     if (data.fat != null) setFat(data.fat)
     if (data.carbs != null) setCarbs(data.carbs)
     if (data.allergens?.length) setAllergens(data.allergens.filter(a => ALLERGEN_OPTIONS.includes(a as AllergenId)))
+    setIsDirty(true)
     toast.success('Recept skannat — granska och spara')
   }
 
   const saveDisabled = saveMutation.isPending || !name.trim()
 
+  // Helper wrappers to mark form as dirty on change
+  function markDirty<T>(setter: React.Dispatch<React.SetStateAction<T>>) {
+    return (value: React.SetStateAction<T>) => {
+      setter(value)
+      setIsDirty(true)
+    }
+  }
+
   return (
     <div style={{ maxWidth: 980, margin: '0 auto', padding: '36px 40px 80px', width: '100%' }}>
+
+      {/* Unsaved-changes confirmation dialog (React Router blocker) */}
+      <AlertDialog open={blocker.state === 'blocked'}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Osparade ändringar</AlertDialogTitle>
+            <AlertDialogDescription>
+              Du har osparade ändringar. Vill du lämna sidan?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => blocker.reset?.()}>Nej, stanna kvar</AlertDialogCancel>
+            <AlertDialogAction onClick={() => blocker.proceed?.()}>Ja, lämna</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Back button */}
       <Button
@@ -206,7 +254,7 @@ export function RecipeFormPage() {
           </Label>
           <Input
             value={name}
-            onChange={e => setName(e.target.value)}
+            onChange={e => markDirty(setName)(e.target.value)}
             placeholder="t.ex. Mormors köttbullar"
             className="font-serif text-[26px] tracking-[-0.02em] h-auto px-[18px] py-[14px]"
           />
@@ -217,7 +265,7 @@ export function RecipeFormPage() {
           <Label className={fieldLabel}>Kort beskrivning</Label>
           <Textarea
             value={description}
-            onChange={e => setDescription(e.target.value)}
+            onChange={e => markDirty(setDescription)(e.target.value)}
             rows={2}
             placeholder="En liten mening om rätten…"
             className="resize-y"
@@ -227,7 +275,7 @@ export function RecipeFormPage() {
         {/* Category */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           <Label className={fieldLabel}>Kategori</Label>
-          <Select value={String(categoryId ?? '')} onValueChange={v => setCategoryId(v ? Number(v) : undefined)}>
+          <Select value={String(categoryId ?? '')} onValueChange={v => { setCategoryId(v ? Number(v) : undefined); setIsDirty(true) }}>
             <SelectTrigger>
               <SelectValue placeholder="Välj kategori…" />
             </SelectTrigger>
@@ -240,25 +288,25 @@ export function RecipeFormPage() {
         {/* Portioner */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           <Label className={fieldLabel}>Portioner</Label>
-          <Input type="number" value={servings} onChange={e => setServings(Number(e.target.value))} />
+          <Input type="number" value={servings} onChange={e => markDirty(setServings)(Number(e.target.value))} />
         </div>
 
         {/* Förberedelsetid */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           <Label className={fieldLabel}>Förberedelsetid (min)</Label>
-          <Input type="number" value={prepTime} onChange={e => setPrepTime(Number(e.target.value))} />
+          <Input type="number" value={prepTime} onChange={e => markDirty(setPrepTime)(Number(e.target.value))} />
         </div>
 
         {/* Tillagningstid */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           <Label className={fieldLabel}>Tillagningstid (min)</Label>
-          <Input type="number" value={cookTime} onChange={e => setCookTime(Number(e.target.value))} />
+          <Input type="number" value={cookTime} onChange={e => markDirty(setCookTime)(Number(e.target.value))} />
         </div>
 
         {/* Difficulty */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           <Label className={fieldLabel}>Svårighet</Label>
-          <Select value={difficulty} onValueChange={setDifficulty}>
+          <Select value={difficulty} onValueChange={v => { setDifficulty(v); setIsDirty(true) }}>
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
@@ -274,7 +322,7 @@ export function RecipeFormPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           <Label className={fieldLabel}>Betyg</Label>
           <div style={{ padding: '8px 10px', background: 'var(--paper)', border: '1px solid var(--line)', borderRadius: 10 }}>
-            <StarPicker value={rating} onChange={setRating} />
+            <StarPicker value={rating} onChange={v => markDirty(setRating)(v)} />
           </div>
         </div>
 
@@ -308,7 +356,7 @@ export function RecipeFormPage() {
                     size="sm"
                     className="rounded-full text-white border-0"
                     style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)' }}
-                    onClick={() => setImageUrl(undefined)}
+                    onClick={() => { setImageUrl(undefined); setIsDirty(true) }}
                   >
                     Ta bort
                   </Button>
@@ -337,7 +385,7 @@ export function RecipeFormPage() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setRows(arr => [...arr, newRow(arr.length + 1)])}
+            onClick={() => { setRows(arr => [...arr, newRow(arr.length + 1)]); setIsDirty(true) }}
           >
             + Lägg till rad
           </Button>
@@ -352,19 +400,19 @@ export function RecipeFormPage() {
                 placeholder="Ingrediens (t.ex. Vetemjöl)"
                 value={row.name}
                 aria-label={`Ingrediens rad ${i + 1}`}
-                onChange={e => setRows(arr => arr.map((x, j) => j === i ? { ...x, name: e.target.value } : x))}
+                onChange={e => { setRows(arr => arr.map((x, j) => j === i ? { ...x, name: e.target.value } : x)); setIsDirty(true) }}
               />
               <Input
                 type="number"
                 placeholder="Mängd"
                 value={row.quantity || ''}
                 aria-label={`Mängd rad ${i + 1}`}
-                onChange={e => setRows(arr => arr.map((x, j) => j === i ? { ...x, quantity: +e.target.value } : x))}
+                onChange={e => { setRows(arr => arr.map((x, j) => j === i ? { ...x, quantity: +e.target.value } : x)); setIsDirty(true) }}
                 className="font-mono text-right"
               />
               <Select
                 value={row.unit}
-                onValueChange={v => setRows(arr => arr.map((x, j) => j === i ? { ...x, unit: v as UnitOfMeasurement } : x))}
+                onValueChange={v => { setRows(arr => arr.map((x, j) => j === i ? { ...x, unit: v as UnitOfMeasurement } : x)); setIsDirty(true) }}
               >
                 <SelectTrigger className="h-8 text-xs w-full font-mono" aria-label={`Enhet rad ${i + 1}`}>
                   <SelectValue />
@@ -378,7 +426,7 @@ export function RecipeFormPage() {
                 size="icon"
                 className="h-8 w-8"
                 aria-label={`Ta bort ingrediens rad ${i + 1}`}
-                onClick={() => setRows(arr => arr.filter((_, j) => j !== i))}
+                onClick={() => { setRows(arr => arr.filter((_, j) => j !== i)); setIsDirty(true) }}
               >
                 ✕
               </Button>
@@ -394,7 +442,7 @@ export function RecipeFormPage() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setSteps(arr => [...arr, ''])}
+            onClick={() => { setSteps(arr => [...arr, '']); setIsDirty(true) }}
           >
             + Lägg till steg
           </Button>
@@ -410,7 +458,7 @@ export function RecipeFormPage() {
                 placeholder="Beskriv steget…"
                 value={step}
                 aria-label={`Steg ${i + 1}`}
-                onChange={e => setSteps(arr => arr.map((s, j) => j === i ? e.target.value : s))}
+                onChange={e => { setSteps(arr => arr.map((s, j) => j === i ? e.target.value : s)); setIsDirty(true) }}
                 className="resize-y font-serif text-base leading-[1.5]"
               />
             </div>
@@ -419,7 +467,7 @@ export function RecipeFormPage() {
         {steps.length === 0 && (
           <Textarea
             value={instructions}
-            onChange={e => setInstructions(e.target.value)}
+            onChange={e => markDirty(setInstructions)(e.target.value)}
             placeholder="Instruktioner steg för steg…"
             aria-label="Instruktioner"
             rows={6}
@@ -438,7 +486,7 @@ export function RecipeFormPage() {
               variant={allergens.includes(a) ? 'default' : 'outline'}
               size="sm"
               className="rounded-full"
-              onClick={() => setAllergens(arr => arr.includes(a) ? arr.filter(x => x !== a) : [...arr, a])}
+              onClick={() => { setAllergens(arr => arr.includes(a) ? arr.filter(x => x !== a) : [...arr, a]); setIsDirty(true) }}
             >
               {a}
             </Button>
