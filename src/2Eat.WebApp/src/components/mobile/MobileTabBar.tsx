@@ -1,5 +1,6 @@
 import { useNavigate, useMatch } from 'react-router-dom'
 import { BookOpen, ShoppingBasket, Utensils, Library, Compass } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 const TABS = [
   { key: 'utforska',  label: 'Utforska',  Icon: Compass,        to: '/'          },
@@ -43,25 +44,20 @@ export function MobileTabBar() {
       {TABS.map(({ key, label, Icon, to }) => {
         const active = isActive(key)
         return (
-          <button
+          <Button
             key={key}
+            variant="ghost"
             onClick={() => navigate(to)}
             aria-label={label}
+            className="h-auto flex-1 flex-col gap-[3px] py-1.5 px-0 rounded-lg text-[10.5px] font-medium"
             style={{
-              flex: 1, padding: '6px 0',
-              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
-              border: 'none', background: 'transparent', cursor: 'pointer',
               color: active ? 'var(--2eat-accent-deep)' : 'var(--ink-50)',
-              fontFamily: 'var(--font-sans)', fontSize: 10.5, fontWeight: 500,
+              fontFamily: 'var(--font-sans)',
             }}
           >
-            <Icon
-              size={20}
-              strokeWidth={1.5}
-              color={active ? 'var(--2eat-accent-deep)' : 'var(--ink-50)'}
-            />
+            <Icon size={20} strokeWidth={1.5} />
             <span>{label}</span>
-          </button>
+          </Button>
         )
       })}
     </nav>
