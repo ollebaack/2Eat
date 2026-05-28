@@ -42,6 +42,7 @@ async function handleResponse<T>(res: Response, noAuthRedirect = false): Promise
 async function request<T>(path: string, init?: RequestOptions): Promise<T> {
   const { noAuthRedirect, ...fetchInit } = init ?? {}
   const res = await fetch(`${BASE}${path}`, {
+    signal: AbortSignal.timeout(15000),
     headers: {
       'Content-Type': 'application/json',
       ...authHeaders(),
