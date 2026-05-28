@@ -20,7 +20,9 @@ public interface IForslagService
 
     /// <summary>
     /// Refreshes the shared Förslag pool from all configured sources.
-    /// Returns (false, reason) if the cooldown window has not elapsed.
+    /// When <paramref name="waitForLock"/> is true the call blocks until any
+    /// in-progress background refresh finishes before acquiring the lock itself.
+    /// Background callers should use the default (false) so they skip rather than queue.
     /// </summary>
-    Task<(bool Refreshed, string Message)> RefreshPoolAsync(CancellationToken ct = default);
+    Task<(bool Refreshed, string Message)> RefreshPoolAsync(bool waitForLock = false, CancellationToken ct = default);
 }

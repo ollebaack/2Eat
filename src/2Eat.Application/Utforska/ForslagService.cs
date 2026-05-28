@@ -64,9 +64,10 @@ public class ForslagService : IForslagService
     public Task<Forslag?> GetByIdAsync(int id, CancellationToken ct = default) =>
         _repo.GetByIdAsync(id, ct);
 
-    public async Task<(bool Refreshed, string Message)> RefreshPoolAsync(CancellationToken ct = default)
+    public async Task<(bool Refreshed, string Message)> RefreshPoolAsync(bool waitForLock = false, CancellationToken ct = default)
     {
-        if (!await _refreshLock.WaitAsync(0, ct))
+        var timeoutMs = waitForLock ? 30_000 : 0;
+        if (!await _refreshLock.WaitAsync(timeoutMs, ct))
         {
             _logger.LogInformation("Förslag pool refresh already in progress — skipping");
             return (false, "Pool refresh already in progress.");

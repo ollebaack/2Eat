@@ -111,7 +111,7 @@ public static class UtforskaEndpoints
     // POST /api/admin/forslag/refresh  — manually trigger pool refresh
     static async Task<IResult> RefreshPool(IForslagService service)
     {
-        var (_, message) = await service.RefreshPoolAsync();
+        var (_, message) = await service.RefreshPoolAsync(waitForLock: true);
         return Results.Ok(new { message });
     }
 
