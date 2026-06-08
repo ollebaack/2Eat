@@ -41,6 +41,7 @@ export function RecipeCard({ recipe, onDelete }: RecipeCardProps) {
           <Button
             variant="ghost"
             size="icon"
+            aria-label="Spara recept"
             className="absolute top-3 right-3 h-8 w-8 rounded-full bg-paper/90 backdrop-blur-sm hover:bg-paper/95"
             style={{ border: 'none' }}
             onClick={e => { e.preventDefault(); e.stopPropagation() }}
@@ -91,6 +92,7 @@ export function RecipeCard({ recipe, onDelete }: RecipeCardProps) {
               <Button
                 variant="ghost"
                 size="icon"
+                aria-label="Ta bort recept"
                 className="h-6 w-6 p-0"
                 onClick={e => { e.preventDefault(); e.stopPropagation(); onDelete(recipe) }}
               >
