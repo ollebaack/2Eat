@@ -102,7 +102,7 @@ test.describe('Login', () => {
 
     await page.goto('/login')
     await page.getByLabel('E-post').fill(email)
-    await page.getByLabel('Lösenord').fill('TestPass123')
+    await page.getByRole('textbox', { name: 'Lösenord' }).fill('TestPass123')
     await page.getByRole('button', { name: 'Logga in' }).click()
 
     await expect(page).toHaveURL('/', { timeout: 10_000 })
@@ -120,7 +120,7 @@ test.describe('Login', () => {
 
     await page.goto('/login')
     await page.getByLabel('E-post').fill(email)
-    await page.getByLabel('Lösenord').fill('NotTheRightPassword!')
+    await page.getByRole('textbox', { name: 'Lösenord' }).fill('NotTheRightPassword!')
     await page.getByRole('button', { name: 'Logga in' }).click()
 
     await expect(page.getByText('Fel e-post eller lösenord')).toBeVisible({ timeout: 8_000 })
@@ -130,7 +130,7 @@ test.describe('Login', () => {
   test('unknown email shows error toast and stays on login', async ({ page }) => {
     await page.goto('/login')
     await page.getByLabel('E-post').fill('nobody-at-all@nowhere.invalid')
-    await page.getByLabel('Lösenord').fill('TestPass123')
+    await page.getByRole('textbox', { name: 'Lösenord' }).fill('TestPass123')
     await page.getByRole('button', { name: 'Logga in' }).click()
 
     await expect(page.getByText('Fel e-post eller lösenord')).toBeVisible({ timeout: 8_000 })
