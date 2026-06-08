@@ -1,6 +1,5 @@
 using System.Text;
 using _2Eat.Application.Utforska;
-using _2Eat.Domain;
 using _2Eat.Web.API.Tests.Helpers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -75,24 +74,3 @@ public class UtforskaFixture : IAsyncLifetime
     }
 }
 
-/// <summary>Returns 3 deterministic fake Förslag from a single fake source.</summary>
-file sealed class StubForslagScraperService : IForslagScraperService
-{
-    public Task<Dictionary<string, List<Forslag>>> ScrapeAllAsync(CancellationToken ct = default)
-    {
-        var now = DateTimeOffset.UtcNow;
-        var items = Enumerable.Range(1, 3).Select(i => new Forslag
-        {
-            Title = $"Stubbed Recept {i}",
-            SourceUrl = $"https://example.com/recept/{i}",
-            ImageUrl = null,
-            SourceSite = "stub",
-            FetchedAt = now,
-        }).ToList();
-
-        return Task.FromResult(new Dictionary<string, List<Forslag>>
-        {
-            ["stub"] = items
-        });
-    }
-}
