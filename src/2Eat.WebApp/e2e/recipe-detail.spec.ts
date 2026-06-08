@@ -22,7 +22,7 @@ test.describe('Recipe Detail', () => {
     test.skip(testInfo.project.name === 'mobile', 'Servings scaler not shown on mobile')
 
     // Scope to the scaler container (parent of +/− buttons) to avoid matching step numbers
-    const plusBtn = page.getByRole('button', { name: '+' })
+    const plusBtn = page.getByRole('button', { name: 'Öka portioner' })
     await expect(plusBtn).toBeVisible()
     const scalerSpan = plusBtn.locator('..').locator('span, div').filter({ hasText: /^\d+$/ }).first()
 
@@ -35,13 +35,13 @@ test.describe('Recipe Detail', () => {
   test('servings decrement decreases servings count', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name === 'mobile', 'Servings scaler not shown on mobile')
 
-    const plusBtn = page.getByRole('button', { name: '+' })
+    const plusBtn = page.getByRole('button', { name: 'Öka portioner' })
     const scalerSpan = plusBtn.locator('..').locator('span, div').filter({ hasText: /^\d+$/ }).first()
 
     // Increment first so decrement stays above minimum
     await plusBtn.click()
     const before = parseInt(await scalerSpan.textContent() ?? '0', 10)
-    await page.getByRole('button', { name: '−' }).click()
+    await page.getByRole('button', { name: 'Minska portioner' }).click()
     const after = parseInt(await scalerSpan.textContent() ?? '0', 10)
     expect(after).toBeLessThan(before)
   })
