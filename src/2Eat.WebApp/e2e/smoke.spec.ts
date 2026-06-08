@@ -23,10 +23,12 @@ test('recipes page loads', async ({ page }) => {
   await expect(page.locator('h1, h2, h3').first()).toBeVisible({ timeout: 10_000 })
 })
 
-test('recipe detail page loads', async ({ page }) => {
+test('recipe detail page loads', async ({ page }, testInfo) => {
   const recipe = await createRecipeViaApi(page, `Smoke detail test ${Date.now()}`)
   await page.goto(`/recipes/${recipe.id}`)
-  await expect(page.locator('h1, h2').first()).toBeVisible({ timeout: 10_000 })
+  // Both mobile and desktop layouts are always in the DOM — scope to the visible one
+  const layoutId = testInfo.project.name === 'mobile' ? 'recipe-detail-mobile' : 'recipe-detail-desktop'
+  await expect(page.locator(`[data-testid="${layoutId}"] h1, [data-testid="${layoutId}"] h2`).first()).toBeVisible({ timeout: 10_000 })
 })
 
 test('ingredients page loads', async ({ page }) => {

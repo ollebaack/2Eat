@@ -10,19 +10,23 @@ test.beforeEach(async ({ page }) => {
 test.describe('Recipe Detail', () => {
   let recipeId: number
 
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page }, testInfo) => {
     await loginViaApi(page, uniqueEmail('detail'))
     const recipe = await createRecipeViaApi(page, `Detail test ${Date.now()}`)
     recipeId = recipe.id
     await page.goto(`/recipes/${recipeId}`)
-    await expect(page.locator('h1, h2').first()).toBeVisible({ timeout: 10_000 })
+    // Scope to the layout that's actually visible at this viewport size to avoid
+    // the hidden counterpart (both mobile and desktop layouts are always in the DOM)
+    const layoutId = testInfo.project.name === 'mobile' ? 'recipe-detail-mobile' : 'recipe-detail-desktop'
+    await expect(page.locator(`[data-testid="${layoutId}"] h1, [data-testid="${layoutId}"] h2`).first()).toBeVisible({ timeout: 10_000 })
   })
 
   test('servings increment increases servings count', async ({ page }, testInfo) => {
-    test.skip(testInfo.project.name === 'mobile', 'Servings scaler not shown on mobile')
+    test.skip(testInfo.project.name === 'mobile', 'Servings scaler not shown on mobile tab — tested separately')
 
-    // Scope to the scaler container (parent of +/− buttons) to avoid matching step numbers
-    const plusBtn = page.getByRole('button', { name: 'Öka portioner' })
+    // Scope to the desktop layout to avoid the hidden mobile scaler
+    const desktop = page.locator('[data-testid="recipe-detail-desktop"]')
+    const plusBtn = desktop.getByRole('button', { name: 'Öka portioner' })
     await expect(plusBtn).toBeVisible()
     const scalerSpan = plusBtn.locator('..').locator('span, div').filter({ hasText: /^\d+$/ }).first()
 
@@ -33,15 +37,16 @@ test.describe('Recipe Detail', () => {
   })
 
   test('servings decrement decreases servings count', async ({ page }, testInfo) => {
-    test.skip(testInfo.project.name === 'mobile', 'Servings scaler not shown on mobile')
+    test.skip(testInfo.project.name === 'mobile', 'Servings scaler not shown on mobile tab — tested separately')
 
-    const plusBtn = page.getByRole('button', { name: 'Öka portioner' })
+    const desktop = page.locator('[data-testid="recipe-detail-desktop"]')
+    const plusBtn = desktop.getByRole('button', { name: 'Öka portioner' })
     const scalerSpan = plusBtn.locator('..').locator('span, div').filter({ hasText: /^\d+$/ }).first()
 
     // Increment first so decrement stays above minimum
     await plusBtn.click()
     const before = parseInt(await scalerSpan.textContent() ?? '0', 10)
-    await page.getByRole('button', { name: 'Minska portioner' }).click()
+    await desktop.getByRole('button', { name: 'Minska portioner' }).click()
     const after = parseInt(await scalerSpan.textContent() ?? '0', 10)
     expect(after).toBeLessThan(before)
   })
@@ -49,7 +54,9 @@ test.describe('Recipe Detail', () => {
   test('ingredient row can be toggled on desktop', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name === 'mobile', 'Desktop ingredient list not shown on mobile')
 
-    const firstIngredient = page.locator('aside li').first()
+    // aside is only in the desktop layout — scope to it anyway for clarity
+    const desktop = page.locator('[data-testid="recipe-detail-desktop"]')
+    const firstIngredient = desktop.locator('aside li').first()
     await expect(firstIngredient).toBeVisible()
 
     await firstIngredient.click()
@@ -61,11 +68,13 @@ test.describe('Recipe Detail', () => {
   test('ingredient row can be toggled on mobile', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'mobile', 'Mobile ingredient list only on mobile')
 
+    const mobile = page.locator('[data-testid="recipe-detail-mobile"]')
+
     // Multiple buttons may match /Ingredienser/ (tab + count badge); take first
-    const ingredientTab = page.getByRole('button', { name: /Ingredienser/ }).first()
+    const ingredientTab = mobile.getByRole('button', { name: /Ingredienser/ }).first()
     await expect(ingredientTab).toBeVisible()
 
-    const firstIngredient = page.locator('ul li').first()
+    const firstIngredient = mobile.locator('ul li').first()
     await expect(firstIngredient).toBeVisible()
 
     await firstIngredient.click()
@@ -75,9 +84,11 @@ test.describe('Recipe Detail', () => {
   })
 
   test('step completion can be toggled', async ({ page }, testInfo) => {
-    test.skip(testInfo.project.name === 'mobile', 'Step toggling not available on mobile')
+    test.skip(testInfo.project.name === 'mobile', 'Step toggling not available on mobile tab by default')
 
-    const firstStep = page.locator('ol li').first()
+    // ol is only rendered in the desktop layout (mobile renders ol conditionally via tab state)
+    const desktop = page.locator('[data-testid="recipe-detail-desktop"]')
+    const firstStep = desktop.locator('ol li').first()
     await expect(firstStep).toBeVisible()
 
     const stepText = firstStep.locator('p')
@@ -91,15 +102,20 @@ test.describe('Recipe Detail', () => {
   test('edit button navigates to edit page', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name === 'mobile', 'Edit button not shown on mobile')
 
-    await page.getByRole('link', { name: /Redigera/i }).first().click()
+    // Redigera recept link is only in the desktop layout
+    const desktop = page.locator('[data-testid="recipe-detail-desktop"]')
+    await desktop.getByRole('link', { name: /Redigera/i }).first().click()
     await expect(page).toHaveURL(new RegExp(`/recipes/${recipeId}/edit`), { timeout: 5_000 })
   })
 
   test('back button navigates away from recipe detail', async ({ page }, testInfo) => {
     if (testInfo.project.name === 'mobile') {
-      await page.getByRole('button', { name: 'Tillbaka' }).click()
+      // Mobile back button is inside the mobile layout (visible at mobile viewport)
+      const mobile = page.locator('[data-testid="recipe-detail-mobile"]')
+      await mobile.getByRole('button', { name: 'Tillbaka' }).click()
     } else {
-      await page.getByRole('button', { name: /Tillbaka till alla recept/i }).click()
+      const desktop = page.locator('[data-testid="recipe-detail-desktop"]')
+      await desktop.getByRole('button', { name: /Tillbaka till alla recept/i }).click()
     }
     await expect(page).not.toHaveURL(new RegExp(`/recipes/${recipeId}$`), { timeout: 5_000 })
   })
@@ -117,7 +133,8 @@ test.describe('Recipe Detail', () => {
     const { id } = await res.json()
 
     await page.goto(`/recipes/${id}`)
-    await expect(page.locator('h1, h2').first()).toBeVisible({ timeout: 10_000 })
+    // Wait for desktop layout to render
+    await expect(page.locator('[data-testid="recipe-detail-desktop"] h1, [data-testid="recipe-detail-desktop"] h2').first()).toBeVisible({ timeout: 10_000 })
 
     await page.locator('[aria-label="Ta bort recept"]').click()
 
