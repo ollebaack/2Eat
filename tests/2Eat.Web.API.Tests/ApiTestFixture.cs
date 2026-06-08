@@ -1,10 +1,12 @@
 using System.Text;
+using _2Eat.Application.Utforska;
 using _2Eat.Web.API.Tests.Helpers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
 using Testcontainers.PostgreSql;
 
@@ -48,6 +50,7 @@ public class ApiTestFixture : IAsyncLifetime
                 // Guarantee that the JWT bearer validation key matches what we put in
                 // IConfiguration, regardless of when Program.cs captured the value.
                 builder.ConfigureTestServices(services =>
+                {
                     services.PostConfigure<JwtBearerOptions>(
                         JwtBearerDefaults.AuthenticationScheme, options =>
                         {
@@ -56,7 +59,10 @@ public class ApiTestFixture : IAsyncLifetime
                             options.TokenValidationParameters.IssuerSigningKey = key;
                             options.TokenValidationParameters.ValidIssuer = TestJwtIssuer;
                             options.TokenValidationParameters.ValidAudience = TestJwtAudience;
-                        }));
+                        });
+                    // Prevent real outbound HTTP to ICA/Köket/Coop during tests.
+                    services.Replace(ServiceDescriptor.Scoped<IForslagScraperService, StubForslagScraperService>());
+                });
             });
 
         // Trigger startup (applies EF Core migrations via ApplyMigrations())
