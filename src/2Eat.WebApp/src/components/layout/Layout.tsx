@@ -201,6 +201,7 @@ export function Layout() {
             variant="ghost"
             size="icon"
             onClick={() => setIsDark(d => !d)}
+            aria-label={isDark ? 'Byt till ljust läge' : 'Byt till mörkt läge'}
             title={isDark ? 'Byt till ljust läge' : 'Byt till mörkt läge'}
             className="rounded-full h-8 w-8 border border-[var(--line)] text-[var(--ink-60)] shrink-0"
           >
@@ -210,6 +211,7 @@ export function Layout() {
             variant="ghost"
             size="icon"
             onClick={handleLogout}
+            aria-label="Logga ut"
             title="Logga ut"
             className="rounded-full h-8 w-8 border border-[var(--line)] text-[var(--ink-60)] shrink-0"
           >

@@ -72,6 +72,7 @@ function SamlingCard({ samling, onDelete }: { samling: SamlingListItem; onDelete
           variant="ghost"
           size="icon"
           className="h-7 w-7 shrink-0"
+          aria-label="Ta bort samling"
           onClick={e => { e.stopPropagation(); onDelete() }}
           style={{ color: 'var(--ink-40)' }}
         >
