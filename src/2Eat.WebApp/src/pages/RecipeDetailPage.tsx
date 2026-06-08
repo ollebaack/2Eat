@@ -177,7 +177,7 @@ export function RecipeDetailPage() {
       {/* ════════════════════════════════════════════════════════════════
           MOBILE LAYOUT  (hidden at md and above)
       ═══════════════════════════════════════════════════════════════════ */}
-      <div className="block md:hidden" style={{ background: 'var(--paper)', minHeight: '100vh', overflowY: 'auto', paddingBottom: 120, position: 'relative' }}>
+      <div data-testid="recipe-detail-mobile" className="block md:hidden" style={{ background: 'var(--paper)', minHeight: '100vh', overflowY: 'auto', paddingBottom: 120, position: 'relative' }}>
 
         {/* Hero */}
         <div style={{ position: 'relative', height: 360 }}>
@@ -503,7 +503,7 @@ export function RecipeDetailPage() {
       {/* ════════════════════════════════════════════════════════════════
           DESKTOP LAYOUT  (hidden below md)
       ═══════════════════════════════════════════════════════════════════ */}
-      <div className="hidden md:block" style={{ maxWidth: 1240, margin: '0 auto', padding: '24px 40px 80px', width: '100%' }}>
+      <div data-testid="recipe-detail-desktop" className="hidden md:block" style={{ maxWidth: 1240, margin: '0 auto', padding: '24px 40px 80px', width: '100%' }}>
 
         {/* ── Top bar ───────────────────────────────────────────────── */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 24 }}>

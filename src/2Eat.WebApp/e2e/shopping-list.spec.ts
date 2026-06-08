@@ -8,13 +8,16 @@ test.beforeEach(async ({ page }) => {
 })
 
 test('add recipe to shopping list', async ({ page }, testInfo) => {
-  // The "Till handlingslista" button is only rendered on the desktop recipe detail view
-  test.skip(testInfo.project.name === 'mobile', 'Till handlingslista button is desktop-only')
+  // Test the desktop layout — the button also exists in mobile but we test desktop path here
+  test.skip(testInfo.project.name === 'mobile', 'Testing desktop shopping-list button path')
   await loginViaApi(page, uniqueEmail('shopping'))
   const recipe = await createRecipeViaApi(page, `Shopping list test ${Date.now()}`)
   await page.goto(`/recipes/${recipe.id}`)
-  await expect(page.locator('text=Till handlingslista').first()).toBeVisible({ timeout: 10_000 })
-  await page.locator('text=Till handlingslista').first().click()
+  // Scope to the desktop layout — both layouts render "Till handlingslista" but only desktop is
+  // visible here; scoping avoids a strict-mode hit on the hidden mobile button
+  const desktop = page.locator('[data-testid="recipe-detail-desktop"]')
+  await expect(desktop.locator('text=Till handlingslista').first()).toBeVisible({ timeout: 10_000 })
+  await desktop.locator('text=Till handlingslista').first().click()
   await expect(page.locator('text=Ingredienser tillagda i handlistan').first()).toBeVisible({ timeout: 5_000 })
 })
 
