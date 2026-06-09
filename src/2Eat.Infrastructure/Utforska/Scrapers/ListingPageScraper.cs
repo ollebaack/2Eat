@@ -89,6 +89,17 @@ public abstract class ListingPageScraper
             }
         }));
 
+        // Safety net: discard anything for which no ingredient names could be extracted.
+        // Non-recipe pages (chef profiles, category listings, etc.) contain no schema.org
+        // recipeIngredient data, so they always produce zero ingredients after enrichment.
+        // Genuine recipes that failed to load their detail page also get filtered here, which
+        // is preferable to surfacing ingredient-free cards to the user.
+        var beforeFilter = results.Count;
+        results = results.Where(f => f.IngredientNames.Count > 0).ToList();
+        var filtered = beforeFilter - results.Count;
+        if (filtered > 0)
+            _logger.LogInformation("Filtered {Filtered} non-recipe Förslag (zero ingredients) from {Site}", filtered, SourceSite);
+
         _logger.LogInformation("Scraped {Count} Förslag from {Site}", results.Count, SourceSite);
         return results;
     }
