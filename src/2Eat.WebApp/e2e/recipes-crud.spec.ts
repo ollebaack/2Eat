@@ -52,7 +52,7 @@ test.describe('Create Recipe', () => {
   test('can create a new recipe', async ({ page }) => {
     const recipeName = uniqueRecipeName('Nytt Testrecept')
 
-    await page.goto('/recipes/new')
+    await page.goto('/recept/nytt')
     await nameInput(page).fill(recipeName)
     // Category is required (FK constraint). The category field uses a Shadcn/Radix
     // Select (custom combobox), not a native <select>. Open it by clicking the trigger
@@ -70,7 +70,7 @@ test.describe('Create Recipe', () => {
   })
 
   test('save button is disabled when recipe name is empty', async ({ page }) => {
-    await page.goto('/recipes/new')
+    await page.goto('/recept/nytt')
 
     const saveButton = page.getByRole('button', { name: /Spara recept/ })
     await expect(saveButton).toBeDisabled()
@@ -81,7 +81,7 @@ test.describe('Create Recipe', () => {
   })
 
   test('clearing name re-disables the save button', async ({ page }) => {
-    await page.goto('/recipes/new')
+    await page.goto('/recept/nytt')
     const saveButton = page.getByRole('button', { name: /Spara recept/ })
 
     await nameInput(page).fill('Tillfälligt namn')
@@ -90,7 +90,7 @@ test.describe('Create Recipe', () => {
     await nameInput(page).clear()
     await expect(saveButton).toBeDisabled()
     // Should remain on the form page
-    await expect(page).toHaveURL('/recipes/new')
+    await expect(page).toHaveURL('/recept/nytt')
   })
 })
 
@@ -110,17 +110,17 @@ test.describe('Edit Recipe', () => {
     const originalName = uniqueRecipeName('Originalt Recept')
     const recipeId = await createRecipeViaApi(page, originalName)
 
-    await page.goto(`/recipes/${recipeId}`)
+    await page.goto(`/recept/${recipeId}`)
     await page.locator('[aria-label="Redigera recept"]').click()
 
-    await expect(page).toHaveURL(`/recipes/${recipeId}/edit`, { timeout: 10_000 })
+    await expect(page).toHaveURL(`/recept/${recipeId}/redigera`, { timeout: 10_000 })
 
     const updatedName = uniqueRecipeName('Uppdaterat Recept')
     await nameInput(page).fill(updatedName)
 
     await page.getByRole('button', { name: /Spara ändringar/ }).click()
 
-    await expect(page).toHaveURL(`/recipes/${recipeId}`, { timeout: 10_000 })
+    await expect(page).toHaveURL(`/recept/${recipeId}`, { timeout: 10_000 })
     await expect(page.getByRole('heading', { name: updatedName })).toBeVisible({ timeout: 10_000 })
   })
 
@@ -129,11 +129,11 @@ test.describe('Edit Recipe', () => {
 
     const recipeId = await createRecipeViaApi(page, uniqueRecipeName('Avbryt Recept'))
 
-    await page.goto(`/recipes/${recipeId}/edit`)
+    await page.goto(`/recept/${recipeId}/redigera`)
     // exact: true avoids matching the "← Avbryt" back button on the same page
     await page.getByRole('button', { name: 'Avbryt', exact: true }).click()
 
-    await expect(page).toHaveURL(`/recipes/${recipeId}`, { timeout: 10_000 })
+    await expect(page).toHaveURL(`/recept/${recipeId}`, { timeout: 10_000 })
   })
 })
 
@@ -153,7 +153,7 @@ test.describe('Delete Recipe', () => {
     const recipeName = uniqueRecipeName('Recept att radera')
     const recipeId = await createRecipeViaApi(page, recipeName)
 
-    await page.goto(`/recipes/${recipeId}`)
+    await page.goto(`/recept/${recipeId}`)
     await page.locator('[aria-label="Ta bort recept"]').click()
 
     await expect(page.getByRole('heading', { name: 'Ta bort recept?' })).toBeVisible({ timeout: 8_000 })
@@ -171,7 +171,7 @@ test.describe('Delete Recipe', () => {
     const recipeName = uniqueRecipeName('Avbryt Radering')
     const recipeId = await createRecipeViaApi(page, recipeName)
 
-    await page.goto(`/recipes/${recipeId}`)
+    await page.goto(`/recept/${recipeId}`)
     await page.locator('[aria-label="Ta bort recept"]').click()
 
     await expect(page.getByRole('heading', { name: 'Ta bort recept?' })).toBeVisible({ timeout: 8_000 })
@@ -179,7 +179,7 @@ test.describe('Delete Recipe', () => {
     // Scope to the dialog so the "← Avbryt" back button behind it isn't matched
     await page.getByRole('dialog').getByRole('button', { name: 'Avbryt' }).click()
 
-    await expect(page).toHaveURL(`/recipes/${recipeId}`, { timeout: 8_000 })
+    await expect(page).toHaveURL(`/recept/${recipeId}`, { timeout: 8_000 })
     // Dialog dismissed — delete button back in view confirms the page is loaded and nothing was deleted
     await expect(page.locator('[aria-label="Ta bort recept"]')).toBeVisible({ timeout: 8_000 })
   })

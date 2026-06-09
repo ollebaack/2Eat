@@ -122,12 +122,12 @@ export function RecipeFormPage() {
       queryClient.invalidateQueries({ queryKey: ['recipes'] })
       if (isEdit) {
         toast.success('Recept uppdaterat')
-        navigate(`/recipes/${saved.id}`)
+        navigate(`/recept/${saved.id}`)
       } else {
         toast.success('Recept skapat', {
           action: {
             label: 'Gå till receptet',
-            onClick: () => navigate(`/recipes/${saved.id}`),
+            onClick: () => navigate(`/recept/${saved.id}`),
           },
         })
         navigate('/')
@@ -226,7 +226,7 @@ export function RecipeFormPage() {
       {/* Back button */}
       <Button
         variant="ghost"
-        onClick={() => navigate(isEdit ? `/recipes/${id}` : '/')}
+        onClick={() => navigate(isEdit ? `/recept/${id}` : '/')}
         className="mb-[18px] px-0 text-[13px] text-[var(--ink-60)]"
       >
         ← Avbryt
@@ -515,7 +515,7 @@ export function RecipeFormPage() {
           <Button
             variant="outline"
             className="rounded-full text-[13px]"
-            onClick={() => navigate(isEdit ? `/recipes/${id}` : '/')}
+            onClick={() => navigate(isEdit ? `/recept/${id}` : '/')}
           >
             Avbryt
           </Button>

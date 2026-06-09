@@ -14,7 +14,7 @@ test.describe('Recipe Detail', () => {
     await loginViaApi(page, uniqueEmail('detail'))
     const recipe = await createRecipeViaApi(page, `Detail test ${Date.now()}`)
     recipeId = recipe.id
-    await page.goto(`/recipes/${recipeId}`)
+    await page.goto(`/recept/${recipeId}`)
     // Scope to the layout that's actually visible at this viewport size to avoid
     // the hidden counterpart (both mobile and desktop layouts are always in the DOM)
     const layoutId = testInfo.project.name === 'mobile' ? 'recipe-detail-mobile' : 'recipe-detail-desktop'
@@ -105,7 +105,7 @@ test.describe('Recipe Detail', () => {
     // Redigera recept link is only in the desktop layout
     const desktop = page.locator('[data-testid="recipe-detail-desktop"]')
     await desktop.getByRole('link', { name: /Redigera/i }).first().click()
-    await expect(page).toHaveURL(new RegExp(`/recipes/${recipeId}/edit`), { timeout: 5_000 })
+    await expect(page).toHaveURL(new RegExp(`/recept/${recipeId}/redigera`), { timeout: 5_000 })
   })
 
   test('back button navigates away from recipe detail', async ({ page }, testInfo) => {
@@ -117,7 +117,7 @@ test.describe('Recipe Detail', () => {
       const desktop = page.locator('[data-testid="recipe-detail-desktop"]')
       await desktop.getByRole('button', { name: /Tillbaka till alla recept/i }).click()
     }
-    await expect(page).not.toHaveURL(new RegExp(`/recipes/${recipeId}$`), { timeout: 5_000 })
+    await expect(page).not.toHaveURL(new RegExp(`/recept/${recipeId}$`), { timeout: 5_000 })
   })
 
   test('delete button opens confirmation dialog', async ({ page }, testInfo) => {
@@ -132,7 +132,7 @@ test.describe('Recipe Detail', () => {
     expect(res.ok()).toBeTruthy()
     const { id } = await res.json()
 
-    await page.goto(`/recipes/${id}`)
+    await page.goto(`/recept/${id}`)
     // Wait for desktop layout to render
     await expect(page.locator('[data-testid="recipe-detail-desktop"] h1, [data-testid="recipe-detail-desktop"] h2').first()).toBeVisible({ timeout: 10_000 })
 
@@ -143,6 +143,6 @@ test.describe('Recipe Detail', () => {
 
     // Cancel — do not actually delete
     await page.getByRole('button', { name: 'Avbryt' }).click()
-    await expect(page).toHaveURL(`/recipes/${id}`, { timeout: 3_000 })
+    await expect(page).toHaveURL(`/recept/${id}`, { timeout: 3_000 })
   })
 })

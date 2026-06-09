@@ -27,7 +27,7 @@ export function RecipeCard({ recipe, onDelete }: RecipeCardProps) {
         boxShadow: hovered ? '0 8px 24px -16px rgba(0,0,0,0.18)' : 'none',
       }}
     >
-      <Link to={`/recipes/${recipe.id}`} className="flex flex-col no-underline flex-1">
+      <Link to={`/recept/${recipe.id}`} className="flex flex-col no-underline flex-1">
         <div className="block relative">
           <PhotoSlot
             imageUrl={recipe.imageUrl}

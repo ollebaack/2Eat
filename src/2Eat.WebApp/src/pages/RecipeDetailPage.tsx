@@ -46,7 +46,7 @@ function RelatedCard({ recipe }: { recipe: Recipe }) {
   const [hovered, setHovered] = useState(false)
   return (
     <Link
-      to={`/recipes/${recipe.id}`}
+      to={`/recept/${recipe.id}`}
       style={{ textDecoration: 'none' }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -525,7 +525,7 @@ export function RecipeDetailPage() {
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button variant="outline" size="icon" className="h-9 w-9 rounded-full" aria-label="Redigera recept" asChild>
-                  <Link to={`/recipes/${recipe.id}/edit`}><Pencil size={15} strokeWidth={1.5} /></Link>
+                  <Link to={`/recept/${recipe.id}/redigera`}><Pencil size={15} strokeWidth={1.5} /></Link>
                 </Button>
               </TooltipTrigger>
               <TooltipContent>Redigera recept</TooltipContent>
