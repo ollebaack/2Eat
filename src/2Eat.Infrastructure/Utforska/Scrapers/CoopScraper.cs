@@ -9,19 +9,23 @@ namespace _2Eat.Infrastructure.Utforska.Scrapers;
 /// <summary>
 /// Scrapes recipe data from coop.se using their XML sitemap.
 ///
-/// Investigation summary (2026-05-17):
+/// Investigation summary (2026-05-17, updated 2026-06-09):
 /// - Listing pages (/recept/, /recept/middagsrecept/) are a JavaScript SPA — the initial
 ///   HTML response contains no recipe links or data, so regex-based scraping of those pages
 ///   yields zero results.
 /// - RSS/feed endpoints (/recept/feed/, /feed/, /rss) returned 404.
-/// - JSON-LD, __NEXT_DATA__, or window.__STATE__ are absent from the SPA shell HTML.
 /// - The site exposes a well-maintained XML sitemap at https://www.coop.se/recept/sitemap.xml
 ///   listing 9 000+ individual recipe URLs (format: /recept/[slug]/).
-/// - Individual recipe pages ARE server-side rendered for their &lt;head&gt; section and include
-///   og:title (e.g. "Ajvarkyckling | Recept - Coop") and og:image (Cloudinary CDN URL).
+/// - Individual recipe pages return a JS SPA shell (no structured data) to regular browser
+///   user agents, but serve fully SSR HTML with JSON-LD (schema.org/Recipe) when the request
+///   comes from Googlebot. The "CoopScraper" named HttpClient uses the Googlebot UA for this
+///   reason (see DependencyInjection.cs).
+/// - With the Googlebot UA, each page includes og:title, og:image, and a complete JSON-LD
+///   Recipe block with recipeIngredient entries.
 ///
 /// Approach: parse the sitemap for recipe URLs, then concurrently fetch a limited number of
-/// individual pages to extract og:title and og:image from the SSR HTML head.
+/// individual pages (with Googlebot UA) to extract og:title, og:image, and ingredients from
+/// the JSON-LD in the SSR HTML.
 /// </summary>
 public class CoopScraper : ListingPageScraper
 {
@@ -60,7 +64,9 @@ public class CoopScraper : ListingPageScraper
     /// </summary>
     public override async Task<List<Forslag>> ScrapeAsync(int maxPerSource, CancellationToken ct)
     {
-        var http = _httpFactory.CreateClient("ForslagScraper");
+        // coop.se returns a JS SPA shell to standard browser UAs; the CoopScraper client
+        // uses a Googlebot UA which triggers SSR HTML with full JSON-LD structured data.
+        var http = _httpFactory.CreateClient("CoopScraper");
 
         List<string> recipeUrls;
         try

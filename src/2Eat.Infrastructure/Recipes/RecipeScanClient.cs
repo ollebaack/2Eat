@@ -73,7 +73,10 @@ public class RecipeScanClient : IRecipeScanService
             return instagramResult with { ImageUrl = instagramImageUrl };
         }
 
-        var http = _httpFactory.CreateClient("RecipeScan");
+        // coop.se serves a JS SPA shell to standard browser UAs but returns fully
+        // server-side rendered HTML (with JSON-LD) to Googlebot. Pick the right client.
+        var clientName = IsCoopUrl(new Uri(url)) ? "RecipeScanCoop" : "RecipeScan";
+        var http = _httpFactory.CreateClient(clientName);
         using var httpResponse = await http.GetAsync(url, ct);
         httpResponse.EnsureSuccessStatusCode();
         var html = await httpResponse.Content.ReadAsStringAsync(ct);
@@ -106,6 +109,9 @@ public class RecipeScanClient : IRecipeScanService
 
     private static bool IsInstagramUrl(Uri uri) =>
         uri.Host is "www.instagram.com" or "instagram.com";
+
+    private static bool IsCoopUrl(Uri uri) =>
+        uri.Host is "www.coop.se" or "coop.se";
 
     private async Task<(string Text, string? ImageUrl)> FetchInstagramContentAsync(string url, CancellationToken ct)
     {
