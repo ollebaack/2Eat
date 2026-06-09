@@ -12,7 +12,7 @@ test('add recipe to shopping list', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name === 'mobile', 'Testing desktop shopping-list button path')
   await loginViaApi(page, uniqueEmail('shopping'))
   const recipe = await createRecipeViaApi(page, `Shopping list test ${Date.now()}`)
-  await page.goto(`/recipes/${recipe.id}`)
+  await page.goto(`/recept/${recipe.id}`)
   // Scope to the desktop layout — both layouts render "Till handlingslista" but only desktop is
   // visible here; scoping avoids a strict-mode hit on the hidden mobile button
   const desktop = page.locator('[data-testid="recipe-detail-desktop"]')

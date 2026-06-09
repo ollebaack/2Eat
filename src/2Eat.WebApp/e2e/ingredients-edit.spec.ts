@@ -10,7 +10,7 @@ test.beforeEach(async ({ page }) => {
 test.describe('Ingredient edit', () => {
   test('can edit an ingredient', async ({ page }) => {
     await loginViaApi(page, uniqueEmail('ing-edit'))
-    await page.goto('/ingredients')
+    await page.goto('/ingredienser')
 
     // Create via API — the add dialog omits categoryId which fails the FK constraint.
     // categoryId 1 (Bakverk) is always seeded.

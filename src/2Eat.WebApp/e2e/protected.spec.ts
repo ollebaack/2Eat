@@ -16,7 +16,7 @@ test.beforeEach(async ({ page }) => {
 // ---------------------------------------------------------------------------
 
 test.describe('Unauthenticated redirects', () => {
-  const protectedRoutes = ['/', '/ingredients', '/recipes/new', '/veckoplan', '/skafferi', '/profile']
+  const protectedRoutes = ['/', '/ingredienser', '/recept/nytt', '/veckoplan', '/skafferi', '/profil']
 
   for (const route of protectedRoutes) {
     test(`${route} redirects to /login when not signed in`, async ({ page }) => {
@@ -60,20 +60,20 @@ test.describe('Authenticated access', () => {
   })
 
   test('ingredients page renders', async ({ page }) => {
-    await page.goto('/ingredients')
-    await expect(page).toHaveURL('/ingredients')
+    await page.goto('/ingredienser')
+    await expect(page).toHaveURL('/ingredienser')
     await expect(page.locator('h1, h2').first()).toBeVisible({ timeout: 10_000 })
   })
 
   test('new recipe page renders form', async ({ page }) => {
-    await page.goto('/recipes/new')
-    await expect(page).toHaveURL('/recipes/new')
+    await page.goto('/recept/nytt')
+    await expect(page).toHaveURL('/recept/nytt')
     await expect(page.locator('form, input').first()).toBeVisible({ timeout: 10_000 })
   })
 
   test('profile page renders', async ({ page }) => {
-    await page.goto('/profile')
-    await expect(page).toHaveURL('/profile')
+    await page.goto('/profil')
+    await expect(page).toHaveURL('/profil')
     await expect(page.locator('h1, h2').first()).toBeVisible({ timeout: 10_000 })
   })
 

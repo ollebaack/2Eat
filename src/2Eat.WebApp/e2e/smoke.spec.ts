@@ -25,18 +25,18 @@ test('recipes page loads', async ({ page }) => {
 
 test('recipe detail page loads', async ({ page }, testInfo) => {
   const recipe = await createRecipeViaApi(page, `Smoke detail test ${Date.now()}`)
-  await page.goto(`/recipes/${recipe.id}`)
+  await page.goto(`/recept/${recipe.id}`)
   // Both mobile and desktop layouts are always in the DOM — scope to the visible one
   const layoutId = testInfo.project.name === 'mobile' ? 'recipe-detail-mobile' : 'recipe-detail-desktop'
   await expect(page.locator(`[data-testid="${layoutId}"] h1, [data-testid="${layoutId}"] h2`).first()).toBeVisible({ timeout: 10_000 })
 })
 
 test('ingredients page loads', async ({ page }) => {
-  await page.goto('/ingredients')
+  await page.goto('/ingredienser')
   await expect(page.locator('h1, h2').first()).toBeVisible({ timeout: 10_000 })
 })
 
 test('new recipe form loads', async ({ page }) => {
-  await page.goto('/recipes/new')
+  await page.goto('/recept/nytt')
   await expect(page.locator('input, textarea, form').first()).toBeVisible({ timeout: 10_000 })
 })

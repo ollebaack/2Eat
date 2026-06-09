@@ -59,7 +59,7 @@ test.describe('Recipe Page Interactions', () => {
     const firstCard = page.locator('article').first()
     await expect(firstCard).toBeVisible({ timeout: 5_000 })
 
-    const detailLink = firstCard.locator('a[href^="/recipes/"]').first()
+    const detailLink = firstCard.locator('a[href^="/recept/"]').first()
     await expect(detailLink).toBeVisible()
   })
 
