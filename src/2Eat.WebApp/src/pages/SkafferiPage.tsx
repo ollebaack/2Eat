@@ -1621,7 +1621,7 @@ export function SkafferiPage() {
                 gap: 16,
               }}>
                 {cookableNow.map((entry) => (
-                  <PantryRecipeCard key={entry.recipe.id} entry={entry} onNavigate={(id) => navigate(`/recipes/${id}`)} />
+                  <PantryRecipeCard key={entry.recipe.id} entry={entry} onNavigate={(id) => navigate(`/recept/${id}`)} />
                 ))}
               </div>
             )}
@@ -1647,7 +1647,7 @@ export function SkafferiPage() {
                 gap: 16,
               }}>
                 {almostThere.map((entry) => (
-                  <PantryRecipeCard key={entry.recipe.id} entry={entry} onNavigate={(id) => navigate(`/recipes/${id}`)} />
+                  <PantryRecipeCard key={entry.recipe.id} entry={entry} onNavigate={(id) => navigate(`/recept/${id}`)} />
                 ))}
               </div>
             )}
@@ -1683,7 +1683,7 @@ export function SkafferiPage() {
                   item={item}
                   recipes={recipes}
                   onManage={(i) => setEditItem(i)}
-                  onNavigate={(id) => navigate(`/recipes/${id}`)}
+                  onNavigate={(id) => navigate(`/recept/${id}`)}
                 />
               ))}
             </div>

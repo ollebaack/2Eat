@@ -31,7 +31,7 @@ export function RecipeRow({ recipe, onDelete }: RecipeRowProps) {
       </div>
 
       <div className="flex flex-col gap-1 min-w-0">
-        <Link to={`/recipes/${recipe.id}`} className="no-underline">
+        <Link to={`/recept/${recipe.id}`} className="no-underline">
           <h3
             className="text-ink m-0 font-normal leading-[1.1]"
             style={{ fontFamily: 'var(--font-serif)', fontSize: 22, letterSpacing: '-0.02em' }}

@@ -16,7 +16,7 @@ const navItems = [
   { to: '/veckoplan',   label: 'Veckoplan',     icon: Calendar,       end: false },
   { to: '/skafferi',    label: 'Skafferi',      icon: ShoppingBasket, end: false },
   { to: '/samlingar',   label: 'Samlingar',     icon: Library,        end: false },
-  { to: '/settings',    label: 'Inställningar', icon: Settings,       end: false },
+  { to: '/installningar', label: 'Inställningar', icon: Settings,       end: false },
 ]
 
 function NavItem({ to, label, icon: Icon, end }: { to: string; label: string; icon: LucideIcon; end: boolean }) {
@@ -59,8 +59,8 @@ export function Layout() {
   }
 
   const { isDark, setIsDark } = useTheme()
-  const isNewRecipe  = !!useMatch('/recipes/new')
-  const isEditRecipe = !!useMatch('/recipes/:id/edit')
+  const isNewRecipe  = !!useMatch('/recept/nytt')
+  const isEditRecipe = !!useMatch('/recept/:id/redigera')
   const isRecipeForm = isNewRecipe || isEditRecipe
 
   if (isMobile) {
@@ -72,7 +72,7 @@ export function Layout() {
         {!isRecipeForm && (
           <Button
             size="icon"
-            onClick={() => navigate('/recipes/new')}
+            onClick={() => navigate('/recept/nytt')}
             aria-label="Nytt recept"
             className="fixed rounded-full h-[52px] w-[52px] border-0 shadow-[0_4px_16px_rgba(0,0,0,0.18)]"
             style={{
@@ -120,7 +120,7 @@ export function Layout() {
           <Button
             className="w-full rounded-full gap-2"
             style={{ background: 'var(--2eat-accent)', color: 'var(--paper)', border: 'none', fontFamily: 'var(--font-sans)', fontSize: 13 }}
-            onClick={() => navigate('/recipes/new')}
+            onClick={() => navigate('/recept/nytt')}
             onMouseEnter={e => (e.currentTarget.style.background = 'var(--2eat-accent-deep)')}
             onMouseLeave={e => (e.currentTarget.style.background = 'var(--2eat-accent)')}
           >
@@ -188,7 +188,7 @@ export function Layout() {
             </div>
           )}
           <Link
-            to="/settings"
+            to="/installningar"
             className="flex flex-col min-w-0 flex-1 no-underline rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1"
             style={{ lineHeight: 1.2 }}
           >

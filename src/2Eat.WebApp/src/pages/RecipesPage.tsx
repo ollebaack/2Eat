@@ -46,7 +46,7 @@ function FeedCard({ recipe, onDelete, onSave }: { recipe: Recipe; onDelete: (r: 
         boxShadow: hovered ? '0 8px 28px -12px rgba(0,0,0,0.16)' : 'none',
       }}
     >
-      <Link to={`/recipes/${recipe.id}`} style={{ display: 'block', position: 'relative', textDecoration: 'none' }}>
+      <Link to={`/recept/${recipe.id}`} style={{ display: 'block', position: 'relative', textDecoration: 'none' }}>
         <PhotoSlot imageUrl={recipe.imageUrl} swatch={recipeSwatch(recipe.id)} label={recipe.category?.name} aspect="3/2" />
         <div style={{ position: 'absolute', top: 12, left: 12 }}>
           <Pill tone="ink" size="sm">{recipe.totalTime} MIN</Pill>
@@ -61,7 +61,7 @@ function FeedCard({ recipe, onDelete, onSave }: { recipe: Recipe; onDelete: (r: 
         ><Bookmark size={14} strokeWidth={1.5} /></Button>
       </Link>
       <div style={{ padding: '18px 20px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <Link to={`/recipes/${recipe.id}`} style={{ textDecoration: 'none' }}>
+        <Link to={`/recept/${recipe.id}`} style={{ textDecoration: 'none' }}>
           <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: 26, lineHeight: 1.1, letterSpacing: '-0.025em', color: 'var(--ink)', margin: 0, fontWeight: 400 }}>
             {recipe.name}
           </h3>
@@ -305,7 +305,7 @@ export function RecipesPage() {
           <Button
             className="rounded-full gap-2"
             style={{ background: 'var(--ink)', color: 'var(--paper)', fontFamily: 'var(--font-sans)', fontSize: 13, border: 'none' }}
-            onClick={() => navigate('/recipes/new')}
+            onClick={() => navigate('/recept/nytt')}
           >
             <Plus size={14} /> Nytt recept
           </Button>
@@ -420,7 +420,7 @@ export function RecipesPage() {
             ) : (
               <>
                 <p style={{ fontFamily: 'var(--font-serif)', fontSize: 22, color: 'var(--ink)', margin: 0 }}>Inga recept ännu.</p>
-                <Button className="rounded-full mt-2" onClick={() => navigate('/recipes/new')}>Lägg till recept</Button>
+                <Button className="rounded-full mt-2" onClick={() => navigate('/recept/nytt')}>Lägg till recept</Button>
               </>
             )}
           </motion.div>
@@ -455,7 +455,7 @@ export function RecipesPage() {
         open={shuffleOpen}
         recipes={randomRecipesForShuffle ?? allRecipes.slice(0, 6)}
         onClose={() => setShuffleOpen(false)}
-        onPick={id => { setShuffleOpen(false); navigate(`/recipes/${id}`) }}
+        onPick={id => { setShuffleOpen(false); navigate(`/recept/${id}`) }}
       />
 
       {/* ── Save to samling modal ──────────────────────────────── */}

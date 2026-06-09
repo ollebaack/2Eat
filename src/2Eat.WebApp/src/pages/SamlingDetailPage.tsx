@@ -368,7 +368,7 @@ export function SamlingDetailPage() {
                 flexDirection: 'column',
               }}
             >
-              <Link to={`/recipes/${item.receptId}`} style={{ textDecoration: 'none', flex: 1 }}>
+              <Link to={`/recept/${item.receptId}`} style={{ textDecoration: 'none', flex: 1 }}>
                 <div style={{ aspectRatio: '5/4', overflow: 'hidden' }}>
                   <PhotoSlot imageUrl={item.imageUrl ?? undefined} swatch={recipeSwatch(item.receptId)} aspect="5/4" />
                 </div>

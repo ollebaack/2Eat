@@ -123,7 +123,7 @@ export function MobileListScreen({ recipes }: MobileListScreenProps) {
             </span>
           </div>
           <div
-            onClick={() => navigate(`/recipes/${featured.id}`)}
+            onClick={() => navigate(`/recept/${featured.id}`)}
             className="rounded-[22px] overflow-hidden border border-line cursor-pointer"
           >
             <div className="h-[220px] relative">
@@ -275,7 +275,7 @@ export function MobileListScreen({ recipes }: MobileListScreenProps) {
           {rest.map(r => (
             <article
               key={r.id}
-              onClick={() => navigate(`/recipes/${r.id}`)}
+              onClick={() => navigate(`/recept/${r.id}`)}
               className="grid gap-[14px] p-[10px] bg-paper border border-line rounded-2xl cursor-pointer"
               style={{ gridTemplateColumns: '88px 1fr' }}
             >
