@@ -120,8 +120,18 @@ export function RecipeFormPage() {
     onSuccess: saved => {
       flushSync(() => setIsDirty(false))
       queryClient.invalidateQueries({ queryKey: ['recipes'] })
-      toast.success(isEdit ? 'Recept uppdaterat' : 'Recept skapat')
-      navigate(`/recipes/${saved.id}`)
+      if (isEdit) {
+        toast.success('Recept uppdaterat')
+        navigate(`/recipes/${saved.id}`)
+      } else {
+        toast.success('Recept skapat', {
+          action: {
+            label: 'Gå till receptet',
+            onClick: () => navigate(`/recipes/${saved.id}`),
+          },
+        })
+        navigate('/')
+      }
     },
     onError: () => toast.error('Kunde inte spara receptet'),
   })
