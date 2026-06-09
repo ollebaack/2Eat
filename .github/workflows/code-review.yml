@@ -188,4 +188,4 @@ jobs:
             if [ -n "$BODY" ]; then BODY="${BODY}\n\n"; fi
             BODY="${BODY}### Backend\n$(cat /tmp/backend/backend-findings.txt)"
           fi
-          gh pr review ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --comment --body "$(printf "$BODY")"
+          gh pr review ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --comment --body "$(printf '%s' "$BODY")"
