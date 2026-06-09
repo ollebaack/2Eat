@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import type { Forslag, SamlingListItem } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { PhotoSlot } from '@/components/PhotoSlot'
 import { fastAddForslag, getSamlingar } from '@/lib/api'
@@ -33,8 +34,114 @@ function sourceDomain(url: string): string {
   }
 }
 
+interface ForslagPreviewDialogProps {
+  forslag: Forslag
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}
+
+function ForslagPreviewDialog({ forslag, open, onOpenChange }: ForslagPreviewDialogProps) {
+  const domain = sourceDomain(forslag.sourceUrl)
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-2xl p-0 overflow-hidden">
+        <div className="relative">
+          <PhotoSlot
+            imageUrl={forslag.imageUrl ?? undefined}
+            swatch="#e8e0d8"
+            aspect="16/9"
+          />
+          <span
+            className="absolute bottom-3 left-3 rounded-full px-2.5 py-1 text-white"
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: 10,
+              fontWeight: 600,
+              letterSpacing: '0.06em',
+              background: SITE_COLORS[forslag.sourceSite] ?? 'var(--ink-50)',
+            }}
+          >
+            {forslag.sourceSite}
+          </span>
+        </div>
+
+        <div className="p-6 flex flex-col gap-4">
+          <DialogHeader>
+            <DialogTitle
+              className="text-ink font-normal leading-[1.2] text-left"
+              style={{ fontFamily: 'var(--font-serif)', fontSize: 26, letterSpacing: '-0.02em' }}
+            >
+              {forslag.title}
+            </DialogTitle>
+          </DialogHeader>
+
+          {/* Source link */}
+          <a
+            href={forslag.sourceUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="no-underline flex items-center gap-1 self-start"
+            style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--ink-50)', letterSpacing: '0.04em' }}
+          >
+            {domain}
+            <ArrowUpRight size={12} strokeWidth={1.5} />
+          </a>
+
+          {/* Ingredients */}
+          <div className="flex flex-col gap-2">
+            <span
+              style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: 9.5,
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+                color: 'var(--ink-40)',
+              }}
+            >
+              Ingredienser
+            </span>
+            {forslag.ingredientNames && forslag.ingredientNames.length > 0 ? (
+              <div className="flex flex-wrap gap-1.5">
+                {forslag.ingredientNames.map(name => (
+                  <span
+                    key={name}
+                    className="rounded-full px-2.5 py-0.5"
+                    style={{
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: 10,
+                      letterSpacing: '0.04em',
+                      background: 'var(--surface-1)',
+                      border: '1px solid var(--line)',
+                      color: 'var(--ink-70)',
+                      textTransform: 'capitalize',
+                    }}
+                  >
+                    {name}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p
+                style={{
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: 11,
+                  color: 'var(--ink-40)',
+                  letterSpacing: '0.02em',
+                }}
+              >
+                Inga ingredienser listade
+              </p>
+            )}
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 export function ForslagCard({ forslag, matchInfo }: ForslagCardProps) {
   const [open, setOpen] = useState(false)
+  const [previewOpen, setPreviewOpen] = useState(false)
   const [selectedIds, setSelectedIds] = useState<number[]>([])
   const queryClient = useQueryClient()
 
@@ -124,11 +231,11 @@ export function ForslagCard({ forslag, matchInfo }: ForslagCardProps) {
       <div className="p-5 flex flex-col gap-3">
         {/* Title row */}
         <div className="flex items-start justify-between gap-3">
-          <a
-            href={forslag.sourceUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 no-underline min-w-0"
+          <button
+            type="button"
+            className="flex-1 text-left min-w-0 bg-transparent border-0 p-0 cursor-pointer"
+            onClick={() => setPreviewOpen(true)}
+            aria-label={`Förhandsgranska ${forslag.title}`}
           >
             <h3
               className="text-ink m-0 font-normal leading-[1.2]"
@@ -136,7 +243,7 @@ export function ForslagCard({ forslag, matchInfo }: ForslagCardProps) {
             >
               {forslag.title}
             </h3>
-          </a>
+          </button>
 
           {/* Fast-add button + Samling picker */}
           <Popover open={open} onOpenChange={setOpen}>
@@ -262,6 +369,12 @@ export function ForslagCard({ forslag, matchInfo }: ForslagCardProps) {
           <ArrowUpRight size={12} strokeWidth={1.5} />
         </a>
       </div>
+
+      <ForslagPreviewDialog
+        forslag={forslag}
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+      />
     </article>
   )
 }
