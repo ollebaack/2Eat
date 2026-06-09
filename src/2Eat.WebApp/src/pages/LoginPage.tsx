@@ -75,6 +75,16 @@ export function LoginPage() {
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </Button>
           </div>
+          <Button
+            type="button"
+            variant="link"
+            className="self-end h-auto p-0 text-xs"
+            onClick={() =>
+              toast.info('Kontakta support på ollebaack@gmail.com för att återställa ditt lösenord.')
+            }
+          >
+            Glömt lösenord?
+          </Button>
         </div>
 
         <Button
