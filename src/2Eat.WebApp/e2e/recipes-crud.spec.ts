@@ -64,10 +64,9 @@ test.describe('Create Recipe', () => {
     await saveBtn.evaluate(el => el.scrollIntoView({ block: 'center' }))
     await saveBtn.click({ force: true })
 
-    // Should redirect to the new recipe's detail page
-    await expect(page).toHaveURL(/\/recipes\/\d+$/, { timeout: 10_000 })
-    // The recipe name should be visible in the heading
-    await expect(page.getByRole('heading', { name: recipeName })).toBeVisible({ timeout: 10_000 })
+    // Should redirect to home (Utforska) and show a toast with a "Gå till receptet" action
+    await expect(page).toHaveURL('/', { timeout: 10_000 })
+    await expect(page.getByText('Gå till receptet')).toBeVisible({ timeout: 10_000 })
   })
 
   test('save button is disabled when recipe name is empty', async ({ page }) => {
