@@ -74,11 +74,33 @@ namespace _2Eat.Infrastructure
                 c.DefaultRequestHeaders.Accept.ParseAdd("text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
             });
 
+            // coop.se serves a JS SPA shell to regular browser UAs but responds with
+            // fully server-side rendered HTML (including JSON-LD structured data) when
+            // it detects a Googlebot crawl. Use that UA for all Coop page fetches.
+            builder.Services.AddHttpClient("CoopScraper", c =>
+            {
+                c.Timeout = TimeSpan.FromSeconds(30);
+                c.DefaultRequestHeaders.UserAgent.ParseAdd(
+                    "Googlebot/2.1 (+http://www.google.com/bot.html)");
+                c.DefaultRequestHeaders.AcceptLanguage.ParseAdd("sv-SE,sv;q=0.9,en-US;q=0.8,en;q=0.7");
+                c.DefaultRequestHeaders.Accept.ParseAdd("text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+            });
+
             builder.Services.AddHttpClient("RecipeScan", c =>
             {
                 c.Timeout = TimeSpan.FromSeconds(30);
                 c.DefaultRequestHeaders.UserAgent.ParseAdd(
                     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36");
+                c.DefaultRequestHeaders.AcceptLanguage.ParseAdd("sv-SE,sv;q=0.9,en-US;q=0.8,en;q=0.7");
+                c.DefaultRequestHeaders.Accept.ParseAdd("text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+            });
+
+            // coop.se requires a Googlebot UA to get SSR HTML with JSON-LD (see CoopScraper client above).
+            builder.Services.AddHttpClient("RecipeScanCoop", c =>
+            {
+                c.Timeout = TimeSpan.FromSeconds(30);
+                c.DefaultRequestHeaders.UserAgent.ParseAdd(
+                    "Googlebot/2.1 (+http://www.google.com/bot.html)");
                 c.DefaultRequestHeaders.AcceptLanguage.ParseAdd("sv-SE,sv;q=0.9,en-US;q=0.8,en;q=0.7");
                 c.DefaultRequestHeaders.Accept.ParseAdd("text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
             });
