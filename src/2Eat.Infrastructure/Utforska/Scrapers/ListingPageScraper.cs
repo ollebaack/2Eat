@@ -75,8 +75,18 @@ public abstract class ListingPageScraper
                 forslag.IngredientNames = ExtractIngredientNames(detailHtml)
                     .Select(n => new ForslagIngredientName { Name = n })
                     .ToList();
-                if (forslag.ImageUrl is null)
-                    forslag.ImageUrl = ExtractOgImage(detailHtml);
+
+                // Prefer the detail page's <h1> as the canonical recipe title — listing-page
+                // anchor text can be truncated or pick up unrelated prose near the link.
+                var detailTitle = ExtractH1Title(detailHtml);
+                if (detailTitle is not null)
+                    forslag.Title = detailTitle;
+
+                // Detail-page og:image is typically the full-resolution hero image, while
+                // listing-page thumbnails are often low-res and appear blurry when enlarged.
+                var detailImage = ExtractOgImage(detailHtml);
+                if (detailImage is not null)
+                    forslag.ImageUrl = detailImage;
             }
             catch (Exception ex)
             {
@@ -124,6 +134,25 @@ public abstract class ListingPageScraper
             .Where(s => s.Length >= 2)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
+    }
+
+    private static readonly Regex H1Pattern = new(
+        @"<h1\b[^>]*>(.*?)</h1>",
+        RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled);
+
+    /// <summary>
+    /// Extracts the recipe title from the detail page's &lt;h1&gt; element, stripping any
+    /// nested tags and decoding HTML entities. Returns null if no plausible title is found.
+    /// </summary>
+    private static string? ExtractH1Title(string html)
+    {
+        var match = H1Pattern.Match(html);
+        if (!match.Success) return null;
+
+        var text = WebUtility.HtmlDecode(Regex.Replace(match.Groups[1].Value, "<[^>]+>", " "));
+        text = Regex.Replace(text, @"\s+", " ").Trim();
+
+        return text.Length is >= 3 and <= 120 ? text : null;
     }
 
     private static string? ExtractOgImage(string html)
