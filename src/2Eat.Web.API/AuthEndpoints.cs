@@ -41,6 +41,8 @@ namespace _2Eat.Web.API
 
         static async Task<IResult> Login(LoginRequest req, IUserService svc, IConfiguration config, IServiceScopeFactory scopeFactory)
         {
+            if (string.IsNullOrWhiteSpace(req.Email) || string.IsNullOrWhiteSpace(req.Password))
+                return Results.Unauthorized();
             var user = await svc.ValidateLoginAsync(req.Email, req.Password);
             if (user is null) return Results.Unauthorized();
             TriggerForslagRefresh(scopeFactory);
