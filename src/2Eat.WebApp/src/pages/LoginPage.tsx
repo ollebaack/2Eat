@@ -32,9 +32,12 @@ export function LoginPage() {
     },
   })
 
-  function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    mutation.mutate({ email, password })
+    const form = e.currentTarget
+    const emailVal = (form.elements.namedItem('email') as HTMLInputElement | null)?.value ?? email
+    const passwordVal = (form.elements.namedItem('password') as HTMLInputElement | null)?.value ?? password
+    mutation.mutate({ email: emailVal, password: passwordVal })
   }
 
   return (
@@ -44,6 +47,7 @@ export function LoginPage() {
           <Label htmlFor="email">E-post</Label>
           <Input
             id="email"
+            name="email"
             type="email"
             autoComplete="email"
             required
@@ -57,6 +61,7 @@ export function LoginPage() {
           <div className="relative">
             <Input
               id="password"
+              name="password"
               type={showPassword ? 'text' : 'password'}
               autoComplete="current-password"
               required
