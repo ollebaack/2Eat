@@ -62,7 +62,7 @@ test.describe('Registration', () => {
     await page.getByLabel('Bekräfta lösenord').fill('DifferentPass!')
     await page.getByRole('button', { name: 'Skapa konto' }).click()
 
-    await expect(page.getByText('matchar inte')).toBeVisible({ timeout: 8_000 })
+    await expect(page.locator('#confirmPassword-error')).toBeVisible({ timeout: 8_000 })
     await expect(page).toHaveURL('/register')
   })
 

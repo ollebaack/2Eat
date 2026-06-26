@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { authRegister } from '@/lib/api'
+import { cn } from '@/lib/utils'
 import { useAuth } from '@/context/AuthContext'
 import { AuthLayout } from '@/components/auth/AuthLayout'
 
@@ -19,6 +20,7 @@ export function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [fieldErrors, setFieldErrors] = useState<{ password?: string; confirmPassword?: string }>({})
 
   const mutation = useMutation({
     mutationFn: authRegister,
@@ -37,12 +39,16 @@ export function RegisterPage() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    const errors: { password?: string; confirmPassword?: string } = {}
     if (password.length < 8) {
-      toast.error('Lösenordet måste vara minst 8 tecken')
-      return
+      errors.password = 'Lösenordet måste vara minst 8 tecken'
     }
     if (password !== confirmPassword) {
-      toast.error('Lösenorden matchar inte')
+      errors.confirmPassword = 'Lösenorden matchar inte'
+    }
+    setFieldErrors(errors)
+    if (Object.keys(errors).length > 0) {
+      toast.error(errors.password ?? errors.confirmPassword)
       return
     }
     mutation.mutate({ email, password, displayName })
@@ -85,8 +91,13 @@ export function RegisterPage() {
               required
               minLength={8}
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="pr-10"
+              onChange={(e) => {
+                setPassword(e.target.value)
+                setFieldErrors((prev) => ({ ...prev, password: undefined }))
+              }}
+              className={cn('pr-10', fieldErrors.password && 'border-destructive focus-visible:ring-destructive')}
+              aria-invalid={!!fieldErrors.password}
+              aria-describedby={fieldErrors.password ? 'password-error' : undefined}
             />
             <Button
               type="button"
@@ -99,6 +110,11 @@ export function RegisterPage() {
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </Button>
           </div>
+          {fieldErrors.password && (
+            <p id="password-error" className="text-sm text-destructive">
+              {fieldErrors.password}
+            </p>
+          )}
         </div>
 
         <div className="flex flex-col gap-1.5">
@@ -110,8 +126,16 @@ export function RegisterPage() {
               autoComplete="new-password"
               required
               value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="pr-10"
+              onChange={(e) => {
+                setConfirmPassword(e.target.value)
+                setFieldErrors((prev) => ({ ...prev, confirmPassword: undefined }))
+              }}
+              className={cn(
+                'pr-10',
+                fieldErrors.confirmPassword && 'border-destructive focus-visible:ring-destructive',
+              )}
+              aria-invalid={!!fieldErrors.confirmPassword}
+              aria-describedby={fieldErrors.confirmPassword ? 'confirmPassword-error' : undefined}
             />
             <Button
               type="button"
@@ -124,6 +148,11 @@ export function RegisterPage() {
               {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </Button>
           </div>
+          {fieldErrors.confirmPassword && (
+            <p id="confirmPassword-error" className="text-sm text-destructive">
+              {fieldErrors.confirmPassword}
+            </p>
+          )}
         </div>
 
         <Button
