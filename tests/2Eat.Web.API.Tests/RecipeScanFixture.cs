@@ -1,10 +1,12 @@
 using System.Text;
+using _2Eat.Application.Utforska;
 using _2Eat.Web.API.Tests.Helpers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
 using Testcontainers.PostgreSql;
 
@@ -57,6 +59,7 @@ public class RecipeScanFixture : IAsyncLifetime
                     }));
 
                 builder.ConfigureTestServices(services =>
+                {
                     services.PostConfigure<JwtBearerOptions>(
                         JwtBearerDefaults.AuthenticationScheme, opts =>
                         {
@@ -65,7 +68,13 @@ public class RecipeScanFixture : IAsyncLifetime
                             opts.TokenValidationParameters.IssuerSigningKey = key;
                             opts.TokenValidationParameters.ValidIssuer = ApiTestFixture.TestJwtIssuer;
                             opts.TokenValidationParameters.ValidAudience = ApiTestFixture.TestJwtAudience;
-                        }));
+                        });
+                    // Login/Register fire a background Förslag pool refresh — stub it out so
+                    // this fixture doesn't make real outbound HTTP to ICA/Köket/Coop, and
+                    // doesn't contend with other fixtures for ForslagService's process-wide
+                    // refresh lock (see UtforskaTests flakiness).
+                    services.Replace(ServiceDescriptor.Scoped<IForslagScraperService, StubForslagScraperService>());
+                });
             });
 
         _ = Factory.CreateClient();
